@@ -1,0 +1,212 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav a {
+    margin: 0 15px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+main {
+    margin: 20px;
+    padding: 20px;
+}
+
+section {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+h1, h2 {
+    margin-bottom: 15px;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+h2 {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+    form label {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    form input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+/* Totals and Transactions */
+#totals div {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+/* Transactions List Styles */
+#transaction-container {
+    max-height: 200px; /* Set a fixed max height to allow for scrolling */
+    overflow-y: scroll; /* Ensure vertical scroll when content overflows */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding-right: 15px;
+    background-color: #fff;
+    box-sizing: border-box; /* Ensures padding is included in width/height calculations */
+}
+
+#transaction-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    #transaction-list li {
+        background-color: #e9e9e9;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+#transaction-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+    #transaction-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+
+        #transaction-list li button {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            #transaction-list li button:hover {
+                background-color: #c82333;
+            }
+
+/* Analytics Section */
+#analytics-container {
+    max-height: 200px; /* Set a max-height to make it smaller */
+    overflow-y: auto; /* Add scrolling in case analytics content overflows */
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#analytics-title {
+    font-size: 1.2em; /* Adjust font size for a smaller look */
+    margin-bottom: 10px;
+}
+
+.analytics-item {
+    font-size: 0.9em; /* Make analytics text smaller */
+    margin-bottom: 5px;
+}
+
+    .analytics-item span {
+        font-weight: bold;
+    }
+
+/* Analytics Page Styles */
+#incomeExpenseChart,
+#expenseCategoryChart {
+    width: 100% !important;
+    height: 150px; /* Adjust the height as needed */
+}
+
+@media (max-width: 768px) {
+    #incomeExpenseChart,
+    #expenseCategoryChart {
+        height: 120px; /* Even smaller height for mobile screens */
+    }
+
+    #analytics-container {
+        max-height: 150px; /* Adjust height for smaller screens */
+        padding: 8px;
+    }
+
+    .analytics-item {
+        font-size: 0.8em; /* Smaller font for mobile */
+    }
+}
+
+/* Clear Data Button */
+#clear-data {
+    background-color: #dc3545;
+    color: white;
+}
+
+    #clear-data:hover {
+        background-color: #c82333;
+    }
+
+/* Footer */
+footer {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    footer p {
+            margin:  0;
+    }

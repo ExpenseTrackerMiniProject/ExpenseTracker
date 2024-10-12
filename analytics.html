@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker - Analytics</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Expense Tracker Analytics</h1>
+        <nav>
+            <a href="index.html">Dashboard</a>
+            <a href="add-transaction.html">Add Transaction</a>
+            <a href="analytics.html">Analytics</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Income vs. Expenses</h2>
+            <div class="chart-container">
+                <canvas id="incomeExpenseChart"></canvas>
+            </div>
+        </section>
+
+        <section>
+            <h2>Expense Breakdown by Category</h2>
+            <div class="chart-container">
+                <canvas id="expenseCategoryChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
