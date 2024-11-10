@@ -107,7 +107,7 @@ h2 {
 /* Form Styles */
 form {
     background-color: white;
-    padding: 60px;
+    padding: 10px;
     border-radius: 8px;
 }
 
@@ -142,6 +142,10 @@ button {
 #totals div {
     margin: 10px 0;
     font-size: 18px;
+}
+
+.TransactionForm {
+    padding: 60px;
 }
 
 /* Transactions List Styles */
