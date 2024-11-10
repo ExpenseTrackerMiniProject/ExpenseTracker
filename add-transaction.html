@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Transaction</title>
     <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <header>
         <h1>Add New Transaction</h1>
         <nav>
-            <button id="theme-toggle">Toggle Dark Mode</button>
+            <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
             <a href="index.html">Dashboard</a>
             <a href="add-transaction.html">Add Transaction</a>
             <a href="analytics.html">Analytics</a>
@@ -35,22 +37,6 @@
 
     <script src="script.js"></script>
 
-    <script>
-        // Dark Mode Toggle Script
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-theme');
-                localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-            });
-        }
 
-        // On load, apply the saved theme from localStorage
-        window.addEventListener('load', () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-theme');
-            }
-        });
-    </script>
 </body>
 </html>
