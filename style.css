@@ -1,4 +1,4 @@
-
+/* Slide-in Animations for Sections */
 .slide-in-left {
     transform: translateX(-100%);
     animation: slideInLeft 1s forwards;
@@ -14,9 +14,7 @@
     }
 }
 
-
-
-/*Right animation*/
+/* Slide-in from Bottom */
 .slide-in-bottom {
     transform: translateY(100%);
     animation: slideInBottom 1s forwards;
@@ -32,6 +30,7 @@
     }
 }
 
+/* Fade-in effect */
 .fade-in {
     opacity: 0;
     animation: fadeIn 2s forwards;
@@ -54,7 +53,7 @@ body {
     color: var(--text-color, #333); /* Default light text color */
     margin: 0;
     padding: 0;
-    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for dark mode */
+    transition: background-color 1s ease, color 1s ease, transform 1s ease; /* Smooth transition for dark mode */
 }
 
 /* Header Styles */
@@ -266,11 +265,15 @@ footer {
 
 /* Dark Mode Styles */
 body.dark-theme #TextColorChange {
-    color: #000
+    color: #000;
 }
+
 body.dark-theme {
     --background-color: #121212;
     --text-color: #e0e0e0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.4s ease, color 0.4s ease; /* Smooth transition for dark mode */
 }
 
     /* Dark Mode Header */
@@ -328,7 +331,7 @@ body.dark-theme {
 /* Dark Mode Toggle Button */
 #theme-toggle {
     position: absolute;
-    top: 20px;
+    top: 20px; /* Adjust this to avoid overlap on larger screens */
     right: 20px;
     background-color: #007bff;
     color: white;
@@ -336,9 +339,23 @@ body.dark-theme {
     padding: 10px 15px;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Added smooth background color transition */
 }
 
     #theme-toggle:hover {
         background-color: #0056b3;
     }
+
+/* Adjust button position on smaller screens */
+@media (max-width: 768px) {
+    #theme-toggle {
+        top: 2px; /* Decrease top spacing to avoid overlap */
+        right: 6px; /* Adjust as needed */
+    }
+
+    /* Ensure the button does not overlap with the header */
+    body.dark-theme #theme-toggle {
+        top: 2px; /* Move further down on smaller devices to ensure it's not over the header */
+        right: 6px; /* Adjust as needed */
+    }
+}
