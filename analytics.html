@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker - Analytics</title>
+    <title>Add Transaction</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <h1>Expense Tracker Analytics</h1>
+        <h1>Add New Transaction</h1>
         <nav>
             <button id="theme-toggle">Toggle Dark Mode</button>
             <a href="index.html">Dashboard</a>
@@ -18,22 +17,21 @@
         </nav>
     </header>
 
-    <main>
-        <section class="slide-in-left">
-            <h2>Income vs. Expenses</h2>
-            <div class="chart-container">
-                <canvas id="incomeExpenseChart"></canvas>
-            </div>
-        </section>
+    <main class="slide-in-bottom">
+        <form id="transaction-form">
+            <label for="category" id="TextColorChange">Category</label>
+            <input type="text" id="category" placeholder="Enter category" required>
 
-        <section>
-            <h2>Expense Breakdown by Category</h2>
-            <div class="chart-container">
-                <canvas id="expenseCategoryChart"></canvas>
-            </div>
-        </section>
+            <label for="amount" id="TextColorChange" >Amount</label>
+            <input type="number" id="amount" placeholder="Enter amount" required>
+
+            <label for="date" id="TextColorChange" >Date</label>
+            <input type="date" id="date" required>
+
+            <button type="submit">Add Transaction</button>
+        </form>
     </main>
-        
+
 
     <script src="script.js"></script>
 
