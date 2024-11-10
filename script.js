@@ -254,30 +254,24 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
 }
 
 // Dark Mode Toggle Logic
-const themeToggle = document.getElementById('theme-toggle');
-if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-        // Toggle dark-theme class on the body
-        document.body.classList.toggle('dark-theme');
+// Toggle between dark and light themes
+const themeToggleButton = document.getElementById('theme-toggle');
+const themeIcon = document.getElementById('theme-icon');
 
-        // Update the button text based on the theme
-        if (document.body.classList.contains('dark-theme')) {
-            themeToggle.textContent = 'Toggle Light Mode';  // Dark mode is active
-        } else {
-            themeToggle.textContent = 'Toggle Dark Mode';   // Light mode is active
-        }
+// Check and apply saved theme on load
+document.body.classList.toggle('dark-theme', localStorage.getItem('theme') === 'dark');
+themeIcon.classList.toggle('fa-sun', document.body.classList.contains('dark-theme'));
+themeIcon.classList.toggle('fa-moon', !document.body.classList.contains('dark-theme'));
 
-        // Save the current theme in localStorage
-        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-    });
-}
+themeToggleButton.addEventListener('click', () => {
+    // Toggle theme class on the body
+    document.body.classList.toggle('dark-theme');
 
-// On load, apply the saved theme from localStorage
-window.addEventListener('load', () => {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark-theme');
-        themeToggle.textContent = 'Toggle Light Mode';  // Set button text to "Light Mode"
-    } else {
-        themeToggle.textContent = 'Toggle Dark Mode';   // Set button text to "Dark Mode"
-    }
+    // Switch icon between sun and moon
+    themeIcon.classList.toggle('fa-sun');
+    themeIcon.classList.toggle('fa-moon');
+
+    // Save theme to localStorage
+    localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
 });
+
