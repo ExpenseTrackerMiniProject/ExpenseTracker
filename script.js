@@ -131,6 +131,7 @@ if (document.getElementById('clear-data')) {
 }
 
 // Handle Download PDF (Dashboard Page)
+// Handle Download PDF (Dashboard Page)
 if (document.getElementById('download-pdf')) {
     document.getElementById('download-pdf').addEventListener('click', function () {
         // Notify user that download is starting
@@ -154,18 +155,22 @@ if (document.getElementById('download-pdf')) {
         y += 15;
 
         // Monthly Income
+        const formattedIncome = `₹ ${monthlyIncome.toFixed(2)}`; // Space added after currency symbol
         doc.setFontSize(16);
         doc.setFont('Helvetica', 'normal');
-        doc.text(`Monthly Income: ₹${parseFloat(monthlyIncome).toFixed(2)}`, 10, y);
+        doc.text(`Monthly Income: ${formattedIncome}`, 10, y);
         y += 10;
 
         // Total Expenses
         const totalExpenses = transactions.reduce((acc, t) => acc + parseFloat(t.amount), 0);
-        doc.text(`Total Expenses: ₹${totalExpenses.toFixed(2)}`, 10, y);
+        const formattedExpenses = `₹ ${totalExpenses.toFixed(2)}`; // Space added after currency symbol
+        doc.text(`Total Expenses: ${formattedExpenses}`, 10, y);
         y += 10;
 
         // Remaining Balance
-        doc.text(`Remaining Balance: ₹${(monthlyIncome - totalExpenses).toFixed(2)}`, 10, y);
+        const remainingBalance = (monthlyIncome - totalExpenses).toFixed(2);
+        const formattedBalance = `₹ ${remainingBalance}`; // Space added after currency symbol
+        doc.text(`Remaining Balance: ${formattedBalance}`, 10, y);
         y += 15;
 
         // Transactions Table
@@ -174,7 +179,7 @@ if (document.getElementById('download-pdf')) {
             head: [['Category', 'Amount', 'Date']],
             body: transactions.map(t => [
                 t.category,
-                `₹${parseFloat(t.amount).toFixed(2)}`, // Ensure amount is formatted correctly
+                `₹ ${parseFloat(t.amount).toFixed(2)}`, // Space added after currency symbol
                 t.date
             ]),
             theme: 'grid',
@@ -191,6 +196,7 @@ if (document.getElementById('download-pdf')) {
         doc.save('expense-report.pdf');
     });
 }
+
 
 // Initial Dashboard Load
 if (document.getElementById('total-income')) {
@@ -244,4 +250,34 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             maintainAspectRatio: false,
         }
     });
+
 }
+
+// Dark Mode Toggle Logic
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        // Toggle dark-theme class on the body
+        document.body.classList.toggle('dark-theme');
+
+        // Update the button text based on the theme
+        if (document.body.classList.contains('dark-theme')) {
+            themeToggle.textContent = 'Toggle Light Mode';  // Dark mode is active
+        } else {
+            themeToggle.textContent = 'Toggle Dark Mode';   // Light mode is active
+        }
+
+        // Save the current theme in localStorage
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    });
+}
+
+// On load, apply the saved theme from localStorage
+window.addEventListener('load', () => {
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-theme');
+        themeToggle.textContent = 'Toggle Light Mode';  // Set button text to "Light Mode"
+    } else {
+        themeToggle.textContent = 'Toggle Dark Mode';   // Set button text to "Dark Mode"
+    }
+});
