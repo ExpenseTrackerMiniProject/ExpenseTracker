@@ -53,7 +53,7 @@ body {
     color: var(--text-color, #333); /* Default light text color */
     margin: 0;
     padding: 0;
-    transition: background-color 1s ease, color 1s ease, transform 1s ease; /* Smooth transition for dark mode */
+    transition: background-color 2s ease, color 2s ease, transform 2s ease; /* Smooth transition for dark mode */
 }
 
 /* Header Styles */
@@ -87,6 +87,7 @@ section {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
     color: var(--text-color); /* Ensure text color is applied */
+    transition: background-color 1s ease, color 1s ease, transform 1s ease; /* Smooth transition for dark mode */
 }
 
 /* Header and Subheader Styles */
@@ -106,7 +107,7 @@ h2 {
 /* Form Styles */
 form {
     background-color: white;
-    padding: 20px;
+    padding: 60px;
     border-radius: 8px;
 }
 
