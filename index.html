@@ -14,17 +14,19 @@
     <header>
         <h1>Expense Tracker Dashboard</h1>
         <nav>
+            <button id="theme-toggle">Toggle Dark Mode</button>
             <a href="index.html">Dashboard</a>
             <a href="add-transaction.html">Add Transaction</a>
             <a href="analytics.html">Analytics</a>
+
         </nav>
     </header>
 
     <main>
-        <section id="summary">
+        <section id="summary" class="slide-in-left">
             <h2>Summary</h2>
             <form id="monthly-income-form">
-                <label for="monthly-income">Enter Monthly Income:</label>
+                <label for="monthly-income" id="TextColorChange" >Enter Monthly Income:</label>
                 <input type="number" id="monthly-income" placeholder="Enter income" required>
                 <button type="submit">Update Income</button>
             </form>
@@ -37,14 +39,14 @@
             <button id="download-pdf">Download PDF</button> <!-- PDF Download Button -->
         </section>
 
-        <section id="recent-transactions">
+        <section id="recent-transactions" class="slide-in-bottom">
             <h2>Recent Transactions</h2>
-            <div>
+            <div class="fade-in">
                 <button id="show-all">Show All</button>
                 <label for="filter-date">Filter by Month:</label>
                 <input type="month" id="filter-date">
             </div>
-            <div id="transaction-container">
+            <div id="transaction-container" class="fade-in">
                 <ul id="transaction-list"></ul>
             </div>
         </section>
