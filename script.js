@@ -295,12 +295,12 @@ if (document.getElementById('download-pdf')) {
 
         // Title
         doc.setFontSize(22);
-        doc.setFont('Helvetica', 'bold');
+        doc.setFont('helvetica', 'bold');
         doc.text('Expense Tracker Report', 10, y);
         y += 15;
 
         // Monthly Income
-        const formattedIncome = `₹ ${monthlyIncome.toFixed(2)}`; // Space added after currency symbol
+        const formattedIncome = `INR ${monthlyIncome.toFixed(2)}`; // Space added after currency symbol
         doc.setFontSize(16);
         doc.setFont('Helvetica', 'normal');
         doc.text(`Monthly Income: ${formattedIncome}`, 10, y);
@@ -308,13 +308,13 @@ if (document.getElementById('download-pdf')) {
 
         // Total Expenses
         const totalExpenses = transactions.reduce((acc, t) => acc + parseFloat(t.amount), 0);
-        const formattedExpenses = `₹ ${totalExpenses.toFixed(2)}`; // Space added after currency symbol
+        const formattedExpenses = `INR ${totalExpenses.toFixed(2)}`; // Space added after currency symbol
         doc.text(`Total Expenses: ${formattedExpenses}`, 10, y);
         y += 10;
 
         // Remaining Balance
         const remainingBalance = (monthlyIncome - totalExpenses).toFixed(2);
-        const formattedBalance = `₹ ${remainingBalance}`; // Space added after currency symbol
+        const formattedBalance = `INR ${remainingBalance}`; // Space added after currency symbol
         doc.text(`Remaining Balance: ${formattedBalance}`, 10, y);
         y += 15;
 
@@ -324,7 +324,7 @@ if (document.getElementById('download-pdf')) {
             head: [['Category', 'Amount', 'Date']],
             body: transactions.map(t => [
                 t.category,
-                `₹ ${parseFloat(t.amount).toFixed(2)}`, // Space added after currency symbol
+                `INR ${parseFloat(t.amount).toFixed(2)}`, // Space added after currency symbol
                 t.date
             ]),
             theme: 'grid',
