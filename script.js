@@ -39,8 +39,16 @@ function displayTransactions(filterDate = null) {
         const li = document.createElement('li');
         li.innerHTML = `
             <span>${transaction.category}: ₹${transaction.amount} on ${transaction.date}</span>
-            <button onclick="deleteTransaction(${index})">Delete</button>
-        `;
+            <div class="button-container">
+            <button class="edit-button" onclick="editTransaction(${index})">
+                <i class="fas fa-edit"></i> <!-- Edit icon inside button -->
+            </button>
+
+            <button class="delete-button" onclick="deleteTransaction(${index})">
+                <i class="fas fa-trash-alt"></i> <!-- Trash icon inside button -->
+            </button>
+        </div>
+    `;
         transactionList.appendChild(li);
     });
 }
@@ -53,6 +61,33 @@ function deleteTransaction(index) {
         updateDashboard();
     }
 }
+
+function editTransaction(index) {
+    // Get the transaction to be edited
+    const transaction = transactions[index];
+
+    // Only prompt the user to edit the category
+    const categoryInput = prompt('Edit Category:', transaction.category);
+
+    // Validate the input
+    if (categoryInput && categoryInput !== transaction.category) {
+        // Update the transaction with the new category value
+        transactions[index].category = categoryInput;
+
+        // Save the updated transactions array to localStorage
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+
+        // Update the dashboard with new transaction data
+        updateDashboard();
+    } else if (categoryInput === null) {
+        // If user cancels the prompt, don't do anything
+        return;
+    } else {
+        alert('Please provide a valid category.');
+    }
+}
+
+
 
 // Handle Income Update (Dashboard Page)
 if (document.getElementById('monthly-income-form')) {
@@ -130,7 +165,6 @@ if (document.getElementById('clear-data')) {
     });
 }
 
-// Handle Download PDF (Dashboard Page)
 // Handle Download PDF (Dashboard Page)
 if (document.getElementById('download-pdf')) {
     document.getElementById('download-pdf').addEventListener('click', function () {
