@@ -166,32 +166,64 @@ button {
     margin: 0;
 }
 
-    #transaction-list li {
-        background-color: #e9e9e9;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        padding: 10px;
-        border-radius: 5px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #ccc;
-    }
+/* Transactions List Styles */
+#transaction-list li {
+    background-color: #e9e9e9;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between; /* Space between text and button container */
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+}
 
-        #transaction-list li button {
-            background-color: #dc3545;
-            color: #fff;
-            border: none;
-            border-radius: 3px;
-            padding: 5px 10px;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+/* Container for buttons - group them together */
+#transaction-list li .button-container {
+    display: flex;
+    justify-content: flex-end; /* Align both buttons to the right side */
+    align-items: center;
+}
 
-            #transaction-list li button:hover {
-                background-color: #c82333;
-            }
+/* Ensure buttons have enough space between them but not too much */
+#transaction-list li .button-container button {
+    margin-left: 5px; /* Adjusted margin to a smaller value */
+}
+
+/* Delete button styles */
+#transaction-list li .delete-button {
+    background-color: #dc3545; /* Red for Delete button */
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Edit button styles */
+#transaction-list li .edit-button {
+    background-color: #007bff; /* Green for Edit button */
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    padding: 5px 10px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Hover effects */
+#transaction-list li .delete-button:hover {
+    background-color: #c82333; /* Darker shade on hover for Delete button */
+}
+
+#transaction-list li .edit-button:hover {
+    background-color: #0056b3; /* Darker shade on hover for Edit button */
+}
+
 
 /* Analytics Section */
 #analytics-container {
@@ -269,33 +301,37 @@ footer {
     }
 
 /* Dark Mode Styles */
-body.dark-theme #TextColorChange {
+/* body.dark-theme #TextColorChange {
     color: #000;
-}
+} */
 
 body.dark-theme {
     --background-color: #121212;
-    --text-color: #e0e0e0;
+    --text-color: #d3d3d3;
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: background-color 0.4s ease, color 0.4s ease; /* Smooth transition for dark mode */
+    transition: background-color 2s ease, color 2s ease, transform 2s ease; /* Smooth transition for dark mode */
 }
 
     /* Dark Mode Header */
     body.dark-theme header {
-        background-color: #007bff;
+        background-color: #00356e;
+        color: #d3d3d3;
+        transition: background-color 1s ease, color 1s ease, transform 1s ease;
     }
 
     /* Dark Mode Section */
     body.dark-theme section {
         background-color: #2c2c2c;
         color: var(--text-color); /* Ensure text color is set */
+        transition: background-color 1s ease, color 1s ease, transform 1s ease;
+        
     }
 
     /* Dark Mode Buttons */
     body.dark-theme button {
-        background-color: #007bff;
-        color: white;
+        background-color: #00356e;
+        color: rgb(228, 228, 228);
     }
 
         body.dark-theme button:hover {
@@ -306,6 +342,8 @@ body.dark-theme {
     body.dark-theme #transaction-list li {
         background-color: #333;
         color: #e0e0e0;
+        border-color: #121212;
+        margin-left: 1%;
     }
 
         body.dark-theme #transaction-list li button {
@@ -322,17 +360,31 @@ body.dark-theme {
     body.dark-theme footer {
         background-color: #1f1f1f;
     }
-
-    /* Dark Mode Clear Data Button */
-    body.dark-theme #clear-data {
-        background-color: #c82333;
-        color: white;
+    body.dark-theme form {
+        background-color: #2c2c2c;
+    }
+    body.dark-theme form input{
+        background-color: #2c2c2c;
+        color: #797979;
+        border: 1px solid rgb(0, 0, 0); /* Ensure all borders are black */
+        border-width: 2px;
     }
 
-        body.dark-theme #clear-data:hover {
-            background-color: #9c1d1f;
+    /* Dark Mode Clear Data Button */
+    
+        body.dark-theme #transaction-container{
+            background-color: #232323;
         }
 
+    body.dark-theme #transaction-list li .edit-button {
+        background-color: #00356e; /* Darker shade on hover for Edit button */
+    }
+    body.dark-theme #transaction-list li .edit-button:hover {
+        background-color: #0056b3; /* Darker shade on hover for Edit button */
+    }
+    body.dark-theme #theme-toggle {
+        background-color: #00356e;
+    }
 /* Dark Mode Toggle Button */
 #theme-toggle {
     position: absolute;
