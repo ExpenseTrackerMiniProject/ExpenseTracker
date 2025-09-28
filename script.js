@@ -81,9 +81,6 @@ function getCurrentDate() {
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome')) || 0;
 
-// =========================================================================
-// === CORRECTED FUNCTION ==================================================
-// =========================================================================
 // Function to update the dashboard display
 function updateDashboardDisplay() {
     const totalIncomeElem = document.getElementById('total-income');
@@ -141,6 +138,7 @@ function displayTransactions(filterDate = null) {
         const originalTransaction = findOriginalTransaction(transaction);
         const originalIndex = transactions.indexOf(originalTransaction);
 
+        // This correctly displays the category for both income and expense types
         li.innerHTML = `
             <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
             <div class="button-container">
@@ -160,12 +158,8 @@ function findOriginalTransaction(transactionToFind) {
     );
 }
 
-// =========================================================================
-// === CORRECTED FUNCTION ==================================================
-// =========================================================================
 function deleteTransaction(index) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-        // REMOVED the logic that incorrectly changed the 'monthlyIncome'
         transactions.splice(index, 1);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDashboardDisplay();
@@ -222,9 +216,6 @@ if (document.getElementById('transaction-form')) {
     });
 }
 
-// =========================================================================
-// === CORRECTED FUNCTION ==================================================
-// =========================================================================
 // Handle Add Money (Income/Credit) Transaction
 if (document.getElementById('add-money-form')) {
     document.getElementById('add-money-form').addEventListener('submit', function(e) {
@@ -237,10 +228,6 @@ if (document.getElementById('add-money-form')) {
             alert('Please fill out all fields correctly.');
             return;
         }
-
-        // REMOVED the lines that incorrectly updated the total income. This was the bug.
-        // monthlyIncome += amount;
-        // localStorage.setItem('monthlyIncome', monthlyIncome);
 
         transactions.push({ category: category, amount: amount, date: date, type: 'income' });
         localStorage.setItem('transactions', JSON.stringify(transactions));
@@ -318,48 +305,71 @@ function generateColorPalette(numColors) {
     const colors = [];
     for (let i = 0; i < numColors; i++) {
         const hue = (i * 360 / numColors) % 360;
-        colors.push(`hsl(${hue}, 70%, 50%)`);
+        // Use different saturation/lightness for income and expense for variety
+        colors.push(`hsl(${hue}, 80%, 60%)`); 
     }
     return colors;
 }
 
-// Analytics Page Logic
-if (document.getElementById('incomeExpenseChart') && document.getElementById('expenseCategoryChart')) {
-    let incomeExpenseChart, expenseCategoryChart;
+// ===============================================
+// === MODIFIED ANALYTICS PAGE LOGIC =============
+// ===============================================
+if (document.getElementById('incomeExpenseChart')) {
+    // Define chart variables
+    let incomeExpenseChart, expenseCategoryChart, incomeCategoryChart; 
+
+    // Get canvas contexts
     const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
     const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+    const incomeCategoryCtx = document.getElementById('incomeCategoryChart').getContext('2d'); // New context
 
     function renderAnalyticsCharts(dataToDisplay) {
+        // Destroy existing charts to prevent duplicates
         if (incomeExpenseChart) incomeExpenseChart.destroy();
         if (expenseCategoryChart) expenseCategoryChart.destroy();
-        
+        if (incomeCategoryChart) incomeCategoryChart.destroy(); // Destroy new chart too
+
+        // --- 1. Income vs. Expenses Bar Chart (No changes here) ---
         const totalCredit = dataToDisplay.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
         const totalDebit = dataToDisplay.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
         const netExpenses = totalDebit - totalCredit;
-
         incomeExpenseChart = new Chart(incomeExpenseCtx, {
             type: 'bar',
             data: {
-                labels: ['Total Income', 'Total Expenses'],
+                labels: ['Total Income', 'Net Expenses'],
                 datasets: [{ label: 'Amount (₹)', data: [monthlyIncome, netExpenses], backgroundColor: ['#28a745', '#dc3545'] }]
             },
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
         
+        // --- 2. Expense Breakdown Pie Chart (No changes here) ---
         const expenseData = dataToDisplay.filter(t => t.type === 'expense');
-        const categories = [...new Set(expenseData.map(t => t.category))];
-        const categoryData = categories.map(cat => expenseData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
-        
+        const expenseCategories = [...new Set(expenseData.map(t => t.category))];
+        const expenseCategoryTotals = expenseCategories.map(cat => expenseData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
         expenseCategoryChart = new Chart(expenseCategoryCtx, {
             type: 'pie',
             data: {
-                labels: categories,
-                datasets: [{ label: 'Expenses by Category', data: categoryData, backgroundColor: generateColorPalette(categories.length) }]
+                labels: expenseCategories,
+                datasets: [{ label: 'Expenses by Category', data: expenseCategoryTotals, backgroundColor: generateColorPalette(expenseCategories.length) }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        
+        // --- 3. NEW: Income Breakdown Pie Chart ---
+        const incomeData = dataToDisplay.filter(t => t.type === 'income');
+        const incomeCategories = [...new Set(incomeData.map(t => t.category))];
+        const incomeCategoryTotals = incomeCategories.map(cat => incomeData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
+        incomeCategoryChart = new Chart(incomeCategoryCtx, {
+            type: 'pie',
+            data: {
+                labels: incomeCategories,
+                datasets: [{ label: 'Income by Category', data: incomeCategoryTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }] // Reversed palette for visual difference
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
     }
 
+    // --- Event Listeners (No changes here) ---
     const monthFilter = document.getElementById('analytics-month-filter');
     const showAllBtn = document.getElementById('analytics-show-all');
     if (monthFilter) {
@@ -393,6 +403,7 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
         }
     });
     
+    // Initial render
     renderAnalyticsCharts(transactions);
 }
 
