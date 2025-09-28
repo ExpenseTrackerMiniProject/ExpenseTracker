@@ -1,3 +1,5 @@
+//Voice Function Starts.....
+// Ensure the SpeechRecognition API is supported
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
 if (recognition) {
@@ -150,10 +152,12 @@ function displayTransactions(filterDate = null) {
             <span>${transaction.category}: ₹${transaction.amount} on ${transaction.date}</span>
             <div class="button-container">
             <button class="edit-button" onclick="editTransaction(${index})">
-                <i class="fas fa-edit"></i> </button>
+                <i class="fas fa-edit"></i> <!-- Edit icon inside button -->
+            </button>
 
             <button class="delete-button" onclick="deleteTransaction(${index})">
-                <i class="fas fa-trash-alt"></i> </button>
+                <i class="fas fa-trash-alt"></i> <!-- Trash icon inside button -->
+            </button>
         </div>
     `;
         transactionList.appendChild(li);
@@ -344,26 +348,6 @@ if (document.getElementById('total-income')) {
     updateDashboard();
 }
 
-/**
- * --- NEW FUNCTION ADDED HERE ---
- * Generates an array of unique, visually distinct colors.
- * @param {number} count The number of colors to generate.
- * @returns {string[]} An array of HSL color strings.
- */
-function generateUniqueColors(count) {
-    const colors = [];
-    const hueStep = 360 / count; // Distribute hues evenly around the color wheel
-
-    for (let i = 0; i < count; i++) {
-        const hue = i * hueStep;
-        // Using HSL color format for better control over saturation and lightness
-        // Saturation is kept high (70%) and lightness at a mid-point (50%) for vibrant colors
-        colors.push(`hsl(${hue}, 70%, 50%)`);
-    }
-
-    return colors;
-}
-
 // Analytics Setup using Chart.js
 if (document.getElementById('incomeExpenseChart') && document.getElementById('expenseCategoryChart')) {
     const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
@@ -396,10 +380,6 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
     const uniqueCategories = [...new Set(categories)];
     const categoryData = uniqueCategories.map(cat => transactions.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
 
-    // --- MODIFICATION IS HERE ---
-    // Generate a dynamic array of colors based on the number of categories
-    const dynamicColors = generateUniqueColors(uniqueCategories.length);
-
     const expenseCategoryChart = new Chart(expenseCategoryCtx, {
         type: 'pie',
         data: {
@@ -407,8 +387,7 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             datasets: [{
                 label: 'Expenses by Category',
                 data: categoryData,
-                // Use the new dynamicColors array
-                backgroundColor: dynamicColors, 
+                backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8'],
             }]
         },
         options: {
@@ -416,6 +395,7 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             maintainAspectRatio: false,
         }
     });
+
 }
 
 // Dark Mode Toggle Logic
