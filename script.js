@@ -49,10 +49,6 @@ if (recognition) {
         alert(`Error occurred in speech recognition: ${event.error}`);
     };
 
-    const voiceCommandButton = document.getElementById('voice-command-btn');
-    if (voiceCommandButton) {
-        voiceCommandButton.addEventListener('click', startVoiceCommand);
-    }
 } else {
     if (document.getElementById('voice-command-btn')) {
         alert('Speech recognition is not supported in your browser.');
@@ -104,7 +100,6 @@ function loadData() {
     monthlyIncomes = JSON.parse(localStorage.getItem('monthlyIncomes')) || {};
     currentMonthKey = localStorage.getItem('currentMonthKey') || getCurrentMonthKey();
     
-    // Ensure the current month has an income entry in our data
     if (typeof monthlyIncomes[currentMonthKey] === 'undefined') {
         monthlyIncomes[currentMonthKey] = 0;
     }
@@ -112,7 +107,6 @@ function loadData() {
     localStorage.setItem('currentMonthKey', currentMonthKey);
     localStorage.setItem('monthlyIncomes', JSON.stringify(monthlyIncomes));
     
-    // Set the initial view to the current tracking month
     currentView.monthKey = currentMonthKey;
 }
 
@@ -125,21 +119,18 @@ function updateDashboardDisplay() {
     const totalExpensesElem = document.getElementById('total-expenses');
     const remainingBalanceElem = document.getElementById('remaining-balance');
 
-    if (!totalIncomeElem) return; // Only run on dashboard page
+    if (!totalIncomeElem) return;
 
     let transactionsForView = [];
     let incomeForView = 0;
-    let viewTitle = '';
 
     if (currentView.mode === 'all') {
         transactionsForView = allTransactions;
         incomeForView = Object.values(monthlyIncomes).reduce((sum, income) => sum + income, 0);
-        viewTitle = 'All-Time';
     } else { // 'month' mode
         const monthKey = currentView.monthKey;
         transactionsForView = allTransactions.filter(t => t.date.startsWith(monthKey));
         incomeForView = monthlyIncomes[monthKey] || 0;
-        viewTitle = monthKey;
     }
 
     const totalCredit = transactionsForView.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
@@ -160,7 +151,10 @@ function displayTransactions(transactionsToDisplay) {
     if (!transactionList) return;
     transactionList.innerHTML = '';
 
-    const filterType = document.querySelector('input[name="transaction-type"]:checked').value;
+    const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
+    if (!filterTypeElement) return;
+    const filterType = filterTypeElement.value;
+    
     let finalList = transactionsToDisplay;
 
     if (filterType !== 'all') {
@@ -194,6 +188,15 @@ function findOriginalTransactionIndex(transactionToFind) {
         t.category === transactionToFind.category &&
         t.type === transactionToFind.type
     );
+}
+
+function generateColorPalette(numColors) {
+    const colors = [];
+    for (let i = 0; i < numColors; i++) {
+        const hue = (i * 360 / numColors) % 360;
+        colors.push(`hsl(${hue}, 80%, 60%)`);
+    }
+    return colors;
 }
 
 // =========================================================================
@@ -233,12 +236,14 @@ function editTransaction(index) {
 // =========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Load all data from storage first
     loadData();
 
-    // Attach all event listeners after the DOM is ready
+    // Attach all event listeners
+    const voiceCommandButton = document.getElementById('voice-command-btn');
+    if (voiceCommandButton) {
+        voiceCommandButton.addEventListener('click', startVoiceCommand);
+    }
     
-    // Handle Income Update for the CURRENT tracking month
     const monthlyIncomeForm = document.getElementById('monthly-income-form');
     if (monthlyIncomeForm) {
         document.getElementById('monthly-income').value = monthlyIncomes[currentMonthKey] || '';
@@ -258,7 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle Add Expense Transaction
     const transactionForm = document.getElementById('transaction-form');
     if (transactionForm) {
         transactionForm.addEventListener('submit', function(e) {
@@ -279,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle Add Money (Income/Credit) Transaction
     const addMoneyForm = document.getElementById('add-money-form');
     if (addMoneyForm) {
         addMoneyForm.addEventListener('submit', function(e) {
@@ -300,7 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // NEW: Handle "Start New Period" Button
     const startNewMonthBtn = document.getElementById('start-new-month');
     if (startNewMonthBtn) {
         startNewMonthBtn.addEventListener('click', function() {
@@ -320,7 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // NEW: Handle View Mode Buttons
     const showCurrentBtn = document.getElementById('show-current-month-data');
     if(showCurrentBtn) {
         showCurrentBtn.addEventListener('click', function() {
@@ -331,16 +332,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    const showAllBtn = document.getElementById('show-all-data');
-    if(showAllBtn) {
-        showAllBtn.addEventListener('click', function() {
+    const showAllDataBtn = document.getElementById('show-all-data');
+    if(showAllDataBtn) {
+        showAllDataBtn.addEventListener('click', function() {
             currentView.mode = 'all';
             document.getElementById('filter-date').value = '';
             updateDashboardDisplay();
         });
     }
 
-    // MODIFIED: Filter Event Listeners
     const filterDateInput = document.getElementById('filter-date');
     if (filterDateInput) {
         filterDateInput.addEventListener('change', function() {
@@ -356,37 +356,28 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', () => updateDashboardDisplay());
     });
 
-    // Handle Clear Data Button
     const clearDataBtn = document.getElementById('clear-data');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to clear ALL data for ALL periods? This cannot be undone.')) {
-                localStorage.removeItem('allTransactions');
-                localStorage.removeItem('monthlyIncomes');
-                localStorage.removeItem('currentMonthKey');
+                localStorage.clear();
                 alert('All data has been cleared!');
                 window.location.reload();
             }
         });
     }
 
-    // Handle PDF Download
     const downloadPdfBtn = document.getElementById('download-pdf');
     if (downloadPdfBtn) {
         downloadPdfBtn.addEventListener('click', function() {
             alert('Your download is starting...');
-            // ... (PDF generation logic remains unchanged but now uses the global data variables) ...
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            // PDF logic here can be enhanced to show which period's data is being downloaded
-            // For now, it will download based on the current view
-             let transactionsForView = [];
-            let incomeForView = 0;
-            let viewTitle = '';
+            let transactionsForView = [], incomeForView = 0, viewTitle = '';
 
             if (currentView.mode === 'all') {
                 transactionsForView = allTransactions;
-                incomeForView = Object.values(monthlyIncomes).reduce((sum, income) => sum + income, 0);
+                incomeForView = Object.values(monthlyIncomes).reduce((s, i) => s + i, 0);
                 viewTitle = 'All-Time Report';
             } else { 
                 const monthKey = currentView.monthKey;
@@ -395,35 +386,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 viewTitle = `Report for ${monthKey}`;
             }
 
-            const totalCredit = transactionsForView.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
-            const totalDebit = transactionsForView.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+            const totalCredit = transactionsForView.filter(t=>t.type==='income').reduce((a, t) => a + parseFloat(t.amount), 0);
+            const totalDebit = transactionsForView.filter(t=>t.type==='expense').reduce((a, t) => a + parseFloat(t.amount), 0);
             const netExpenses = totalDebit - totalCredit;
             
             let y = 20;
             doc.setFontSize(22);
             doc.setFont('helvetica', 'bold');
-            doc.text(viewTitle, 10, y);
-            y += 15;
+            doc.text(viewTitle, 10, y); y += 15;
             doc.setFontSize(16);
             doc.setFont('Helvetica', 'normal');
-            doc.text(`Period Income / Budget: INR ${incomeForView.toFixed(2)}`, 10, y);
-            y += 10;
-            doc.text(`Net Expenses: INR ${netExpenses.toFixed(2)}`, 10, y);
-            y += 10;
-            doc.text(`Remaining Balance: INR ${(incomeForView - netExpenses).toFixed(2)}`, 10, y);
-            y += 15;
+            doc.text(`Period Income / Budget: INR ${incomeForView.toFixed(2)}`, 10, y); y += 10;
+            doc.text(`Net Expenses: INR ${netExpenses.toFixed(2)}`, 10, y); y += 10;
+            doc.text(`Remaining Balance: INR ${(incomeForView - netExpenses).toFixed(2)}`, 10, y); y += 15;
             doc.autoTable({
                 startY: y,
                 head: [['Type', 'Category', 'Amount', 'Date']],
                 body: transactionsForView.map(t => [t.type.charAt(0).toUpperCase() + t.type.slice(1), t.category, `INR ${parseFloat(t.amount).toFixed(2)}`, t.date]),
-                theme: 'grid',
-                headStyles: { fillColor: [0, 0, 0] },
+                theme: 'grid', headStyles: { fillColor: [0, 0, 0] },
             });
             doc.save(`expense-report-${currentView.mode === 'all' ? 'all-time' : currentView.monthKey}.pdf`);
         });
     }
 
-    // Analytics Page Logic
+    // =========================================================================
+    // === CORRECTED: Analytics Page Logic =====================================
+    // =========================================================================
     if (document.getElementById('incomeExpenseChart')) {
         let incomeExpenseChart, expenseCategoryChart, incomeCategoryChart;
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
@@ -439,8 +427,60 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalDebit = dataToDisplay.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
             const netExpenses = totalDebit - totalCredit;
 
-            incomeExpenseChart = new Chart(incomeExpenseCtx, { /* ... same as before but use incomeForView ... */ });
-            // ... The rest of the analytics logic to render pie charts is correct ...
+            incomeExpenseChart = new Chart(incomeExpenseCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Period Income', 'Net Expenses'],
+                    datasets: [{
+                        label: 'Amount (₹)',
+                        data: [incomeForView || 0, netExpenses || 0],
+                        backgroundColor: ['#28a745', '#dc3545']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+            });
+
+            const expenseData = dataToDisplay.filter(t => t.type === 'expense');
+            const expenseChartContainer = document.getElementById('expenseCategoryChart').parentElement;
+            let existingMsg = expenseChartContainer.querySelector('.no-data-message');
+            if(existingMsg) existingMsg.remove();
+            
+            if (expenseData.length === 0) {
+                document.getElementById('expenseCategoryChart').style.display = 'none';
+                const noDataMessage = document.createElement('p');
+                noDataMessage.textContent = 'No expense data for this period.';
+                noDataMessage.className = 'no-data-message';
+                expenseChartContainer.appendChild(noDataMessage);
+            } else {
+                document.getElementById('expenseCategoryChart').style.display = 'block';
+                const expenseCategories = [...new Set(expenseData.map(t => t.category))];
+                const expenseCategoryTotals = expenseCategories.map(cat => expenseData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
+                expenseCategoryChart = new Chart(expenseCategoryCtx, {
+                    type: 'pie', data: { labels: expenseCategories, datasets: [{ label: 'Expenses by Category', data: expenseCategoryTotals, backgroundColor: generateColorPalette(expenseCategories.length) }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            const incomeData = dataToDisplay.filter(t => t.type === 'income');
+            const incomeChartContainer = document.getElementById('incomeCategoryChart').parentElement;
+            existingMsg = incomeChartContainer.querySelector('.no-data-message');
+            if(existingMsg) existingMsg.remove();
+
+            if (incomeData.length === 0) {
+                document.getElementById('incomeCategoryChart').style.display = 'none';
+                const noDataMessage = document.createElement('p');
+                noDataMessage.textContent = 'No income data for this period.';
+                noDataMessage.className = 'no-data-message';
+                incomeChartContainer.appendChild(noDataMessage);
+            } else {
+                document.getElementById('incomeCategoryChart').style.display = 'block';
+                const incomeCategories = [...new Set(incomeData.map(t => t.category))];
+                const incomeCategoryTotals = incomeCategories.map(cat => incomeData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
+                incomeCategoryChart = new Chart(incomeCategoryCtx, {
+                    type: 'pie', data: { labels: incomeCategories, datasets: [{ label: 'Income by Category', data: incomeCategoryTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }] },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
         }
 
         const analyticsMonthFilter = document.getElementById('analytics-month-filter');
@@ -462,18 +502,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (analyticsShowAllBtn) {
             analyticsShowAllBtn.addEventListener('click', function() {
                 if (analyticsMonthFilter) analyticsMonthFilter.value = '';
-                 const totalIncome = Object.values(monthlyIncomes).reduce((s, i) => s + i, 0);
+                const totalIncome = Object.values(monthlyIncomes).reduce((s, i) => s + i, 0);
                 renderAnalyticsCharts(allTransactions, totalIncome);
             });
         }
-
-        // Initial render for analytics shows current month data
+        
+        // Initial render for analytics shows the current tracking month's data by default
         const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
         const initialIncome = monthlyIncomes[currentMonthKey] || 0;
         renderAnalyticsCharts(initialTransactions, initialIncome);
     }
 
-    // Dark Mode Toggle Logic (remains unchanged)
     const themeToggleButton = document.getElementById('theme-toggle');
     if (themeToggleButton) {
         const themeIcon = themeToggleButton.querySelector('i');
@@ -492,6 +531,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Finally, run the initial display for the dashboard page
     updateDashboardDisplay();
 });
