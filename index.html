@@ -31,7 +31,10 @@
             <form id="monthly-income-form">
                 <label for="monthly-income" id="TextColorChange">Enter Income for this Period:</label>
                 <input type="number" id="monthly-income" placeholder="Enter income for this period" required>
-                <button type="submit">Update Income</button>
+                <div class="form-buttons">
+                    <button type="submit">Update Income</button>
+                    <button type="button" id="start-new-month">Start New Period</button>
+                </div>
             </form>
             <div id="totals">
                 <div>Period Income: ₹<span id="total-income">0</span></div>
@@ -42,7 +45,6 @@
             <div class="summary-actions">
                 <button id="clear-data">Clear All Data</button>
                 <button id="download-pdf">Download PDF</button>
-                <button id="start-new-month">Start New Period</button>
                 <button id="show-current-month-data">View Current Period</button>
                 <button id="show-all-data">View All-Time Data</button>
             </div>
