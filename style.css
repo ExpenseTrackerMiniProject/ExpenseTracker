@@ -58,7 +58,7 @@ body {
 
 /* Header Styles */
 header {
-    background-color: #007bff; /* Back to blue */
+    background-color: #007bff;
     color: white;
     padding: 20px;
     text-align: center;
@@ -124,7 +124,7 @@ form {
 
 /* Button Styles */
 button {
-    background-color: #007bff; /* Back to blue */
+    background-color: #007bff;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -133,7 +133,7 @@ button {
 }
 
     button:hover {
-        background-color: #0056b3; /* Back to dark blue */
+        background-color: #0056b3;
         transform: scale(1.06);
         transition: transform 0.3s ease-in-out;
     }
@@ -146,8 +146,6 @@ button {
     margin-top: 20px; 
 }
 
-/* REMOVED flex: 1; from .summary-actions button to restore natural width */
-
 /* Styles for the buttons inside the form */
 .form-buttons {
     display: flex;
@@ -155,7 +153,6 @@ button {
 }
 
 .form-buttons button {
-    /* REMOVED flex: 1; to restore natural width */
     margin-top: -10px;
 }
 
@@ -173,20 +170,6 @@ button {
     align-items: center;
     gap: 8px;
 }
-
-/* Specific override for the three green buttons */
-#start-new-month,
-#show-current-month-data,
-#show-all-data {
-    background-color: #77dd77; /* Pastel Green */
-}
-
-#start-new-month:hover,
-#show-current-month-data:hover,
-#show-all-data:hover {
-    background-color: #69c769; /* Darker Pastel Green */
-}
-
 
 /* Totals and Transactions */
 #totals div {
@@ -259,7 +242,7 @@ body.dark-theme #transaction-list li.income-transaction span {
 }
 
 #transaction-list li .edit-button {
-    background-color: #007bff; /* Back to blue */
+    background-color: #007bff;
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -274,7 +257,7 @@ body.dark-theme #transaction-list li.income-transaction span {
 }
 
 #transaction-list li .edit-button:hover {
-    background-color: #0056b3; /* Back to dark blue */
+    background-color: #0056b3;
 }
 
 /* Analytics Page Styles */
@@ -305,7 +288,7 @@ body.dark-theme {
 }
 
     body.dark-theme header {
-        background-color: #00356e; /* Back to dark blue */
+        background-color: #00356e;
         color: #d3d3d3;
         transition: background-color 1s ease, color 1s ease, transform 1s ease;
     }
@@ -318,26 +301,13 @@ body.dark-theme {
     }
 
     body.dark-theme button {
-        background-color: #00356e; /* Back to dark blue */
+        background-color: #00356e;
         color: rgb(228, 228, 228);
     }
 
         body.dark-theme button:hover {
-            background-color: #0056b3; /* Back to lighter dark blue */
+            background-color: #0056b3;
         }
-
-    /* Dark mode override for the three green buttons */
-    body.dark-theme #start-new-month,
-    body.dark-theme #show-current-month-data,
-    body.dark-theme #show-all-data {
-        background-color: #4a784a; /* Dark pastel green */
-    }
-
-    body.dark-theme #start-new-month:hover,
-    body.dark-theme #show-current-month-data:hover,
-    body.dark-theme #show-all-data:hover {
-        background-color: #5a8b5a; /* Lighter dark pastel green */
-    }
 
     body.dark-theme #transaction-list li {
         background-color: #333;
@@ -365,13 +335,13 @@ body.dark-theme {
         }
 
     body.dark-theme #transaction-list li .edit-button {
-        background-color: #00356e; /* Back to dark blue */
+        background-color: #00356e;
     }
     body.dark-theme #transaction-list li .edit-button:hover {
-        background-color: #0056b3; /* Back to lighter dark blue */
+        background-color: #0056b3;
     }
     body.dark-theme #theme-toggle {
-        background-color: #00356e; /* Back to dark blue */
+        background-color: #00356e;
     }
 
 /* Dark Mode Toggle Button */
@@ -379,7 +349,7 @@ body.dark-theme {
     position: absolute;
     top: 20px;
     right: 20px;
-    background-color: #007bff; /* Back to blue */
+    background-color: #007bff;
     color: white;
     border: none;
     padding: 10px 15px;
@@ -389,7 +359,7 @@ body.dark-theme {
 }
 
     #theme-toggle:hover {
-        background-color: #0056b3; /* Back to dark blue */
+        background-color: #0056b3;
     }
 
 /* Media Queries for Responsiveness */
