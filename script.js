@@ -89,24 +89,20 @@ function updateDashboardDisplay() {
 
     if (!totalIncomeElem || !totalExpensesElem || !remainingBalanceElem) return;
 
-    // Calculate total of all credits (refunds, etc.)
     const totalCredit = transactions
         .filter(t => t.type === 'income')
         .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
 
-    // Calculate total of all debits (expenses)
     const totalDebit = transactions
         .filter(t => t.type === 'expense')
         .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
 
-    // Net expenses are the debits minus the credits
     const netExpenses = totalDebit - totalCredit;
 
     totalIncomeElem.textContent = monthlyIncome.toFixed(2);
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (monthlyIncome - netExpenses).toFixed(2);
 
-    // Refresh the transaction list if it's on the page
     if (document.getElementById('transaction-list')) {
          displayTransactions();
     }
@@ -138,7 +134,6 @@ function displayTransactions(filterDate = null) {
         const originalTransaction = findOriginalTransaction(transaction);
         const originalIndex = transactions.indexOf(originalTransaction);
 
-        // This correctly displays the category for both income and expense types
         li.innerHTML = `
             <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
             <div class="button-container">
@@ -166,26 +161,51 @@ function deleteTransaction(index) {
     }
 }
 
+// =========================================================================
+// === CORRECTED FUNCTION ==================================================
+// =========================================================================
 function editTransaction(index) {
     const transaction = transactions[index];
-    if (transaction.type === 'income') {
-        alert("Income categories cannot be edited, only deleted.");
+
+    // Prompt for new category, showing the current one
+    const newCategory = prompt('Edit Category:', transaction.category);
+    
+    // Exit if the user clicks "Cancel" on the first prompt
+    if (newCategory === null) {
         return;
     }
-    const categoryInput = prompt('Edit Category:', transaction.category);
-    if (categoryInput && categoryInput.trim() !== '') {
-        transactions[index].category = categoryInput;
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        updateDashboardDisplay();
+
+    // Prompt for new amount, showing the current one
+    const newAmountStr = prompt('Edit Amount:', transaction.amount);
+
+    // Exit if the user clicks "Cancel" on the second prompt
+    if (newAmountStr === null) {
+        return;
     }
+
+    const newAmount = parseFloat(newAmountStr);
+
+    // Validate the new inputs
+    if (newCategory.trim() === '' || isNaN(newAmount) || newAmount <= 0) {
+        alert('Invalid category or amount. Please try again.');
+        return;
+    }
+    
+    // Update the transaction object in the array
+    transactions[index].category = newCategory.trim();
+    transactions[index].amount = newAmount;
+
+    // Save the updated array to localStorage and refresh the screen
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+    updateDashboardDisplay();
 }
 
-// Handle Income Update (This is the ONLY place that should change the 'Total Income' field)
+// Handle Income Update
 if (document.getElementById('monthly-income-form')) {
     document.getElementById('monthly-income-form').addEventListener('submit', function(e) {
         e.preventDefault();
         const income = parseFloat(document.getElementById('monthly-income').value);
-        if (isNaN(income) || income < 0) { // Allow 0
+        if (isNaN(income) || income < 0) {
             alert('Please enter a valid income.');
             return;
         }
@@ -305,31 +325,25 @@ function generateColorPalette(numColors) {
     const colors = [];
     for (let i = 0; i < numColors; i++) {
         const hue = (i * 360 / numColors) % 360;
-        // Use different saturation/lightness for income and expense for variety
         colors.push(`hsl(${hue}, 80%, 60%)`); 
     }
     return colors;
 }
 
-// ===============================================
-// === MODIFIED ANALYTICS PAGE LOGIC =============
-// ===============================================
+// Analytics Page Logic
 if (document.getElementById('incomeExpenseChart')) {
-    // Define chart variables
     let incomeExpenseChart, expenseCategoryChart, incomeCategoryChart; 
 
-    // Get canvas contexts
     const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
     const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
-    const incomeCategoryCtx = document.getElementById('incomeCategoryChart').getContext('2d'); // New context
+    const incomeCategoryCtx = document.getElementById('incomeCategoryChart').getContext('2d');
 
     function renderAnalyticsCharts(dataToDisplay) {
-        // Destroy existing charts to prevent duplicates
         if (incomeExpenseChart) incomeExpenseChart.destroy();
         if (expenseCategoryChart) expenseCategoryChart.destroy();
-        if (incomeCategoryChart) incomeCategoryChart.destroy(); // Destroy new chart too
+        if (incomeCategoryChart) incomeCategoryChart.destroy();
 
-        // --- 1. Income vs. Expenses Bar Chart (No changes here) ---
+        // --- 1. Income vs. Expenses Bar Chart ---
         const totalCredit = dataToDisplay.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
         const totalDebit = dataToDisplay.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
         const netExpenses = totalDebit - totalCredit;
@@ -342,34 +356,64 @@ if (document.getElementById('incomeExpenseChart')) {
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
         
-        // --- 2. Expense Breakdown Pie Chart (No changes here) ---
+        // --- 2. Expense Breakdown Pie Chart ---
         const expenseData = dataToDisplay.filter(t => t.type === 'expense');
-        const expenseCategories = [...new Set(expenseData.map(t => t.category))];
-        const expenseCategoryTotals = expenseCategories.map(cat => expenseData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
-        expenseCategoryChart = new Chart(expenseCategoryCtx, {
-            type: 'pie',
-            data: {
-                labels: expenseCategories,
-                datasets: [{ label: 'Expenses by Category', data: expenseCategoryTotals, backgroundColor: generateColorPalette(expenseCategories.length) }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        const expenseChartContainer = document.getElementById('expenseCategoryChart').parentElement;
+        if (expenseData.length === 0) {
+            document.getElementById('expenseCategoryChart').style.display = 'none';
+            if (!expenseChartContainer.querySelector('.no-data-message')) {
+                const noDataMessage = document.createElement('p');
+                noDataMessage.textContent = 'No expense data available for this period.';
+                noDataMessage.className = 'no-data-message';
+                expenseChartContainer.appendChild(noDataMessage);
+            }
+        } else {
+            document.getElementById('expenseCategoryChart').style.display = 'block';
+            const existingMessage = expenseChartContainer.querySelector('.no-data-message');
+            if (existingMessage) existingMessage.remove();
+
+            const expenseCategories = [...new Set(expenseData.map(t => t.category))];
+            const expenseCategoryTotals = expenseCategories.map(cat => expenseData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
+            expenseCategoryChart = new Chart(expenseCategoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: expenseCategories,
+                    datasets: [{ label: 'Expenses by Category', data: expenseCategoryTotals, backgroundColor: generateColorPalette(expenseCategories.length) }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
         
-        // --- 3. NEW: Income Breakdown Pie Chart ---
+        // --- 3. Income Breakdown Pie Chart ---
         const incomeData = dataToDisplay.filter(t => t.type === 'income');
-        const incomeCategories = [...new Set(incomeData.map(t => t.category))];
-        const incomeCategoryTotals = incomeCategories.map(cat => incomeData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
-        incomeCategoryChart = new Chart(incomeCategoryCtx, {
-            type: 'pie',
-            data: {
-                labels: incomeCategories,
-                datasets: [{ label: 'Income by Category', data: incomeCategoryTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }] // Reversed palette for visual difference
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        const incomeChartContainer = document.getElementById('incomeCategoryChart').parentElement;
+        if (incomeData.length === 0) {
+            document.getElementById('incomeCategoryChart').style.display = 'none';
+            if (!incomeChartContainer.querySelector('.no-data-message')) {
+                const noDataMessage = document.createElement('p');
+                noDataMessage.textContent = 'No income data available for this period.';
+                noDataMessage.className = 'no-data-message';
+                incomeChartContainer.appendChild(noDataMessage);
+            }
+        } else {
+            document.getElementById('incomeCategoryChart').style.display = 'block';
+            const existingMessage = incomeChartContainer.querySelector('.no-data-message');
+            if (existingMessage) existingMessage.remove();
+
+            const incomeCategories = [...new Set(incomeData.map(t => t.category))];
+            const incomeCategoryTotals = incomeCategories.map(cat => incomeData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
+            incomeCategoryChart = new Chart(incomeCategoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: incomeCategories,
+                    datasets: [{ label: 'Income by Category', data: incomeCategoryTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
     }
 
-    // --- Event Listeners (No changes here) ---
+    // --- Event Listeners ---
     const monthFilter = document.getElementById('analytics-month-filter');
     const showAllBtn = document.getElementById('analytics-show-all');
     if (monthFilter) {
