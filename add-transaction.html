@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Transaction</title>
     <link rel="stylesheet" href="style.css">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -20,27 +19,30 @@
     </header>
 
     <main class="slide-in-bottom">
-        <form class ="TransactionForm" id="transaction-form">
+        <form class="TransactionForm" id="transaction-form">
+            <h2>Add an Expense</h2>
             <label for="category" id="TextColorChange">Category</label>
-            <input type="text" id="category" placeholder="Enter category" required>
+            <input type="text" id="category" placeholder="e.g., Food, Petrol" required>
 
-            <label for="amount" id="TextColorChange" >Amount</label>
-            <input type="number" id="amount" placeholder="Enter amount" required>
+            <label for="amount" id="TextColorChange">Amount</label>
+            <input type="number" id="amount" placeholder="Enter amount spent" required>
 
-            <label for="date" id="TextColorChange" >Date</label>
+            <label for="date" id="TextColorChange">Date</label>
             <input type="date" id="date" required>
 
             <button type="submit">Add Transaction</button>
-            <button id="voice-command-btn">
-                <i class="fas fa-microphone"></i>
+            <button type="button" id="voice-command-btn"> <i class="fas fa-microphone"></i>
             </button>
         </form>
-        
+
+        <form class="TransactionForm" id="add-money-form">
+            <h2>Add Money to Balance</h2>
+            <label for="add-money-amount" id="TextColorChange">Amount to Add</label>
+            <input type="number" id="add-money-amount" placeholder="Enter income or deposit amount" required>
+            <button type="submit">Add Money</button>
+        </form>
     </main>
 
-
     <script src="script.js"></script>
-
-
 </body>
 </html>
