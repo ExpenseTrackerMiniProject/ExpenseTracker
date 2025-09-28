@@ -17,9 +17,7 @@ if (recognition) {
 
         // Regex for expenses (e.g., "add 250 food on today")
         const expenseRegex = /add (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
-        
-        // ▼▼▼ THIS IS THE CORRECTED LINE ▼▼▼
-        // Now accepts "credit", "credited", or "deposit" as the command
+        // Regex for income (e.g., "credit 5000 salary on today")
         const incomeRegex = /(credit|credited|deposit) (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
 
         const expenseMatches = voiceInput.match(expenseRegex);
@@ -37,8 +35,8 @@ if (recognition) {
         }
 
         if (matches) {
-            // The amount and category are now at index 2 and 3 because of the new group in incomeRegex
-            const amount = parseFloat(matches[2]);
+            // Amount and category indices are shifted for the income regex
+            const amount = parseFloat(matches[2] || matches[1]);
             const category = matches[3].trim();
             let dateString = matches[4];
 
@@ -275,7 +273,7 @@ function generatePdfReport(selectedMonths) {
         doc.setFontSize(18);
         doc.text(`Expense Report for ${month}`, 105, 20, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`Period Income / Budget: ₹${monthIncome.toFixed(2)}`, 15, 35);
+        doc.text(`Monthly Income / Budget: ₹${monthIncome.toFixed(2)}`, 15, 35);
         doc.text(`Net Expenses: ₹${monthNet.toFixed(2)}`, 15, 42);
         doc.text(`Remaining Balance: ₹${(monthIncome - monthNet).toFixed(2)}`, 15, 49);
 
@@ -286,7 +284,7 @@ function generatePdfReport(selectedMonths) {
                 body: monthTransactions.map(t => [t.type.charAt(0).toUpperCase() + t.type.slice(1), t.category, `₹${t.amount.toFixed(2)}`, t.date]),
             });
         } else {
-            doc.text('No transactions were recorded for this period.', 15, 70);
+            doc.text('No transactions were recorded for this month.', 15, 70);
         }
         
         firstPage = false;
@@ -327,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             monthlyIncomes[currentMonthKey] = income;
             localStorage.setItem('monthlyIncomes', JSON.stringify(monthlyIncomes));
-            alert('Income for current period updated!');
+            alert('Income for this month updated!');
             updateDashboardDisplay();
         });
     }
@@ -373,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startNewMonthBtn = document.getElementById('start-new-month');
     if (startNewMonthBtn) {
         startNewMonthBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to end the current period and start a new one? Your current data will be saved.')) {
+            if (confirm('Are you sure you want to end the current month and start a new one? Your current data will be saved.')) {
                 const [year, month] = currentMonthKey.split('-').map(Number);
                 const currentDate = new Date(year, month - 1, 1);
                 currentDate.setMonth(currentDate.getMonth() + 1);
@@ -383,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newMonthKey = `${newYear}-${newMonth}`;
 
                 localStorage.setItem('currentMonthKey', newMonthKey);
-                alert(`New tracking period started for ${newMonthKey}. You can now set the income for this period.`);
+                alert(`New tracking month started for ${newMonthKey}. You can now set the income for this month.`);
                 window.location.reload();
             }
         });
