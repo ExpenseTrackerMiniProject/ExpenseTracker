@@ -112,6 +112,9 @@ function updateDashboard() {
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome')) || 0;
 
+// =========================================================================
+// === MODIFIED FUNCTION ===================================================
+// =========================================================================
 // Function to update the dashboard display
 function updateDashboardDisplay() {
     const totalIncomeElem = document.getElementById('total-income');
@@ -120,16 +123,27 @@ function updateDashboardDisplay() {
 
     if (!totalIncomeElem || !totalExpensesElem || !remainingBalanceElem) return;
 
-    let totalExpenses = transactions
-        .filter(t => t.type === 'expense')
+    // 1. Calculate total of all 'income' type transactions
+    const totalCredit = transactions
+        .filter(t => t.type === 'income')
         .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
 
-    totalIncomeElem.textContent = monthlyIncome.toFixed(2);
-    totalExpensesElem.textContent = totalExpenses.toFixed(2);
-    remainingBalanceElem.textContent = (monthlyIncome - totalExpenses).toFixed(2);
+    // 2. Calculate total of all 'expense' type transactions
+    const totalDebit = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
+    
+    // 3. The "Total Expenses" field now shows the net result
+    const netExpenses = totalDebit - totalCredit;
+
+    // 4. Update the display
+    totalIncomeElem.textContent = monthlyIncome.toFixed(2); // This now acts as the starting "Budget"
+    totalExpensesElem.textContent = netExpenses.toFixed(2);
+    remainingBalanceElem.textContent = (monthlyIncome - netExpenses).toFixed(2);
 
     displayTransactions();
 }
+
 
 // Function to display transactions with scrolling enabled
 function displayTransactions(filterDate = null) {
@@ -184,15 +198,12 @@ function findOriginalTransaction(transactionToFind) {
     );
 }
 
+// =========================================================================
+// === MODIFIED FUNCTION ===================================================
+// =========================================================================
 function deleteTransaction(index) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-        const transactionToDelete = transactions[index];
-        
-        if (transactionToDelete.type === 'income') {
-            monthlyIncome -= parseFloat(transactionToDelete.amount);
-            localStorage.setItem('monthlyIncome', monthlyIncome);
-        }
-
+        // This function no longer needs to touch the monthlyIncome variable
         transactions.splice(index, 1);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDashboardDisplay();
@@ -250,27 +261,31 @@ if (document.getElementById('transaction-form')) {
 
         alert('Expense added!');
         document.getElementById('transaction-form').reset();
+        // Manually update the dashboard display after adding
+        if (typeof updateDashboardDisplay === "function") updateDashboardDisplay();
     });
 }
 
-// MODIFIED: Handle Add Money (Income) Transaction with all fields
+// =========================================================================
+// === MODIFIED FUNCTION ===================================================
+// =========================================================================
+// Handle Add Money (Income) Transaction with all fields
 if (document.getElementById('add-money-form')) {
     document.getElementById('add-money-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Get values from all the new fields
         const category = document.getElementById('add-money-category').value;
         const amount = parseFloat(document.getElementById('add-money-amount').value);
         const date = document.getElementById('add-money-date').value;
 
-        // Validate all fields
         if (!category || isNaN(amount) || amount <= 0 || !date) {
             alert('Please fill out all fields correctly.');
             return;
         }
 
-        monthlyIncome += amount;
-        localStorage.setItem('monthlyIncome', monthlyIncome);
+        // REMOVED: No longer adds to monthlyIncome
+        // monthlyIncome += amount;
+        // localStorage.setItem('monthlyIncome', monthlyIncome);
 
         transactions.push({
             category: category,
@@ -282,6 +297,8 @@ if (document.getElementById('add-money-form')) {
 
         alert(`Income of ₹${amount.toFixed(2)} added successfully!`);
         document.getElementById('add-money-form').reset();
+        // Manually update the dashboard display after adding
+        if (typeof updateDashboardDisplay === "function") updateDashboardDisplay();
     });
 }
 
