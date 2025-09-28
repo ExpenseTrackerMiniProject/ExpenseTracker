@@ -580,145 +580,146 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === NEW: BILL SPLITTER PAGE LOGIC =======================================
-    // =========================================================================
-    const splitForm = document.getElementById('split-form');
-    if (splitForm) {
-        const equalSection = document.getElementById('equal-split-section');
-        const unevenSection = document.getElementById('uneven-split-section');
-        const peopleContainer = document.getElementById('people-list-container');
-        const resultDiv = document.getElementById('split-result');
-        let personCount = 0;
+    // // === NEW: BILL SPLITTER PAGE LOGIC =======================================
+    // // =========================================================================
+    // const splitForm = document.getElementById('split-form');
+    // if (splitForm) {
+    //     const equalSection = document.getElementById('equal-split-section');
+    //     const unevenSection = document.getElementById('uneven-split-section');
+    //     const peopleContainer = document.getElementById('people-list-container');
+    //     const resultDiv = document.getElementById('split-result');
+    //     let personCount = 0;
 
-        const addPerson = () => {
-            personCount++;
-            const personRow = document.createElement('div');
-            personRow.className = 'person-input-row';
-            personRow.innerHTML = `
-                <input type="text" placeholder="Person ${personCount} Name" class="person-name">
-                <input type="number" placeholder="Amount Paid" class="person-amount" min="0" step="0.01">
-                <label class="is-me-label"><input type="radio" name="who-is-me" value="${personCount-1}"> Me</label>
-            `;
-            peopleContainer.appendChild(personRow);
-        };
-        addPerson();
-        addPerson();
+    //     const addPerson = () => {
+    //         personCount++;
+    //         const personRow = document.createElement('div');
+    //         personRow.className = 'person-input-row';
+    //         personRow.innerHTML = `
+    //             <input type="text" placeholder="Person ${personCount} Name" class="person-name">
+    //             <input type="number" placeholder="Amount Paid" class="person-amount" min="0" step="0.01">
+    //             <label class="is-me-label"><input type="radio" name="who-is-me" value="${personCount-1}"> Me</label>
+    //         `;
+    //         peopleContainer.appendChild(personRow);
+    //     };
+    //     addPerson();
+    //     addPerson();
 
-        document.querySelectorAll('input[name="split-mode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                if (this.value === 'equally') {
-                    equalSection.classList.remove('hidden');
-                    unevenSection.classList.add('hidden');
-                } else {
-                    equalSection.classList.add('hidden');
-                    unevenSection.classList.remove('hidden');
-                }
-            });
-        });
+    //     document.querySelectorAll('input[name="split-mode"]').forEach(radio => {
+    //         radio.addEventListener('change', function() {
+    //             if (this.value === 'equally') {
+    //                 equalSection.classList.remove('hidden');
+    //                 unevenSection.classList.add('hidden');
+    //             } else {
+    //                 equalSection.classList.add('hidden');
+    //                 unevenSection.classList.remove('hidden');
+    //             }
+    //         });
+    //     });
 
-        document.getElementById('add-person-btn').addEventListener('click', addPerson);
-        document.getElementById('remove-person-btn').addEventListener('click', () => {
-            if (personCount > 1) {
-                peopleContainer.lastChild.remove();
-                personCount--;
-            }
-        });
+    //     document.getElementById('add-person-btn').addEventListener('click', addPerson);
+    //     document.getElementById('remove-person-btn').addEventListener('click', () => {
+    //         if (personCount > 1) {
+    //             peopleContainer.lastChild.remove();
+    //             personCount--;
+    //         }
+    //     });
 
-        splitForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const totalBill = parseFloat(document.getElementById('total-bill').value);
-            const taxAmount = parseFloat(document.getElementById('tax-amount').value) || 0;
-            const tipPercent = parseFloat(document.getElementById('tip-percent').value) || 0;
-            const shouldRound = document.getElementById('round-up-checkbox').checked;
+    //     splitForm.addEventListener('submit', function(e) {
+    //         e.preventDefault();
+    //         const totalBill = parseFloat(document.getElementById('total-bill').value);
+    //         const taxAmount = parseFloat(document.getElementById('tax-amount').value) || 0;
+    //         const tipPercent = parseFloat(document.getElementById('tip-percent').value) || 0;
+    //         const shouldRound = document.getElementById('round-up-checkbox').checked;
 
-            if (isNaN(totalBill) || totalBill <= 0) {
-                resultDiv.innerHTML = `<p class="error-text">Please enter a valid Total Bill Amount.</p>`;
-                return;
-            }
+    //         if (isNaN(totalBill) || totalBill <= 0) {
+    //             resultDiv.innerHTML = `<p class="error-text">Please enter a valid Total Bill Amount.</p>`;
+    //             return;
+    //         }
 
-            const tipAmount = totalBill * (tipPercent / 100);
-            const grandTotal = totalBill + taxAmount + tipAmount;
+    //         const tipAmount = totalBill * (tipPercent / 100);
+    //         const grandTotal = totalBill + taxAmount + tipAmount;
 
-            let resultHTML = `<h3>Split Details</h3><p>Base Bill: ₹${totalBill.toFixed(2)}</p><p>Tax: ₹${taxAmount.toFixed(2)}</p><p>Tip (${tipPercent}%): ₹${tipAmount.toFixed(2)}</p><p><strong>Grand Total: ₹${grandTotal.toFixed(2)}</strong></p><hr>`;
-            let resultTextForClipboard = `Bill Split Summary:\n- Grand Total: ₹${grandTotal.toFixed(2)}\n- Breakdown:\n`;
-            let myShare = 0;
+    //         let resultHTML = `<h3>Split Details</h3><p>Base Bill: ₹${totalBill.toFixed(2)}</p><p>Tax: ₹${taxAmount.toFixed(2)}</p><p>Tip (${tipPercent}%): ₹${tipAmount.toFixed(2)}</p><p><strong>Grand Total: ₹${grandTotal.toFixed(2)}</strong></p><hr>`;
+    //         let resultTextForClipboard = `Bill Split Summary:\n- Grand Total: ₹${grandTotal.toFixed(2)}\n- Breakdown:\n`;
+    //         let myShare = 0;
 
-            const splitMode = document.querySelector('input[name="split-mode"]:checked').value;
+    //         const splitMode = document.querySelector('input[name="split-mode"]:checked').value;
 
-            if (splitMode === 'equally') {
-                const numPeople = parseInt(document.getElementById('num-people').value);
-                if (isNaN(numPeople) || numPeople < 1) {
-                    resultDiv.innerHTML = `<p class="error-text">Please enter a valid Number of People.</p>`;
-                    return;
-                }
-                let amountPerPerson = grandTotal / numPeople;
-                if (shouldRound) {
-                    amountPerPerson = Math.ceil(amountPerPerson);
-                }
-                myShare = amountPerPerson;
-                resultHTML += `<p class="total-per-person">Each of ${numPeople} People Pays: ₹${amountPerPerson.toFixed(2)}</p>`;
-                resultTextForClipboard += `  - Each Person Pays: ₹${amountPerPerson.toFixed(2)}`;
-            } else { // Uneven split
-                const personRows = document.querySelectorAll('.person-input-row');
-                const peopleData = [];
-                let totalPaid = 0;
+    //         if (splitMode === 'equally') {
+    //             const numPeople = parseInt(document.getElementById('num-people').value);
+    //             if (isNaN(numPeople) || numPeople < 1) {
+    //                 resultDiv.innerHTML = `<p class="error-text">Please enter a valid Number of People.</p>`;
+    //                 return;
+    //             }
+    //             let amountPerPerson = grandTotal / numPeople;
+    //             if (shouldRound) {
+    //                 amountPerPerson = Math.ceil(amountPerPerson);
+    //             }
+    //             myShare = amountPerPerson;
+    //             resultHTML += `<p class="total-per-person">Each of ${numPeople} People Pays: ₹${amountPerPerson.toFixed(2)}</p>`;
+    //             resultTextForClipboard += `  - Each Person Pays: ₹${amountPerPerson.toFixed(2)}`;
+    //         } else { // Uneven split
+    //             const personRows = document.querySelectorAll('.person-input-row');
+    //             const peopleData = [];
+    //             let totalPaid = 0;
                 
-                personRows.forEach((row, index) => {
-                    const name = row.querySelector('.person-name').value || `Person ${index + 1}`;
-                    const amount = parseFloat(row.querySelector('.person-amount').value) || 0;
-                    peopleData.push({ name, amount });
-                    totalPaid += amount;
-                });
+    //             personRows.forEach((row, index) => {
+    //                 const name = row.querySelector('.person-name').value || `Person ${index + 1}`;
+    //                 const amount = parseFloat(row.querySelector('.person-amount').value) || 0;
+    //                 peopleData.push({ name, amount });
+    //                 totalPaid += amount;
+    //             });
                 
-                if (Math.abs(totalPaid - grandTotal) > 0.01) {
-                    resultDiv.innerHTML = `<p class="error-text">The sum of individual amounts (₹${totalPaid.toFixed(2)}) doesn't match the grand total (₹${grandTotal.toFixed(2)}). Please check the values.</p>`;
-                    return;
-                }
+    //             if (Math.abs(totalPaid - grandTotal) > 0.01) {
+    //                 resultDiv.innerHTML = `<p class="error-text">The sum of individual amounts (₹${totalPaid.toFixed(2)}) doesn't match the grand total (₹${grandTotal.toFixed(2)}). Please check the values.</p>`;
+    //                 return;
+    //             }
                 
-                resultHTML += `<h4>Individual Amounts:</h4>`;
-                peopleData.forEach((person, index) => {
-                    let amount = person.amount;
-                    if (shouldRound) amount = Math.ceil(amount);
-                    resultHTML += `<p><strong>${person.name}</strong> pays: ₹${amount.toFixed(2)}</p>`;
-                    resultTextForClipboard += `  - ${person.name} pays: ₹${amount.toFixed(2)}\n`;
-                    const meRadio = document.querySelector('input[name="who-is-me"]:checked');
-                    if (meRadio && parseInt(meRadio.value) === index) {
-                        myShare = amount;
-                    }
-                });
-            }
+    //             resultHTML += `<h4>Individual Amounts:</h4>`;
+    //             peopleData.forEach((person, index) => {
+    //                 let amount = person.amount;
+    //                 if (shouldRound) amount = Math.ceil(amount);
+    //                 resultHTML += `<p><strong>${person.name}</strong> pays: ₹${amount.toFixed(2)}</p>`;
+    //                 resultTextForClipboard += `  - ${person.name} pays: ₹${amount.toFixed(2)}\n`;
+    //                 const meRadio = document.querySelector('input[name="who-is-me"]:checked');
+    //                 if (meRadio && parseInt(meRadio.value) === index) {
+    //                     myShare = amount;
+    //                 }
+    //             });
+    //         }
 
-            resultHTML += `<div class="result-actions"><button type="button" id="copy-result-btn">Copy Results</button><button type="button" id="add-to-expenses-btn" ${myShare > 0 ? '' : 'disabled'}>Add My Share (₹${myShare.toFixed(2)}) to Expenses</button></div>`;
-            resultDiv.innerHTML = resultHTML;
+    //         resultHTML += `<div class="result-actions"><button type="button" id="copy-result-btn">Copy Results</button><button type="button" id="add-to-expenses-btn" ${myShare > 0 ? '' : 'disabled'}>Add My Share (₹${myShare.toFixed(2)}) to Expenses</button></div>`;
+    //         resultDiv.innerHTML = resultHTML;
 
-            document.getElementById('copy-result-btn').addEventListener('click', () => {
-                navigator.clipboard.writeText(resultTextForClipboard).then(() => alert('Results copied to clipboard!')).catch(() => alert('Failed to copy results.'));
-            });
+    //         document.getElementById('copy-result-btn').addEventListener('click', () => {
+    //             navigator.clipboard.writeText(resultTextForClipboard).then(() => alert('Results copied to clipboard!')).catch(() => alert('Failed to copy results.'));
+    //         });
 
-            const addToExpensesBtn = document.getElementById('add-to-expenses-btn');
-            if (addToExpensesBtn && !addToExpensesBtn.disabled) {
-                addToExpensesBtn.addEventListener('click', () => {
-                    const today = new Date().toISOString().slice(0, 10);
-                    allTransactions.push({ category: 'Shared Expense', amount: myShare, date: today, type: 'expense' });
-                    localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
-                    alert(`Your share of ₹${myShare.toFixed(2)} has been added to your expenses.`);
-                    updateDashboardDisplay();
-                });
-            }
-        });
+    //         const addToExpensesBtn = document.getElementById('add-to-expenses-btn');
+    //         if (addToExpensesBtn && !addToExpensesBtn.disabled) {
+    //             addToExpensesBtn.addEventListener('click', () => {
+    //                 const today = new Date().toISOString().slice(0, 10);
+    //                 allTransactions.push({ category: 'Shared Expense', amount: myShare, date: today, type: 'expense' });
+    //                 localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
+    //                 alert(`Your share of ₹${myShare.toFixed(2)} has been added to your expenses.`);
+    //                 updateDashboardDisplay();
+    //             });
+    //         }
+    //     });
 
-        document.getElementById('reset-split-btn').addEventListener('click', () => {
-            splitForm.reset();
-            resultDiv.innerHTML = '';
-            peopleContainer.innerHTML = '';
-            personCount = 0;
-            addPerson();
-            addPerson();
-        });
-    }
+    //     document.getElementById('reset-split-btn').addEventListener('click', () => {
+    //         splitForm.reset();
+    //         resultDiv.innerHTML = '';
+    //         peopleContainer.innerHTML = '';
+    //         personCount = 0;
+    //         addPerson();
+    //         addPerson();
+    //     });
+    // }
 
     updateDashboardDisplay();
 });
+
 
 
 
