@@ -12,15 +12,31 @@ if (recognition) {
     }
 
     recognition.onresult = function(event) {
-        const voiceInput = event.results[0][0].transcript;
+        const voiceInput = event.results[0][0].transcript.toLowerCase();
         console.log(`Voice Command Recognized: ${voiceInput}`);
 
-        const regex = /add (\d+(\.\d{1,2})?) (\w+) on (today|\w+ \d{1,2} \d{4})/i;
-        const matches = voiceInput.match(regex);
+        // Regex for expenses (e.g., "add 250 food on today")
+        const expenseRegex = /add (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
+        // Regex for income (e.g., "credit 5000 salary on today")
+        const incomeRegex = /credit (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
+
+        const expenseMatches = voiceInput.match(expenseRegex);
+        const incomeMatches = voiceInput.match(incomeRegex);
+
+        let matches = null;
+        let transactionType = '';
+
+        if (expenseMatches) {
+            matches = expenseMatches;
+            transactionType = 'expense';
+        } else if (incomeMatches) {
+            matches = incomeMatches;
+            transactionType = 'income';
+        }
 
         if (matches) {
             const amount = parseFloat(matches[1]);
-            const category = matches[3];
+            const category = matches[3].trim();
             let dateString = matches[4];
 
             if (dateString.toLowerCase() === 'today') {
@@ -34,13 +50,14 @@ if (recognition) {
                 return;
             }
 
-            allTransactions.push({ category, amount, date: formattedDate, type: 'expense' });
+            allTransactions.push({ category, amount, date: formattedDate, type: transactionType });
             localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
 
-            alert('Transaction added successfully via voice command!');
+            const typeCapitalized = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
+            alert(`${typeCapitalized} transaction added successfully via voice command!`);
             updateDashboardDisplay();
         } else {
-            alert('Voice command not recognized correctly. Please try again.');
+            alert('Command not recognized. Try "Add 100 food on today" or "Credit 5000 salary on today".');
         }
     };
 
@@ -162,25 +179,23 @@ function displayTransactions(transactionsToDisplay) {
     finalList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     finalList.forEach(transaction => {
-    const li = document.createElement('li');
-    
-    // This part is new
-    if (transaction.type === 'income') {
-        li.classList.add('income-transaction');
-    } else if (transaction.type === 'expense') {
-        li.classList.add('expense-transaction'); // Add this line for expenses
-    }
-    
-    const originalIndex = findOriginalTransactionIndex(transaction);
+        const li = document.createElement('li');
+        if (transaction.type === 'income') {
+            li.classList.add('income-transaction');
+        } else if (transaction.type === 'expense') {
+            li.classList.add('expense-transaction');
+        }
+        
+        const originalIndex = findOriginalTransactionIndex(transaction);
 
-    li.innerHTML = `
-        <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
-        <div class="button-container">
-            <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
-            <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
-        </div>`;
-    transactionList.appendChild(li);
-});
+        li.innerHTML = `
+            <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
+            <div class="button-container">
+                <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
+                <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
+            </div>`;
+        transactionList.appendChild(li);
+    });
 }
 
 function findOriginalTransactionIndex(transactionToFind) {
@@ -234,7 +249,7 @@ function editTransaction(index) {
 }
 
 // =========================================================================
-// === PDF Generation Logic (SIMPLIFIED & FIXED) ===========================
+// === PDF Generation Logic (SIMPLIFIED) ===================================
 // =========================================================================
 function generatePdfReport(selectedMonths) {
     alert('Generating PDF report...');
@@ -243,20 +258,17 @@ function generatePdfReport(selectedMonths) {
     
     let firstPage = true;
 
-    // Loop through each selected month to create a page for it.
     for (const month of selectedMonths.sort()) {
         if (!firstPage) {
             doc.addPage();
         }
 
-        // Filter data for the current month in the loop
         const monthTransactions = allTransactions.filter(t => t.date.startsWith(month));
         const monthIncome = monthlyIncomes[month] || 0;
         const monthCredit = monthTransactions.filter(t => t.type === 'income').reduce((a, t) => a + parseFloat(t.amount), 0);
         const monthDebit = monthTransactions.filter(t => t.type === 'expense').reduce((a, t) => a + parseFloat(t.amount), 0);
         const monthNet = monthDebit - monthCredit;
 
-        // Add title and summary text
         doc.setFontSize(18);
         doc.text(`Expense Report for ${month}`, 105, 20, { align: 'center' });
         doc.setFontSize(12);
@@ -264,7 +276,6 @@ function generatePdfReport(selectedMonths) {
         doc.text(`Net Expenses: ₹${monthNet.toFixed(2)}`, 15, 42);
         doc.text(`Remaining Balance: ₹${(monthIncome - monthNet).toFixed(2)}`, 15, 49);
 
-        // Add the transaction table
         if (monthTransactions.length > 0) {
             doc.autoTable({
                 startY: 60,
@@ -289,9 +300,14 @@ function generatePdfReport(selectedMonths) {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
-    const voiceCommandButton = document.getElementById('voice-command-btn');
-    if (voiceCommandButton) {
-        voiceCommandButton.addEventListener('click', startVoiceCommand);
+    // Event Listeners for BOTH voice command buttons
+    const expenseVoiceBtn = document.getElementById('voice-command-btn');
+    if (expenseVoiceBtn) {
+        expenseVoiceBtn.addEventListener('click', startVoiceCommand);
+    }
+    const incomeVoiceBtn = document.getElementById('voice-command-income-btn');
+    if (incomeVoiceBtn) {
+        incomeVoiceBtn.addEventListener('click', startVoiceCommand);
     }
     
     const monthlyIncomeForm = document.getElementById('monthly-income-form');
@@ -452,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Please select at least one month to include in the report.');
                 return;
             }
-            // Call the new, simplified PDF function
             generatePdfReport(selectedMonths);
             pdfModal.classList.remove('show');
         });
@@ -566,4 +581,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboardDisplay();
 });
-
