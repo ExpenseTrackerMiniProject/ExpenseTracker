@@ -138,6 +138,34 @@ button {
         transition: transform 0.3s ease-in-out;
     }
 
+/* === NEW STYLES ADDED FOR BUTTON LAYOUT === */
+.summary-actions {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 10px;      
+    margin-top: 20px; 
+}
+
+.summary-actions button {
+    flex: 1; /* Makes all buttons in the container have the same width */
+}
+
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px; 
+    margin-bottom: 15px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+/* === END OF NEW STYLES === */
+
+
 /* Totals and Transactions */
 #totals div {
     margin: 10px 0;
@@ -166,7 +194,6 @@ button {
     margin: 0;
 }
 
-/* Transactions List Styles */
 #transaction-list li {
     background-color: #e9e9e9;
     margin-top: 10px;
@@ -312,16 +339,12 @@ footer {
     }
 
 /* Dark Mode Styles */
-/* body.dark-theme #TextColorChange {
-    color: #000;
-} */
-
 body.dark-theme {
     --background-color: #121212;
     --text-color: #d3d3d3;
     background-color: var(--background-color);
     color: var(--text-color);
-    transition: background-color 2s ease, color 2s ease, transform 2s ease; /* Smooth transition for dark mode */
+    transition: background-color 2s ease, color 2s ease, transform 2s ease;
 }
 
     /* Dark Mode Header */
