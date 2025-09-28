@@ -40,7 +40,7 @@ if (recognition) {
             localStorage.setItem('transactions', JSON.stringify(transactions));
 
             alert('Transaction added successfully via voice command!');
-            updateDashboardDisplay(); // Changed to prevent page reload
+            updateDashboardDisplay();
         } else {
             alert('Voice command not recognized correctly. Please try again.');
         }
@@ -108,22 +108,37 @@ function updateDashboardDisplay() {
     }
 }
 
-function displayTransactions(filterDate = null) {
+
+// =========================================================================
+// === MODIFIED FUNCTION TO HANDLE ALL FILTERS =============================
+// =========================================================================
+function displayTransactions() {
     const transactionList = document.getElementById('transaction-list');
     if (!transactionList) return;
     transactionList.innerHTML = '';
 
+    // Get current filter values from the DOM
+    const filterDate = document.getElementById('filter-date').value;
+    const filterType = document.querySelector('input[name="transaction-type"]:checked').value;
+    
     let currentTransactions = JSON.parse(localStorage.getItem('transactions')) || [];
     let filteredTransactions = currentTransactions;
 
+    // 1. Apply Month Filter
     if (filterDate) {
         const [year, month] = filterDate.split('-');
-        filteredTransactions = currentTransactions.filter(transaction => {
+        filteredTransactions = filteredTransactions.filter(transaction => {
             const transactionDate = new Date(transaction.date);
             return transactionDate.getFullYear() === parseInt(year) && transactionDate.getMonth() === parseInt(month) - 1;
         });
     }
 
+    // 2. Apply Type Filter (Credit/Debit)
+    if (filterType !== 'all') {
+        filteredTransactions = filteredTransactions.filter(transaction => transaction.type === filterType);
+    }
+    
+    // Sort and render the final list
     filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     filteredTransactions.forEach(transaction => {
@@ -144,6 +159,7 @@ function displayTransactions(filterDate = null) {
     });
 }
 
+
 function findOriginalTransaction(transactionToFind) {
     return transactions.find(t =>
         t.date === transactionToFind.date &&
@@ -161,41 +177,23 @@ function deleteTransaction(index) {
     }
 }
 
-// =========================================================================
-// === CORRECTED FUNCTION ==================================================
-// =========================================================================
 function editTransaction(index) {
     const transaction = transactions[index];
-
-    // Prompt for new category, showing the current one
     const newCategory = prompt('Edit Category:', transaction.category);
-    
-    // Exit if the user clicks "Cancel" on the first prompt
     if (newCategory === null) {
         return;
     }
-
-    // Prompt for new amount, showing the current one
     const newAmountStr = prompt('Edit Amount:', transaction.amount);
-
-    // Exit if the user clicks "Cancel" on the second prompt
     if (newAmountStr === null) {
         return;
     }
-
     const newAmount = parseFloat(newAmountStr);
-
-    // Validate the new inputs
     if (newCategory.trim() === '' || isNaN(newAmount) || newAmount <= 0) {
         alert('Invalid category or amount. Please try again.');
         return;
     }
-    
-    // Update the transaction object in the array
     transactions[index].category = newCategory.trim();
     transactions[index].amount = newAmount;
-
-    // Save the updated array to localStorage and refresh the screen
     localStorage.setItem('transactions', JSON.stringify(transactions));
     updateDashboardDisplay();
 }
@@ -257,17 +255,30 @@ if (document.getElementById('add-money-form')) {
     });
 }
 
-// Other event handlers
+// =========================================================================
+// === MODIFIED EVENT HANDLERS FOR FILTERS =================================
+// =========================================================================
+
+// Handle Filter by Month
 if (document.getElementById('filter-date')) {
-    document.getElementById('filter-date').addEventListener('change', function() {
-        displayTransactions(this.value);
-    });
+    document.getElementById('filter-date').addEventListener('change', displayTransactions);
 }
+
+// Handle Filter by Type (Credit/Debit)
+document.querySelectorAll('input[name="transaction-type"]').forEach(radio => {
+    radio.addEventListener('change', displayTransactions);
+});
+
+// The "Show All" button now resets all filters
 if (document.getElementById('show-all')) {
-    document.getElementById('show-all').addEventListener('click', function() {
-        displayTransactions();
+    document.getElementById('show-all').addEventListener('click', function () {
+        document.getElementById('filter-date').value = ''; // Clear month
+        document.querySelector('input[name="transaction-type"][value="all"]').checked = true; // Select "All"
+        displayTransactions(); // Refresh the list
     });
 }
+
+// Handle Clear Data Button
 if (document.getElementById('clear-data')) {
     document.getElementById('clear-data').addEventListener('click', function() {
         if (confirm('Are you sure you want to clear all data?')) {
@@ -413,7 +424,7 @@ if (document.getElementById('incomeExpenseChart')) {
         }
     }
 
-    // --- Event Listeners ---
+    // --- Analytics Event Listeners ---
     const monthFilter = document.getElementById('analytics-month-filter');
     const showAllBtn = document.getElementById('analytics-show-all');
     if (monthFilter) {
