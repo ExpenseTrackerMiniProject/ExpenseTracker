@@ -20,7 +20,7 @@
 
     <main class="slide-in-bottom">
         <form class="TransactionForm" id="transaction-form">
-            <h2>Add an Expense</h2>
+            <h2>Add an Expense (Debit)</h2>
             <label for="category">Category</label>
             <input type="text" id="category" placeholder="e.g., Food, Petrol" required>
 
@@ -34,10 +34,11 @@
             <button type="button" id="voice-command-btn">
                 <i class="fas fa-microphone"></i>
             </button>
+            <p class="voice-hint">Voice format: "Add 250 food on today"</p>
         </form>
 
         <form class="TransactionForm" id="add-money-form">
-            <h2>Add Income / Credit</h2>
+            <h2>Add Income (Credit)</h2>
             <label for="add-money-category">Category</label>
             <input type="text" id="add-money-category" placeholder="e.g., Salary, Refund" required>
 
@@ -48,6 +49,10 @@
             <input type="date" id="add-money-date" required>
             
             <button type="submit">Add Income</button>
+            <button type="button" id="voice-command-income-btn">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <p class="voice-hint">Voice format: "Credit 5000 salary on today"</p>
         </form>
     </main>
 
