@@ -40,7 +40,7 @@ if (recognition) {
             localStorage.setItem('transactions', JSON.stringify(transactions));
 
             alert('Transaction added successfully via voice command!');
-            updateDashboard();
+            updateDashboardDisplay(); // Changed to prevent page reload
         } else {
             alert('Voice command not recognized correctly. Please try again.');
         }
@@ -75,19 +75,15 @@ function getCurrentDate() {
     const year = today.getFullYear();
     return `${month} ${day} ${year}`;
 }
-
-function updateDashboard() {
-    console.log('Updating dashboard with new transactions...');
-    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
-        window.location.reload();
-    }
-}
 //voice Function Ends......
 
 // Initialize localStorage
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome')) || 0;
 
+// =========================================================================
+// === CORRECTED FUNCTION ==================================================
+// =========================================================================
 // Function to update the dashboard display
 function updateDashboardDisplay() {
     const totalIncomeElem = document.getElementById('total-income');
@@ -96,16 +92,27 @@ function updateDashboardDisplay() {
 
     if (!totalIncomeElem || !totalExpensesElem || !remainingBalanceElem) return;
 
-    // This calculation logic is correct from the last update
-    const totalCredit = transactions.filter(t => t.type === 'income').reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
-    const totalDebit = transactions.filter(t => t.type === 'expense').reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
+    // Calculate total of all credits (refunds, etc.)
+    const totalCredit = transactions
+        .filter(t => t.type === 'income')
+        .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
+
+    // Calculate total of all debits (expenses)
+    const totalDebit = transactions
+        .filter(t => t.type === 'expense')
+        .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
+
+    // Net expenses are the debits minus the credits
     const netExpenses = totalDebit - totalCredit;
 
     totalIncomeElem.textContent = monthlyIncome.toFixed(2);
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (monthlyIncome - netExpenses).toFixed(2);
 
-    displayTransactions();
+    // Refresh the transaction list if it's on the page
+    if (document.getElementById('transaction-list')) {
+         displayTransactions();
+    }
 }
 
 function displayTransactions(filterDate = null) {
@@ -218,7 +225,7 @@ if (document.getElementById('transaction-form')) {
 // =========================================================================
 // === CORRECTED FUNCTION ==================================================
 // =========================================================================
-// Handle Add Money (Income) Transaction
+// Handle Add Money (Income/Credit) Transaction
 if (document.getElementById('add-money-form')) {
     document.getElementById('add-money-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -231,19 +238,19 @@ if (document.getElementById('add-money-form')) {
             return;
         }
 
-        // REMOVED the lines that incorrectly updated the total income.
+        // REMOVED the lines that incorrectly updated the total income. This was the bug.
         // monthlyIncome += amount;
         // localStorage.setItem('monthlyIncome', monthlyIncome);
 
         transactions.push({ category: category, amount: amount, date: date, type: 'income' });
         localStorage.setItem('transactions', JSON.stringify(transactions));
-        alert(`Income of ₹${amount.toFixed(2)} added successfully!`);
+        alert(`Credit of ₹${amount.toFixed(2)} added successfully!`);
         document.getElementById('add-money-form').reset();
         updateDashboardDisplay();
     });
 }
 
-// Other event handlers remain unchanged
+// Other event handlers
 if (document.getElementById('filter-date')) {
     document.getElementById('filter-date').addEventListener('change', function() {
         displayTransactions(this.value);
@@ -276,18 +283,18 @@ if (document.getElementById('download-pdf')) {
         doc.setFont('helvetica', 'bold');
         doc.text('Expense Tracker Report', 10, y);
         y += 15;
-        const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
-        const formattedIncome = `INR ${monthlyIncome.toFixed(2)}`;
+        
+        const totalCredit = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+        const totalDebit = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+        const netExpenses = totalDebit - totalCredit;
+
         doc.setFontSize(16);
         doc.setFont('Helvetica', 'normal');
-        doc.text(`Starting Budget: ${formattedIncome}`, 10, y);
+        doc.text(`Total Income / Budget: INR ${monthlyIncome.toFixed(2)}`, 10, y);
         y += 10;
-        const formattedExpenses = `INR ${totalExpenses.toFixed(2)}`;
-        doc.text(`Total Expenses: ${formattedExpenses}`, 10, y);
+        doc.text(`Total Expenses: INR ${netExpenses.toFixed(2)}`, 10, y);
         y += 10;
-        const remainingBalance = (monthlyIncome - totalExpenses).toFixed(2);
-        const formattedBalance = `INR ${remainingBalance}`;
-        doc.text(`Remaining Balance: ${formattedBalance}`, 10, y);
+        doc.text(`Remaining Balance: INR ${(monthlyIncome - netExpenses).toFixed(2)}`, 10, y);
         y += 15;
         doc.autoTable({
             startY: y,
@@ -325,18 +332,24 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
     function renderAnalyticsCharts(dataToDisplay) {
         if (incomeExpenseChart) incomeExpenseChart.destroy();
         if (expenseCategoryChart) expenseCategoryChart.destroy();
-        const totalExpenses = dataToDisplay.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+        
+        const totalCredit = dataToDisplay.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+        const totalDebit = dataToDisplay.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
+        const netExpenses = totalDebit - totalCredit;
+
         incomeExpenseChart = new Chart(incomeExpenseCtx, {
             type: 'bar',
             data: {
                 labels: ['Total Income', 'Total Expenses'],
-                datasets: [{ label: 'Amount (₹)', data: [monthlyIncome, totalExpenses], backgroundColor: ['#28a745', '#dc3545'] }]
+                datasets: [{ label: 'Amount (₹)', data: [monthlyIncome, netExpenses], backgroundColor: ['#28a745', '#dc3545'] }]
             },
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
+        
         const expenseData = dataToDisplay.filter(t => t.type === 'expense');
         const categories = [...new Set(expenseData.map(t => t.category))];
         const categoryData = categories.map(cat => expenseData.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
+        
         expenseCategoryChart = new Chart(expenseCategoryCtx, {
             type: 'pie',
             data: {
@@ -370,6 +383,7 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             renderAnalyticsCharts(transactions);
         });
     }
+    
     window.addEventListener('pageshow', function(event) {
         if (event.persisted) {
             transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -378,6 +392,7 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             renderAnalyticsCharts(transactions);
         }
     });
+    
     renderAnalyticsCharts(transactions);
 }
 
