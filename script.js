@@ -580,7 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // =========================================================================
     // === NEW: BILL SPLITTER PAGE LOGIC =======================================
     // =========================================================================
     const splitForm = document.getElementById('split-form');
@@ -591,24 +590,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const resultDiv = document.getElementById('split-result');
         let personCount = 0;
 
-        // Function to add a new person input row for uneven splitting
         const addPerson = () => {
             personCount++;
             const personRow = document.createElement('div');
             personRow.className = 'person-input-row';
             personRow.innerHTML = `
-                <input type="text" placeholder="Person ${personCount} Name" class="person-name" required>
-                <input type="number" placeholder="Amount Paid" class="person-amount" min="0" step="0.01" required>
+                <input type="text" placeholder="Person ${personCount} Name" class="person-name">
+                <input type="number" placeholder="Amount Paid" class="person-amount" min="0" step="0.01">
                 <label class="is-me-label"><input type="radio" name="who-is-me" value="${personCount-1}"> Me</label>
             `;
             peopleContainer.appendChild(personRow);
         };
-
-        // Add 2 people by default for uneven split mode
         addPerson();
         addPerson();
 
-        // Toggle between equal and uneven split sections
         document.querySelectorAll('input[name="split-mode"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value === 'equally') {
@@ -621,7 +616,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Add/Remove person buttons
         document.getElementById('add-person-btn').addEventListener('click', addPerson);
         document.getElementById('remove-person-btn').addEventListener('click', () => {
             if (personCount > 1) {
@@ -630,11 +624,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Main calculation logic
         splitForm.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            // Get universal values
             const totalBill = parseFloat(document.getElementById('total-bill').value);
             const taxAmount = parseFloat(document.getElementById('tax-amount').value) || 0;
             const tipPercent = parseFloat(document.getElementById('tip-percent').value) || 0;
@@ -648,18 +639,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const tipAmount = totalBill * (tipPercent / 100);
             const grandTotal = totalBill + taxAmount + tipAmount;
 
-            let resultHTML = `
-                <h3>Split Details</h3>
-                <p>Base Bill: ₹${totalBill.toFixed(2)}</p>
-                <p>Tax: ₹${taxAmount.toFixed(2)}</p>
-                <p>Tip (${tipPercent}%): ₹${tipAmount.toFixed(2)}</p>
-                <p><strong>Grand Total: ₹${grandTotal.toFixed(2)}</strong></p>
-                <hr>`;
-            
+            let resultHTML = `<h3>Split Details</h3><p>Base Bill: ₹${totalBill.toFixed(2)}</p><p>Tax: ₹${taxAmount.toFixed(2)}</p><p>Tip (${tipPercent}%): ₹${tipAmount.toFixed(2)}</p><p><strong>Grand Total: ₹${grandTotal.toFixed(2)}</strong></p><hr>`;
             let resultTextForClipboard = `Bill Split Summary:\n- Grand Total: ₹${grandTotal.toFixed(2)}\n- Breakdown:\n`;
             let myShare = 0;
 
-            // Check which mode is active
             const splitMode = document.querySelector('input[name="split-mode"]:checked').value;
 
             if (splitMode === 'equally') {
@@ -672,10 +655,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (shouldRound) {
                     amountPerPerson = Math.ceil(amountPerPerson);
                 }
-                myShare = amountPerPerson; // In equal split, everyone's share is the same
+                myShare = amountPerPerson;
                 resultHTML += `<p class="total-per-person">Each of ${numPeople} People Pays: ₹${amountPerPerson.toFixed(2)}</p>`;
                 resultTextForClipboard += `  - Each Person Pays: ₹${amountPerPerson.toFixed(2)}`;
-
             } else { // Uneven split
                 const personRows = document.querySelectorAll('.person-input-row');
                 const peopleData = [];
@@ -696,12 +678,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultHTML += `<h4>Individual Amounts:</h4>`;
                 peopleData.forEach((person, index) => {
                     let amount = person.amount;
-                    if (shouldRound) {
-                        amount = Math.ceil(amount);
-                    }
+                    if (shouldRound) amount = Math.ceil(amount);
                     resultHTML += `<p><strong>${person.name}</strong> pays: ₹${amount.toFixed(2)}</p>`;
                     resultTextForClipboard += `  - ${person.name} pays: ₹${amount.toFixed(2)}\n`;
-
                     const meRadio = document.querySelector('input[name="who-is-me"]:checked');
                     if (meRadio && parseInt(meRadio.value) === index) {
                         myShare = amount;
@@ -709,21 +688,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Add action buttons to the result
-            resultHTML += `
-                <div class="result-actions">
-                    <button type="button" id="copy-result-btn">Copy Results</button>
-                    <button type="button" id="add-to-expenses-btn" ${myShare > 0 ? '' : 'disabled'}>Add My Share (₹${myShare.toFixed(2)}) to Expenses</button>
-                </div>
-            `;
-            
+            resultHTML += `<div class="result-actions"><button type="button" id="copy-result-btn">Copy Results</button><button type="button" id="add-to-expenses-btn" ${myShare > 0 ? '' : 'disabled'}>Add My Share (₹${myShare.toFixed(2)}) to Expenses</button></div>`;
             resultDiv.innerHTML = resultHTML;
 
-            // Add event listeners for the new buttons
             document.getElementById('copy-result-btn').addEventListener('click', () => {
-                navigator.clipboard.writeText(resultTextForClipboard)
-                    .then(() => alert('Results copied to clipboard!'))
-                    .catch(() => alert('Failed to copy results.'));
+                navigator.clipboard.writeText(resultTextForClipboard).then(() => alert('Results copied to clipboard!')).catch(() => alert('Failed to copy results.'));
             });
 
             const addToExpensesBtn = document.getElementById('add-to-expenses-btn');
@@ -738,11 +707,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Reset button logic
         document.getElementById('reset-split-btn').addEventListener('click', () => {
             splitForm.reset();
             resultDiv.innerHTML = '';
-            // Restore default of 2 people for uneven mode
             peopleContainer.innerHTML = '';
             personCount = 0;
             addPerson();
@@ -752,5 +719,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboardDisplay();
 });
+
 
 
