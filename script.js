@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const monthlyIncomeForm = document.getElementById('monthly-income-form');
     if (monthlyIncomeForm) {
         document.getElementById('monthly-income').value = monthlyIncomes[currentMonthKey] || '';
-        document.getElementById('current-month-display').textContent = `Tracking Period: ${currentMonthKey}`;
+        document.getElementById('current-month-display').textContent = currentMonthKey;
         
         monthlyIncomeForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -581,3 +581,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboardDisplay();
 });
+
