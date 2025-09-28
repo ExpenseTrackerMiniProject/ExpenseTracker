@@ -104,6 +104,10 @@ function getCurrentDate() {
 function updateDashboard() {
     // Implement logic to refresh or update the dashboard based on the new transactions
     console.log('Updating dashboard with new transactions...');
+    // A simple page reload can work if you are on the dashboard, or you can implement more specific logic.
+    if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
+        window.location.reload();
+    }
 }
 //voice Function Ends......
 
@@ -113,8 +117,8 @@ function updateDashboard() {
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome')) || 0;
 
-// Function to update the dashboard
-function updateDashboard() {
+// Function to update the dashboard display
+function updateDashboardDisplay() {
     const totalIncomeElem = document.getElementById('total-income');
     const totalExpensesElem = document.getElementById('total-expenses');
     const remainingBalanceElem = document.getElementById('remaining-balance');
@@ -134,6 +138,7 @@ function updateDashboard() {
 // Function to display transactions with scrolling enabled
 function displayTransactions(filterDate = null) {
     const transactionList = document.getElementById('transaction-list');
+    if (!transactionList) return; // Exit if not on the right page
     transactionList.innerHTML = '';
 
     let filteredTransactions = transactions;
@@ -152,12 +157,10 @@ function displayTransactions(filterDate = null) {
             <span>${transaction.category}: ₹${transaction.amount} on ${transaction.date}</span>
             <div class="button-container">
             <button class="edit-button" onclick="editTransaction(${index})">
-                <i class="fas fa-edit"></i> <!-- Edit icon inside button -->
-            </button>
+                <i class="fas fa-edit"></i> </button>
 
             <button class="delete-button" onclick="deleteTransaction(${index})">
-                <i class="fas fa-trash-alt"></i> <!-- Trash icon inside button -->
-            </button>
+                <i class="fas fa-trash-alt"></i> </button>
         </div>
     `;
         transactionList.appendChild(li);
@@ -169,7 +172,7 @@ function deleteTransaction(index) {
     if (confirm('Are you sure you want to delete this transaction?')) {
         transactions.splice(index, 1);
         localStorage.setItem('transactions', JSON.stringify(transactions));
-        updateDashboard();
+        updateDashboardDisplay();
     }
 }
 
@@ -189,7 +192,7 @@ function editTransaction(index) {
         localStorage.setItem('transactions', JSON.stringify(transactions));
 
         // Update the dashboard with new transaction data
-        updateDashboard();
+        updateDashboardDisplay();
     } else if (categoryInput === null) {
         // If user cancels the prompt, don't do anything
         return;
@@ -215,7 +218,7 @@ if (document.getElementById('monthly-income-form')) {
         localStorage.setItem('monthlyIncome', monthlyIncome);
 
         alert('Income updated!');
-        updateDashboard();
+        updateDashboardDisplay();
     });
 }
 
@@ -241,7 +244,7 @@ if (document.getElementById('transaction-form')) {
 
         // Only update dashboard if we are on the dashboard page
         if (document.getElementById('total-income')) {
-            updateDashboard();
+            updateDashboardDisplay();
         }
     });
 }
@@ -270,7 +273,7 @@ if (document.getElementById('clear-data')) {
             transactions = [];
             monthlyIncome = 0;
 
-            updateDashboard();
+            updateDashboardDisplay();
             alert('Data cleared!');
         }
     });
@@ -345,7 +348,20 @@ if (document.getElementById('download-pdf')) {
 
 // Initial Dashboard Load
 if (document.getElementById('total-income')) {
-    updateDashboard();
+    updateDashboardDisplay();
+}
+
+// =========================================================================
+// === NEW FUNCTION TO GENERATE A COLOR PALETTE ============================
+// =========================================================================
+function generateColorPalette(numColors) {
+    const colors = [];
+    for (let i = 0; i < numColors; i++) {
+        // This creates a rainbow effect by cycling through hues
+        const hue = (i * 360 / numColors) % 360;
+        colors.push(`hsl(${hue}, 70%, 50%)`);
+    }
+    return colors;
 }
 
 // Analytics Setup using Chart.js
@@ -380,6 +396,11 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
     const uniqueCategories = [...new Set(categories)];
     const categoryData = uniqueCategories.map(cat => transactions.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
 
+    // =========================================================================
+    // === MODIFIED PART: Use the new function to generate dynamic colors ======
+    // =========================================================================
+    const dynamicColors = generateColorPalette(uniqueCategories.length);
+
     const expenseCategoryChart = new Chart(expenseCategoryCtx, {
         type: 'pie',
         data: {
@@ -387,7 +408,7 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             datasets: [{
                 label: 'Expenses by Category',
                 data: categoryData,
-                backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8'],
+                backgroundColor: dynamicColors, // <-- Use the dynamically generated colors
             }]
         },
         options: {
@@ -395,7 +416,6 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             maintainAspectRatio: false,
         }
     });
-
 }
 
 // Dark Mode Toggle Logic
@@ -404,18 +424,25 @@ const themeToggleButton = document.getElementById('theme-toggle');
 const themeIcon = document.getElementById('theme-icon');
 
 // Check and apply saved theme on load
-document.body.classList.toggle('dark-theme', localStorage.getItem('theme') === 'dark');
-themeIcon.classList.toggle('fa-sun', document.body.classList.contains('dark-theme'));
-themeIcon.classList.toggle('fa-moon', !document.body.classList.contains('dark-theme'));
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-theme');
+    if(themeIcon) {
+       themeIcon.classList.remove('fa-moon');
+       themeIcon.classList.add('fa-sun');
+    }
+}
 
-themeToggleButton.addEventListener('click', () => {
-    // Toggle theme class on the body
-    document.body.classList.toggle('dark-theme');
 
-    // Switch icon between sun and moon
-    themeIcon.classList.toggle('fa-sun');
-    themeIcon.classList.toggle('fa-moon');
+if (themeToggleButton) {
+    themeToggleButton.addEventListener('click', () => {
+        // Toggle theme class on the body
+        document.body.classList.toggle('dark-theme');
 
-    // Save theme to localStorage
-    localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-});
+        // Switch icon between sun and moon
+        themeIcon.classList.toggle('fa-sun');
+        themeIcon.classList.toggle('fa-moon');
+
+        // Save theme to localStorage
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    });
+}
