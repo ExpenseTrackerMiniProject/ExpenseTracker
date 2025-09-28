@@ -179,6 +179,17 @@ button {
     border-bottom: 1px solid #ccc;
 }
 
+/* Style for income transactions in the list (green text) */
+#transaction-list li.income-transaction span {
+    color: #28a745; /* A pleasant green color */
+    font-weight: bold;
+}
+
+/* Dark mode specific style for better visibility */
+body.dark-theme #transaction-list li.income-transaction span {
+    color: #4CAF50; /* A slightly brighter green for dark backgrounds */
+}
+
 /* Container for buttons - group them together */
 #transaction-list li .button-container {
     display: flex;
@@ -416,3 +427,4 @@ body.dark-theme {
         right: 6px; /* Adjust as needed */
     }
 }
+
