@@ -351,75 +351,116 @@ if (document.getElementById('total-income')) {
     updateDashboardDisplay();
 }
 
-// =========================================================================
-// === NEW FUNCTION TO GENERATE A COLOR PALETTE ============================
-// =========================================================================
 function generateColorPalette(numColors) {
     const colors = [];
     for (let i = 0; i < numColors; i++) {
-        // This creates a rainbow effect by cycling through hues
         const hue = (i * 360 / numColors) % 360;
         colors.push(`hsl(${hue}, 70%, 50%)`);
     }
     return colors;
 }
 
-// Analytics Setup using Chart.js
+// =========================================================================
+// === ANALYTICS PAGE LOGIC (HEAVILY MODIFIED) =============================
+// =========================================================================
 if (document.getElementById('incomeExpenseChart') && document.getElementById('expenseCategoryChart')) {
+    
+    // Declare chart variables in a wider scope so they can be destroyed and recreated
+    let incomeExpenseChart;
+    let expenseCategoryChart;
+
     const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
     const expenseCategoryCtx = document.getElementById('expenseCategoryChart').getContext('2d');
 
-    // Chart for Income vs Expenses
-    const incomeExpenseChart = new Chart(incomeExpenseCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Income', 'Expenses'],
-            datasets: [{
-                label: 'Amount (₹)',
-                data: [monthlyIncome, transactions.reduce((acc, t) => acc + parseFloat(t.amount), 0)],
-                backgroundColor: ['#007bff', '#dc3545'],
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+    // --- NEW FUNCTION TO RENDER/RE-RENDER CHARTS ---
+    function renderAnalyticsCharts(dataToDisplay) {
+        // Destroy existing charts if they exist
+        if (incomeExpenseChart) {
+            incomeExpenseChart.destroy();
+        }
+        if (expenseCategoryChart) {
+            expenseCategoryChart.destroy();
+        }
+
+        // Calculate total expenses from the provided data
+        const totalExpenses = dataToDisplay.reduce((acc, t) => acc + parseFloat(t.amount), 0);
+        
+        // --- Render Bar Chart: Income vs Expenses ---
+        incomeExpenseChart = new Chart(incomeExpenseCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Income', 'Expenses'],
+                datasets: [{
+                    label: 'Amount (₹)',
+                    data: [monthlyIncome, totalExpenses], // Note: Income is still the total monthly income
+                    backgroundColor: ['#007bff', '#dc3545'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
             }
+        });
+
+        // --- Render Pie Chart: Expense Categories ---
+        const categories = dataToDisplay.map(t => t.category);
+        const uniqueCategories = [...new Set(categories)];
+        const categoryData = uniqueCategories.map(cat => 
+            dataToDisplay.filter(t => t.category === cat)
+                         .reduce((acc, t) => acc + parseFloat(t.amount), 0)
+        );
+        
+        const dynamicColors = generateColorPalette(uniqueCategories.length);
+
+        expenseCategoryChart = new Chart(expenseCategoryCtx, {
+            type: 'pie',
+            data: {
+                labels: uniqueCategories,
+                datasets: [{
+                    label: 'Expenses by Category',
+                    data: categoryData,
+                    backgroundColor: dynamicColors,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+            }
+        });
+    }
+
+    // --- NEW EVENT LISTENERS FOR FILTERS ---
+    const monthFilter = document.getElementById('analytics-month-filter');
+    const showAllBtn = document.getElementById('analytics-show-all');
+
+    monthFilter.addEventListener('change', function() {
+        const selectedMonth = this.value;
+        if (selectedMonth) {
+            const [year, month] = selectedMonth.split('-');
+            const filteredData = transactions.filter(t => {
+                const transactionDate = new Date(t.date);
+                return transactionDate.getFullYear() === parseInt(year) && 
+                       transactionDate.getMonth() === parseInt(month) - 1;
+            });
+            renderAnalyticsCharts(filteredData);
+        } else {
+            // If filter is cleared, show all
+            renderAnalyticsCharts(transactions);
         }
     });
 
-    // Chart for Expense Categories
-    const categories = transactions.map(t => t.category);
-    const uniqueCategories = [...new Set(categories)];
-    const categoryData = uniqueCategories.map(cat => transactions.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
-
-    // =========================================================================
-    // === MODIFIED PART: Use the new function to generate dynamic colors ======
-    // =========================================================================
-    const dynamicColors = generateColorPalette(uniqueCategories.length);
-
-    const expenseCategoryChart = new Chart(expenseCategoryCtx, {
-        type: 'pie',
-        data: {
-            labels: uniqueCategories,
-            datasets: [{
-                label: 'Expenses by Category',
-                data: categoryData,
-                backgroundColor: dynamicColors, // <-- Use the dynamically generated colors
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-        }
+    showAllBtn.addEventListener('click', function() {
+        monthFilter.value = ''; // Clear the input
+        renderAnalyticsCharts(transactions); // Render with all data
     });
+
+    // --- INITIAL RENDER ON PAGE LOAD ---
+    renderAnalyticsCharts(transactions);
 }
 
+
 // Dark Mode Toggle Logic
-// Toggle between dark and light themes
 const themeToggleButton = document.getElementById('theme-toggle');
 const themeIcon = document.getElementById('theme-icon');
 
@@ -432,17 +473,11 @@ if (localStorage.getItem('theme') === 'dark') {
     }
 }
 
-
 if (themeToggleButton) {
     themeToggleButton.addEventListener('click', () => {
-        // Toggle theme class on the body
         document.body.classList.toggle('dark-theme');
-
-        // Switch icon between sun and moon
         themeIcon.classList.toggle('fa-sun');
         themeIcon.classList.toggle('fa-moon');
-
-        // Save theme to localStorage
         localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
     });
 }
