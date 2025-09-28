@@ -21,25 +21,33 @@
     <main class="slide-in-bottom">
         <form class="TransactionForm" id="transaction-form">
             <h2>Add an Expense</h2>
-            <label for="category" id="TextColorChange">Category</label>
+            <label for="category">Category</label>
             <input type="text" id="category" placeholder="e.g., Food, Petrol" required>
 
-            <label for="amount" id="TextColorChange">Amount</label>
+            <label for="amount">Amount</label>
             <input type="number" id="amount" placeholder="Enter amount spent" required>
 
-            <label for="date" id="TextColorChange">Date</label>
+            <label for="date">Date</label>
             <input type="date" id="date" required>
 
-            <button type="submit">Add Transaction</button>
-            <button type="button" id="voice-command-btn"> <i class="fas fa-microphone"></i>
+            <button type="submit">Add Expense</button>
+            <button type="button" id="voice-command-btn">
+                <i class="fas fa-microphone"></i>
             </button>
         </form>
 
         <form class="TransactionForm" id="add-money-form">
-            <h2>Add Money to Balance</h2>
-            <label for="add-money-amount" id="TextColorChange">Amount to Add</label>
+            <h2>Add Income / Credit</h2>
+            <label for="add-money-category">Category</label>
+            <input type="text" id="add-money-category" placeholder="e.g., Salary, Refund" required>
+
+            <label for="add-money-amount">Amount</label>
             <input type="number" id="add-money-amount" placeholder="Enter income or deposit amount" required>
-            <button type="submit">Add Money</button>
+
+            <label for="add-money-date">Date</label>
+            <input type="date" id="add-money-date" required>
+            
+            <button type="submit">Add Income</button>
         </form>
     </main>
 
