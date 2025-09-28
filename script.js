@@ -43,7 +43,6 @@ if (recognition) {
 
             // Store the transaction (you may want to store this in localStorage or an array)
             let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-            // MODIFIED: Added type property
             transactions.push({ category, amount, date: formattedDate, type: 'expense' });
             localStorage.setItem('transactions', JSON.stringify(transactions));
 
@@ -72,7 +71,6 @@ if (recognition) {
 function formatDateToYYYYMMDD(dateString) {
     const dateParts = dateString.split(' '); // Split by space (e.g., "October 12 2024")
     
-    // Month names to numbers
     const monthNames = {
         "January": "01", "February": "02", "March": "03", "April": "04",
         "May": "05", "June": "06", "July": "07", "August": "08", "September": "09",
@@ -86,7 +84,6 @@ function formatDateToYYYYMMDD(dateString) {
     return `${year}-${month}-${day}`;
 }
 
-// Function to get the current date in "Month Day Year" format (e.g., "October 12 2024")
 function getCurrentDate() {
     const today = new Date();
     const monthNames = [
@@ -101,7 +98,6 @@ function getCurrentDate() {
     return `${month} ${day} ${year}`;
 }
 
-// Function to update the dashboard (optional)
 function updateDashboard() {
     console.log('Updating dashboard with new transactions...');
     if (window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/')) {
@@ -124,7 +120,6 @@ function updateDashboardDisplay() {
 
     if (!totalIncomeElem || !totalExpensesElem || !remainingBalanceElem) return;
 
-    // Expenses are now only transactions of type 'expense'
     let totalExpenses = transactions
         .filter(t => t.type === 'expense')
         .reduce((acc, transaction) => acc + parseFloat(transaction.amount), 0);
@@ -142,34 +137,36 @@ function displayTransactions(filterDate = null) {
     if (!transactionList) return;
     transactionList.innerHTML = '';
 
-    let filteredTransactions = transactions;
+    let currentTransactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    let filteredTransactions = currentTransactions;
 
     if (filterDate) {
         const [year, month] = filterDate.split('-');
-        filteredTransactions = transactions.filter(transaction => {
+        filteredTransactions = currentTransactions.filter(transaction => {
             const transactionDate = new Date(transaction.date);
             return transactionDate.getFullYear() === parseInt(year) && transactionDate.getMonth() === parseInt(month) - 1;
         });
     }
 
-    // Sort transactions by date so income and expenses are chronological
     filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    filteredTransactions.forEach((transaction, index) => {
+    filteredTransactions.forEach(transaction => {
         const li = document.createElement('li');
         
-        // MODIFIED: Add a class if the transaction is of type 'income'
         if (transaction.type === 'income') {
             li.classList.add('income-transaction');
         }
 
+        const originalTransaction = findOriginalTransaction(transaction);
+        const originalIndex = transactions.indexOf(originalTransaction);
+
         li.innerHTML = `
-            <span>${transaction.category}: ₹${transaction.amount.toFixed(2)} on ${transaction.date}</span>
+            <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
             <div class="button-container">
-            <button class="edit-button" onclick="editTransaction(${index})">
+            <button class="edit-button" onclick="editTransaction(${originalIndex})">
                 <i class="fas fa-edit"></i>
             </button>
-            <button class="delete-button" onclick="deleteTransaction(${index})">
+            <button class="delete-button" onclick="deleteTransaction(${originalIndex})">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>
@@ -178,20 +175,25 @@ function displayTransactions(filterDate = null) {
     });
 }
 
-// Function to delete a transaction
+function findOriginalTransaction(transactionToFind) {
+    return transactions.find(t => 
+        t.date === transactionToFind.date && 
+        t.amount == transactionToFind.amount && // Use == for flexible comparison of number and string
+        t.category === transactionToFind.category &&
+        t.type === transactionToFind.type
+    );
+}
+
 function deleteTransaction(index) {
     if (confirm('Are you sure you want to delete this transaction?')) {
-        // Find the actual index in the global transactions array
-        const transactionToDelete = transactions.find(t => t.date === transactions[index].date && t.amount === transactions[index].amount);
-        const globalIndex = transactions.indexOf(transactionToDelete);
-
-        // If it was an income transaction, we must also reduce the total income
-        if (transactions[globalIndex].type === 'income') {
-            monthlyIncome -= transactions[globalIndex].amount;
+        const transactionToDelete = transactions[index];
+        
+        if (transactionToDelete.type === 'income') {
+            monthlyIncome -= parseFloat(transactionToDelete.amount);
             localStorage.setItem('monthlyIncome', monthlyIncome);
         }
 
-        transactions.splice(globalIndex, 1);
+        transactions.splice(index, 1);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDashboardDisplay();
     }
@@ -200,9 +202,8 @@ function deleteTransaction(index) {
 function editTransaction(index) {
     const transaction = transactions[index];
 
-    // Prevent editing of 'Income' category
     if (transaction.type === 'income') {
-        alert("Income transactions cannot be edited, only deleted.");
+        alert("Income categories cannot be edited, only deleted.");
         return;
     }
 
@@ -214,8 +215,6 @@ function editTransaction(index) {
         updateDashboardDisplay();
     }
 }
-
-
 
 // Handle Income Update (Dashboard Page)
 if (document.getElementById('monthly-income-form')) {
@@ -246,7 +245,6 @@ if (document.getElementById('transaction-form')) {
             return;
         }
 
-        // MODIFIED: Added type property
         transactions.push({ category, amount, date, type: 'expense' });
         localStorage.setItem('transactions', JSON.stringify(transactions));
 
@@ -255,33 +253,34 @@ if (document.getElementById('transaction-form')) {
     });
 }
 
-// NEW: Handle Add Money (Income) Transaction
+// MODIFIED: Handle Add Money (Income) Transaction with all fields
 if (document.getElementById('add-money-form')) {
     document.getElementById('add-money-form').addEventListener('submit', function(e) {
         e.preventDefault();
-        const amountInput = document.getElementById('add-money-amount');
-        const amount = parseFloat(amountInput.value);
+        
+        // Get values from all the new fields
+        const category = document.getElementById('add-money-category').value;
+        const amount = parseFloat(document.getElementById('add-money-amount').value);
+        const date = document.getElementById('add-money-date').value;
 
-        if (isNaN(amount) || amount <= 0) {
-            alert('Please enter a valid amount to add.');
+        // Validate all fields
+        if (!category || isNaN(amount) || amount <= 0 || !date) {
+            alert('Please fill out all fields correctly.');
             return;
         }
 
-        // 1. Add amount to the total income
         monthlyIncome += amount;
         localStorage.setItem('monthlyIncome', monthlyIncome);
 
-        // 2. Create a transaction record for this income
-        const today = new Date().toISOString().slice(0, 10); // Format as YYYY-MM-DD
         transactions.push({
-            category: 'Income',
+            category: category,
             amount: amount,
-            date: today,
-            type: 'income' // Mark this as an income transaction
+            date: date,
+            type: 'income'
         });
         localStorage.setItem('transactions', JSON.stringify(transactions));
 
-        alert(`₹${amount.toFixed(2)} added to your balance successfully!`);
+        alert(`Income of ₹${amount.toFixed(2)} added successfully!`);
         document.getElementById('add-money-form').reset();
     });
 }
@@ -347,7 +346,7 @@ if (document.getElementById('download-pdf')) {
             startY: y,
             head: [['Type', 'Category', 'Amount', 'Date']],
             body: transactions.map(t => [
-                t.type.charAt(0).toUpperCase() + t.type.slice(1), // Capitalize type
+                t.type.charAt(0).toUpperCase() + t.type.slice(1),
                 t.category,
                 `INR ${parseFloat(t.amount).toFixed(2)}`,
                 t.date
@@ -360,7 +359,6 @@ if (document.getElementById('download-pdf')) {
         doc.save('expense-report.pdf');
     });
 }
-
 
 // Initial Dashboard Load
 if (document.getElementById('total-income')) {
@@ -404,7 +402,6 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
 
-        // Pie chart should only show expenses
         const expenseData = dataToDisplay.filter(t => t.type === 'expense');
         const categories = expenseData.map(t => t.category);
         const uniqueCategories = [...new Set(categories)];
@@ -463,7 +460,6 @@ if (document.getElementById('incomeExpenseChart') && document.getElementById('ex
 
     renderAnalyticsCharts(transactions);
 }
-
 
 // Dark Mode Toggle Logic
 const themeToggleButton = document.getElementById('theme-toggle');
