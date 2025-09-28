@@ -580,5 +580,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Logic for the new Bill Splitter Page
+    const splitForm = document.getElementById('split-form');
+    if (splitForm) {
+        splitForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const totalBill = parseFloat(document.getElementById('total-bill').value);
+            const numPeople = parseInt(document.getElementById('num-people').value);
+            const tipPercent = parseFloat(document.getElementById('tip-percent').value);
+            const resultDiv = document.getElementById('split-result');
+
+            if (isNaN(totalBill) || isNaN(numPeople) || isNaN(tipPercent) || totalBill <= 0 || numPeople < 1) {
+                resultDiv.innerHTML = `<p style="color: red;">Please enter valid numbers.</p>`;
+                return;
+            }
+
+            const tipAmount = totalBill * (tipPercent / 100);
+            const grandTotal = totalBill + tipAmount;
+            const amountPerPerson = grandTotal / numPeople;
+
+            resultDiv.innerHTML = `
+                <h3>Split Details</h3>
+                <p>Total Bill: ₹${totalBill.toFixed(2)}</p>
+                <p>Tip (${tipPercent}%): ₹${tipAmount.toFixed(2)}</p>
+                <p><strong>Grand Total: ₹${grandTotal.toFixed(2)}</strong></p>
+                <hr>
+                <p class="total-per-person">Each Person Pays: ₹${amountPerPerson.toFixed(2)}</p>
+            `;
+        });
+    }
+
     updateDashboardDisplay();
 });
+
