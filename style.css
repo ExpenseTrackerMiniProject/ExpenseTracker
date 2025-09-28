@@ -482,5 +482,53 @@ body.dark-theme #pdf-month-selection {
     border-color: #555;
 }
 
+/* Styles for the Bill Splitter Result */
+#split-result {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    display: none; /* Hidden by default */
+}
+
+#split-result:not(:empty) {
+    display: block; /* Becomes visible when it has content */
+}
+
+#split-result h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #007bff;
+}
+
+#split-result p {
+    margin: 8px 0;
+    font-size: 1.1em;
+}
+
+#split-result .total-per-person {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #28a745; /* Green color for the final amount */
+    margin-top: 15px;
+}
+
+/* Dark mode styles for the result box */
+body.dark-theme #split-result {
+    background-color: #333;
+    border-color: #444;
+}
+
+body.dark-theme #split-result h3 {
+    color: #4dabf7;
+}
+
+body.dark-theme #split-result .total-per-person {
+    color: #4CAF50;
+}
+
+
 
 
