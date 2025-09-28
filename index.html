@@ -1,74 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
-    <header>
-        <h1>Expense Tracker Dashboard</h1>
-        <nav>
-            <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
-            <a href="index.html">Dashboard</a>
-            <a href="add-transaction.html">Add Transaction</a>
-            <a href="analytics.html">Analytics</a>
-        </nav>
-    </header>
+<main>
+    <section id="summary" class="slide-in-left">
+        <h2>Summary</h2>
+        
+        <div id="month-management">
+             <p>Current Period: <strong id="current-month-display"></strong></p>
+        </div>
+        
+        <form id="monthly-income-form">
+            <label for="monthly-income" id="TextColorChange">Enter Income for this Period:</label>
+            <input type="number" id="monthly-income" placeholder="Enter income for this period" required>
+            <button type="submit">Update Income</button>
+        </form>
+        <div id="totals">
+            <div>Period Income: ₹<span id="total-income">0</span></div>
+            <div>Period Expenses: ₹<span id="total-expenses">0</span></div>
+            <div>Remaining Balance: ₹<span id="remaining-balance">0</span></div>
+        </div>
 
-    <main>
-        <section id="summary" class="slide-in-left">
-            <h2>Summary</h2>
-            
-            <div id="month-management">
-                 <p>Current Period: <strong id="current-month-display"></strong></p>
-                <button id="start-new-month">Start New Period</button>
-            </div>
-            
-            <form id="monthly-income-form">
-                <label for="monthly-income" id="TextColorChange">Enter Income for this Period:</label>
-                <input type="number" id="monthly-income" placeholder="Enter income for this period" required>
-                <button type="submit">Update Income</button>
-            </form>
-            <div id="totals">
-                <div>Period Income: ₹<span id="total-income">0</span></div>
-                <div>Period Expenses: ₹<span id="total-expenses">0</span></div>
-                <div>Remaining Balance: ₹<span id="remaining-balance">0</span></div>
-            </div>
+        <div class="summary-actions">
             <button id="clear-data">Clear All Data</button>
             <button id="download-pdf">Download PDF</button>
-        </section>
+            <button id="start-new-month">Start New Period</button>
+            <button id="show-current-month-data">View Current Period</button>
+            <button id="show-all-data">View All-Time Data</button>
+        </div>
+    </section>
 
-        <section id="recent-transactions" class="slide-in-bottom">
-            <h2>Recent Transactions</h2>
-            
-            <div class="filter-container fade-in">
-                <div class="filter-group">
-                    <button id="show-current-month-data">View Current Period</button>
-                    <button id="show-all-data">View All-Time Data</button>
-                </div>
-                 <div class="filter-group">
-                    <label for="filter-date">View a Specific Month:</label>
-                    <input type="month" id="filter-date">
-                </div>
-                <div class="filter-group" id="type-filter-container">
-                    <span>Type:</span>
-                    <label><input type="radio" name="transaction-type" value="all" checked> All</label>
-                    <label><input type="radio" name="transaction-type" value="income"> Credit</label>
-                    <label><input type="radio" name="transaction-type" value="expense"> Debit</label>
-                </div>
+    <section id="recent-transactions" class="slide-in-bottom">
+        <h2>Recent Transactions</h2>
+        
+        <div class="filter-container fade-in">
+             <div class="filter-group">
+                <label for="filter-date">View a Specific Month:</label>
+                <input type="month" id="filter-date">
             </div>
-            
-            <div id="transaction-container" class="fade-in">
-                <ul id="transaction-list"></ul>
+            <div class="filter-group" id="type-filter-container">
+                <span>Type:</span>
+                <label><input type="radio" name="transaction-type" value="all" checked> All</label>
+                <label><input type="radio" name="transaction-type" value="income"> Credit</label>
+                <label><input type="radio" name="transaction-type" value="expense"> Debit</label>
             </div>
-        </section>
-    </main>
-
-    <script src="script.js"></script>
-</body>
-</html>
+        </div>
+        
+        <div id="transaction-container" class="fade-in">
+            <ul id="transaction-list"></ul>
+        </div>
+    </section>
+</main>
