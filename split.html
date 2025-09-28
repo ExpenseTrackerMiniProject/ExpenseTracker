@@ -22,16 +22,42 @@
     <main class="slide-in-bottom">
         <form class="TransactionForm" id="split-form">
             <h2>Bill Splitter</h2>
+
             <label for="total-bill">Total Bill Amount (₹)</label>
             <input type="number" id="total-bill" placeholder="e.g., 1500" min="0.01" step="0.01" required>
 
-            <label for="num-people">Number of People</label>
-            <input type="number" id="num-people" placeholder="e.g., 4" min="1" step="1" required>
+            <label for="tax-amount">Tax (₹) <span class="optional-text">(Optional)</span></label>
+            <input type="number" id="tax-amount" placeholder="e.g., 75" min="0" step="0.01">
 
-            <label for="tip-percent">Tip (%)</label>
+            <label for="tip-percent">Tip (%) <span class="optional-text">(Optional)</span></label>
             <input type="number" id="tip-percent" placeholder="e.g., 10" min="0" value="10">
 
+            <div class="split-mode-toggle">
+                <label><input type="radio" name="split-mode" value="equally" checked> Split Equally</label>
+                <label><input type="radio" name="split-mode" value="unevenly"> Split Unevenly</label>
+            </div>
+
+            <div id="equal-split-section">
+                <label for="num-people">Number of People</label>
+                <input type="number" id="num-people" placeholder="e.g., 4" min="1" step="1">
+            </div>
+
+            <div id="uneven-split-section" class="hidden">
+                <label>Enter each person's name and what they paid:</label>
+                <div id="people-list-container">
+                    </div>
+                <div class="person-controls">
+                    <button type="button" id="add-person-btn">Add Person</button>
+                    <button type="button" id="remove-person-btn">Remove Person</button>
+                </div>
+            </div>
+
+            <div class="options-container">
+                <label><input type="checkbox" id="round-up-checkbox"> Round Up Totals</label>
+            </div>
+
             <button type="submit">Calculate Split</button>
+            <button type="button" id="reset-split-btn">Reset</button>
         </form>
 
         <section id="split-result" class="fade-in"></section>
