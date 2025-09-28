@@ -231,18 +231,85 @@ function editTransaction(index) {
 }
 
 // =========================================================================
-// === PDF Modal and Generation Logic ======================================
+// === REWRITTEN: PDF Modal and Generation Logic ===========================
 // =========================================================================
+
+// Helper function to create a placeholder image if a chart has no data
+function createPlaceholderImage(text) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f0f0f0';
+    ctx.fillRect(0, 0, 400, 200);
+    ctx.fillStyle = '#888';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 200, 100);
+    return canvas.toDataURL();
+}
+
+// This function creates one chart and returns a Promise that resolves with the chart's image data
+function createChartPromise(canvasId, config, dataExists) {
+    return new Promise(resolve => {
+        if (!dataExists) {
+            resolve(createPlaceholderImage('No Data for this Chart'));
+            return;
+        }
+        
+        const chart = new Chart(canvasId, {
+            ...config,
+            options: {
+                ...config.options,
+                animation: {
+                    onComplete: () => {
+                        resolve(chart.toBase64Image());
+                    }
+                }
+            }
+        });
+    });
+}
+
+// This function prepares all chart configurations and awaits their image data
+async function renderChartsForPdf(dataToDisplay, incomeForView) {
+    // Bar Chart Config
+    const netExpenses = dataToDisplay.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0) - dataToDisplay.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
+    const barConfig = { type: 'bar', data: { labels: ['Total Budget', 'Net Expenses'], datasets: [{ label: 'Amount (₹)', data: [incomeForView, netExpenses], backgroundColor: ['#28a745', '#dc3545'] }] } };
+
+    // Expense Pie Config
+    const expenseData = dataToDisplay.filter(t => t.type === 'expense');
+    const expenseCategories = [...new Set(expenseData.map(t => t.category))];
+    const expenseTotals = expenseCategories.map(c => expenseData.filter(t=>t.category===c).reduce((a,t)=>a+t.amount,0));
+    const expenseConfig = { type: 'pie', data: { labels: expenseCategories, datasets: [{ label: 'Expenses', data: expenseTotals, backgroundColor: generateColorPalette(expenseCategories.length) }] } };
+    
+    // Income Pie Config
+    const incomeData = dataToDisplay.filter(t => t.type === 'income');
+    const incomeCategories = [...new Set(incomeData.map(t => t.category))];
+    const incomeTotals = incomeCategories.map(c => incomeData.filter(t=>t.category===c).reduce((a,t)=>a+t.amount,0));
+    const incomeConfig = { type: 'pie', data: { labels: incomeCategories, datasets: [{ label: 'Income', data: incomeTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }] } };
+
+    // Create all promises and wait for them to resolve
+    const promises = [
+        createChartPromise('temp-bar-chart', barConfig, true), // Bar chart is always created
+        createChartPromise('temp-pie-expense', expenseConfig, expenseData.length > 0),
+        createChartPromise('temp-pie-income', incomeConfig, incomeData.length > 0)
+    ];
+
+    const [bar, pieExpense, pieIncome] = await Promise.all(promises);
+    return { bar, pieExpense, pieIncome };
+}
+
+
 async function generatePdfWithCharts(selectedMonths) {
     alert('Generating PDF... This may take a moment.');
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Filter data based on selection
     const data = allTransactions.filter(t => selectedMonths.includes(t.date.substring(0, 7)));
     const totalIncome = selectedMonths.reduce((sum, month) => sum + (monthlyIncomes[month] || 0), 0);
     
-    // Create temporary canvases to render charts
     const chartContainer = document.createElement('div');
     chartContainer.style.position = 'absolute';
     chartContainer.style.left = '-9999px';
@@ -253,17 +320,14 @@ async function generatePdfWithCharts(selectedMonths) {
     `;
     document.body.appendChild(chartContainer);
 
-    // Render charts and get their image data
     const chartImages = await renderChartsForPdf(data, totalIncome);
 
-    // Build the PDF
     doc.setFontSize(22);
     doc.text('Expense Tracker Report', 105, 20, { align: 'center' });
     doc.addImage(chartImages.bar, 'PNG', 15, 30, 180, 90);
     doc.addImage(chartImages.pieExpense, 'PNG', 15, 125, 90, 90);
     doc.addImage(chartImages.pieIncome, 'PNG', 105, 125, 90, 90);
 
-    // Add data tables for each selected month
     for (const month of selectedMonths.sort()) {
         doc.addPage();
         const monthTransactions = allTransactions.filter(t => t.date.startsWith(month));
@@ -277,7 +341,7 @@ async function generatePdfWithCharts(selectedMonths) {
         doc.setFontSize(12);
         doc.text(`Period Income: ${monthIncome.toFixed(2)}`, 15, 35);
         doc.text(`Net Expenses: ${monthNet.toFixed(2)}`, 15, 42);
-        doc.text(`Remaining Balance: ${(monthIncome - monthNet).toFixed(2)}`, 15, 49);
+        doc.text(`Remaining Balance: ${(monthIncome - netNet).toFixed(2)}`, 15, 49);
 
         if (monthTransactions.length > 0) {
             doc.autoTable({
@@ -292,37 +356,6 @@ async function generatePdfWithCharts(selectedMonths) {
 
     document.body.removeChild(chartContainer);
     doc.save(`expense-report.pdf`);
-}
-
-function renderChartsForPdf(dataToDisplay, incomeForView) {
-    return new Promise(resolve => {
-        const imageResults = {};
-        let chartsRendered = 0;
-        const totalCharts = 3;
-
-        const onChartRender = () => {
-            chartsRendered++;
-            if (chartsRendered === totalCharts) {
-                resolve(imageResults);
-            }
-        };
-        
-        // Bar Chart
-        const netExpenses = dataToDisplay.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0) - dataToDisplay.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
-        const barChart = new Chart('temp-bar-chart', { type: 'bar', data: { labels: ['Total Budget', 'Net Expenses'], datasets: [{ label: 'Amount (₹)', data: [incomeForView, netExpenses], backgroundColor: ['#28a745', '#dc3545'] }] }, options: { animation: { onComplete: () => { imageResults.bar = barChart.toBase64Image(); onChartRender(); } } } });
-        
-        // Expense Pie
-        const expenseData = dataToDisplay.filter(t => t.type === 'expense');
-        const expenseCategories = [...new Set(expenseData.map(t => t.category))];
-        const expenseTotals = expenseCategories.map(c => expenseData.filter(t=>t.category===c).reduce((a,t)=>a+t.amount,0));
-        const pieExpense = new Chart('temp-pie-expense', { type: 'pie', data: { labels: expenseCategories, datasets: [{ label: 'Expenses', data: expenseTotals, backgroundColor: generateColorPalette(expenseCategories.length) }] }, options: { animation: { onComplete: () => { imageResults.pieExpense = pieExpense.toBase64Image(); onChartRender(); } } } });
-
-        // Income Pie
-        const incomeData = dataToDisplay.filter(t => t.type === 'income');
-        const incomeCategories = [...new Set(incomeData.map(t => t.category))];
-        const incomeTotals = incomeCategories.map(c => incomeData.filter(t=>t.category===c).reduce((a,t)=>a+t.amount,0));
-        const pieIncome = new Chart('temp-pie-income', { type: 'pie', data: { labels: incomeCategories, datasets: [{ label: 'Income', data: incomeTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }] }, options: { animation: { onComplete: () => { imageResults.pieIncome = pieIncome.toBase64Image(); onChartRender(); } } } });
-    });
 }
 
 // =========================================================================
@@ -357,10 +390,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // RESTORED: Full logic for add transaction forms
     const transactionForm = document.getElementById('transaction-form');
     if (transactionForm) {
-        transactionForm.addEventListener('submit', function(e) { 
+        transactionForm.addEventListener('submit', function(e) { 
             e.preventDefault(); 
             const category = document.getElementById('category').value;
             const amount = parseFloat(document.getElementById('amount').value);
@@ -379,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addMoneyForm = document.getElementById('add-money-form');
     if (addMoneyForm) {
-        addMoneyForm.addEventListener('submit', function(e) { 
+        addMoneyForm.addEventListener('submit', function(e) { 
             e.preventDefault(); 
             const category = document.getElementById('add-money-category').value;
             const amount = parseFloat(document.getElementById('add-money-amount').value);
