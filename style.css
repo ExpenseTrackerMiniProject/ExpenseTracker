@@ -220,6 +220,17 @@ body.dark-theme #transaction-list li.income-transaction span {
     color: #4CAF50;
 }
 
+/* Style for expense transactions in the list (red text) */
+#transaction-list li.expense-transaction span {
+    color: #dc3545; /* A standard red color */
+    font-weight: bold;
+}
+
+/* Dark mode specific style for expense transactions */
+body.dark-theme #transaction-list li.expense-transaction span {
+    color: #f06571; /* A slightly brighter red for dark backgrounds */
+}
+
 #transaction-list li .button-container {
     display: flex;
     justify-content: flex-end;
@@ -458,4 +469,5 @@ body.dark-theme .modal-content {
 body.dark-theme #pdf-month-selection {
     border-color: #555;
 }
+
 
