@@ -79,6 +79,18 @@ main {
     padding: 20px;
 }
 
+/* Voice command hint text */
+.voice-hint {
+    font-size: 0.8em;
+    color: #6c757d; /* A muted gray color */
+    margin-top: 15px;
+    text-align: center;
+}
+
+body.dark-theme .voice-hint {
+    color: #a0a0a0;
+}
+
 /* Section Styles */
 section {
     background-color: white;
@@ -469,5 +481,6 @@ body.dark-theme .modal-content {
 body.dark-theme #pdf-month-selection {
     border-color: #555;
 }
+
 
 
