@@ -17,8 +17,10 @@ if (recognition) {
 
         // Regex for expenses (e.g., "add 250 food on today")
         const expenseRegex = /add (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
-        // Regex for income (e.g., "credit 5000 salary on today")
-        const incomeRegex = /credit (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
+        
+        // ▼▼▼ THIS IS THE CORRECTED LINE ▼▼▼
+        // Now accepts "credit", "credited", or "deposit" as the command
+        const incomeRegex = /(credit|credited|deposit) (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
 
         const expenseMatches = voiceInput.match(expenseRegex);
         const incomeMatches = voiceInput.match(incomeRegex);
@@ -35,7 +37,8 @@ if (recognition) {
         }
 
         if (matches) {
-            const amount = parseFloat(matches[1]);
+            // The amount and category are now at index 2 and 3 because of the new group in incomeRegex
+            const amount = parseFloat(matches[2]);
             const category = matches[3].trim();
             let dateString = matches[4];
 
@@ -581,5 +584,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboardDisplay();
 });
-
-
