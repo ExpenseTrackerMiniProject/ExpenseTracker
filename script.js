@@ -162,21 +162,25 @@ function displayTransactions(transactionsToDisplay) {
     finalList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     finalList.forEach(transaction => {
-        const li = document.createElement('li');
-        if (transaction.type === 'income') {
-            li.classList.add('income-transaction');
-        }
-        
-        const originalIndex = findOriginalTransactionIndex(transaction);
+    const li = document.createElement('li');
+    
+    // This part is new
+    if (transaction.type === 'income') {
+        li.classList.add('income-transaction');
+    } else if (transaction.type === 'expense') {
+        li.classList.add('expense-transaction'); // Add this line for expenses
+    }
+    
+    const originalIndex = findOriginalTransactionIndex(transaction);
 
-        li.innerHTML = `
-            <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
-            <div class="button-container">
-                <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
-                <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
-            </div>`;
-        transactionList.appendChild(li);
-    });
+    li.innerHTML = `
+        <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
+        <div class="button-container">
+            <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
+            <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
+        </div>`;
+    transactionList.appendChild(li);
+});
 }
 
 function findOriginalTransactionIndex(transactionToFind) {
@@ -562,3 +566,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboardDisplay();
 });
+
