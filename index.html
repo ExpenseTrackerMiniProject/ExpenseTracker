@@ -25,7 +25,7 @@
             <h2>Summary</h2>
             
             <div id="month-management">
-                 <p>Current Period: <strong id="current-month-display"></strong></p>
+                 <p>Current Year/Month: <strong id="current-month-display"></strong></p>
             </div>
             
             <form id="monthly-income-form">
@@ -33,19 +33,19 @@
                 <input type="number" id="monthly-income" placeholder="Enter income for this period" required>
                 <div class="form-buttons">
                     <button type="submit">Update Income</button>
-                    <button type="button" id="start-new-month">Start New Period</button>
+                    <button type="button" id="start-new-month">Start New Month</button>
                 </div>
             </form>
             <div id="totals">
-                <div>Period Income: ₹<span id="total-income">0</span></div>
-                <div>Period Expenses: ₹<span id="total-expenses">0</span></div>
+                <div>Total Income: ₹<span id="total-income">0</span></div>
+                <div>Total Expenses: ₹<span id="total-expenses">0</span></div>
                 <div>Remaining Balance: ₹<span id="remaining-balance">0</span></div>
             </div>
 
             <div class="summary-actions">
                 <button id="clear-data">Clear All Data</button>
                 <button id="download-pdf">Download PDF</button>
-                <button id="show-current-month-data">View Current Period</button>
+                <button id="show-current-month-data">View Current Month</button>
                 <button id="show-all-data">View All-Time Data</button>
             </div>
         </section>
@@ -94,3 +94,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
