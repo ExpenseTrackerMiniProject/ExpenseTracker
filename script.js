@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             incomeExpenseChart = new Chart(incomeExpenseCtx, {
                 type: 'bar',
-                data: { labels: ['Period Income', 'Net Expenses'], datasets: [{ label: 'Amount (₹)', data: [incomeForView || 0, netExpenses || 0], backgroundColor: ['#28a745', '#dc3545'] }] },
+                data: { labels: ['Monthly Income', 'Net Expenses'], datasets: [{ label: 'Amount (₹)', data: [incomeForView || 0, netExpenses || 0], backgroundColor: ['#28a745', '#dc3545'] }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
 
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (expenseData.length === 0) {
                 document.getElementById('expenseCategoryChart').style.display = 'none';
                 const noDataMessage = document.createElement('p');
-                noDataMessage.textContent = 'No expense data for this period.';
+                noDataMessage.textContent = 'No expense data for this month.';
                 noDataMessage.className = 'no-data-message';
                 expenseChartContainer.appendChild(noDataMessage);
             } else {
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (incomeData.length === 0) {
                 document.getElementById('incomeCategoryChart').style.display = 'none';
                 const noDataMessage = document.createElement('p');
-                noDataMessage.textContent = 'No income data for this period.';
+                noDataMessage.textContent = 'No income data for this month.';
                 noDataMessage.className = 'no-data-message';
                 incomeChartContainer.appendChild(noDataMessage);
             } else {
@@ -581,4 +581,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboardDisplay();
 });
+
 
