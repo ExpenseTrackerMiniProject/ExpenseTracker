@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Include jsPDF library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 
 </head>
 <body>
@@ -21,7 +19,6 @@
             <a href="index.html">Dashboard</a>
             <a href="add-transaction.html">Add Transaction</a>
             <a href="analytics.html">Analytics</a>
-
         </nav>
     </header>
 
@@ -38,16 +35,24 @@
                 <div>Total Expenses: ₹<span id="total-expenses">0</span></div>
                 <div>Remaining Balance: ₹<span id="remaining-balance">0</span></div>
             </div>
-            <button id="clear-data">Clear Data</button> <!-- Clear Data Button -->
-            <button id="download-pdf">Download PDF</button> <!-- PDF Download Button -->
-        </section>
+            <button id="clear-data">Clear Data</button> <button id="download-pdf">Download PDF</button> </section>
 
         <section id="recent-transactions" class="slide-in-bottom">
             <h2>Recent Transactions</h2>
-            <div class="fade-in">
-                <button id="show-all">Show All</button>
-                <label for="filter-date">Filter by Month:</label>
-                <input type="month" id="filter-date">
+            <div class="filter-container fade-in">
+                <div class="filter-group">
+                    <label for="filter-date">Filter by Month:</label>
+                    <input type="month" id="filter-date">
+                </div>
+                <div class="filter-group" id="type-filter-container">
+                    <span>Type:</span>
+                    <label><input type="radio" name="transaction-type" value="all" checked> All</label>
+                    <label><input type="radio" name="transaction-type" value="income"> Credit</label>
+                    <label><input type="radio" name="transaction-type" value="expense"> Debit</label>
+                </div>
+                 <div class="filter-group">
+                    <button id="show-all">Reset Filters</button>
+                 </div>
             </div>
             <div id="transaction-container" class="fade-in">
                 <ul id="transaction-list"></ul>
