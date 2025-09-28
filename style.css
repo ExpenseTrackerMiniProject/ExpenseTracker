@@ -138,6 +138,34 @@ button {
         transition: transform 0.3s ease-in-out;
     }
 
+/* Styles for the new button row in the summary section */
+.summary-actions {
+    display: flex;
+    flex-wrap: wrap; /* Allows buttons to wrap on smaller screens */
+    gap: 10px;       /* Creates space between buttons */
+    margin-top: 20px;  /* Adds space above the button row */
+}
+
+/* You can optionally add this if you want all buttons to be the same size */
+.summary-actions button {
+    flex: 1;
+}
+
+/* Improved styling for the transaction filters */
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px; /* Space between the filter groups */
+    margin-bottom: 15px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between labels and inputs */
+}
+
 /* Totals and Transactions */
 #totals div {
     margin: 10px 0;
@@ -427,3 +455,4 @@ body.dark-theme {
         right: 6px; /* Adjust as needed */
     }
 }
+
