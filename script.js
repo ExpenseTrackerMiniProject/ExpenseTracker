@@ -230,7 +230,7 @@ function editTransaction(index) {
 }
 
 // =========================================================================
-// === REWRITTEN & FIXED: PDF Modal and Generation Logic ===================
+// === PDF Modal and Generation Logic ======================================
 // =========================================================================
 
 function createPlaceholderImage(text) {
@@ -254,13 +254,13 @@ function createChartPromise(canvasId, config, dataExists) {
             resolve(createPlaceholderImage('No Data for this Chart'));
             return;
         }
-
+        
         const newOptions = { ...config.options, animation: false, responsive: false };
         const chart = new Chart(canvasId, { ...config, options: newOptions });
 
         setTimeout(() => {
             resolve(chart.toBase64Image());
-        }, 250); // A small delay to ensure the canvas has painted
+        }, 250);
     });
 }
 
@@ -272,7 +272,7 @@ async function renderChartsForPdf(dataToDisplay, incomeForView) {
     const expenseCategories = [...new Set(expenseData.map(t => t.category))];
     const expenseTotals = expenseCategories.map(c => expenseData.filter(t => t.category === c).reduce((a, t) => a + t.amount, 0));
     const expenseConfig = { type: 'pie', data: { labels: expenseCategories, datasets: [{ label: 'Expenses', data: expenseTotals, backgroundColor: generateColorPalette(expenseCategories.length) }] } };
-
+    
     const incomeData = dataToDisplay.filter(t => t.type === 'income');
     const incomeCategories = [...new Set(incomeData.map(t => t.category))];
     const incomeTotals = incomeCategories.map(c => incomeData.filter(t => t.category === c).reduce((a, t) => a + t.amount, 0));
@@ -327,7 +327,7 @@ async function generatePdfWithCharts(selectedMonths) {
         doc.setFontSize(12);
         doc.text(`Period Income: ${monthIncome.toFixed(2)}`, 15, 35);
         doc.text(`Net Expenses: ${monthNet.toFixed(2)}`, 15, 42);
-        doc.text(`Remaining Balance: ${(monthIncome - monthNet).toFixed(2)}`, 15, 49); // <-- FIXED TYPO HERE
+        doc.text(`Remaining Balance: ${(monthIncome - monthNet).toFixed(2)}`, 15, 49);
 
         if (monthTransactions.length > 0) {
             doc.autoTable({
@@ -351,7 +351,6 @@ async function generatePdfWithCharts(selectedMonths) {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
-    // Attach all event listeners
     const voiceCommandButton = document.getElementById('voice-command-btn');
     if (voiceCommandButton) {
         voiceCommandButton.addEventListener('click', startVoiceCommand);
@@ -478,7 +477,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // PDF Modal Listeners
     const downloadPdfBtn = document.getElementById('download-pdf');
     const pdfModal = document.getElementById('pdf-modal');
     if (downloadPdfBtn && pdfModal) {
