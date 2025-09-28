@@ -146,9 +146,7 @@ button {
     margin-top: 20px; 
 }
 
-.summary-actions button {
-    flex: 1; 
-}
+/* REMOVED flex: 1; from .summary-actions button to restore natural width */
 
 /* Styles for the buttons inside the form */
 .form-buttons {
@@ -157,7 +155,7 @@ button {
 }
 
 .form-buttons button {
-    flex: 1;
+    /* REMOVED flex: 1; to restore natural width */
     margin-top: -10px;
 }
 
@@ -176,7 +174,7 @@ button {
     gap: 8px;
 }
 
-/* === NEW: Specific override for the three green buttons === */
+/* Specific override for the three green buttons */
 #start-new-month,
 #show-current-month-data,
 #show-all-data {
@@ -188,7 +186,6 @@ button {
 #show-all-data:hover {
     background-color: #69c769; /* Darker Pastel Green */
 }
-/* === END OF NEW STYLES === */
 
 
 /* Totals and Transactions */
@@ -329,7 +326,7 @@ body.dark-theme {
             background-color: #0056b3; /* Back to lighter dark blue */
         }
 
-    /* === NEW: Dark mode override for the three green buttons === */
+    /* Dark mode override for the three green buttons */
     body.dark-theme #start-new-month,
     body.dark-theme #show-current-month-data,
     body.dark-theme #show-all-data {
