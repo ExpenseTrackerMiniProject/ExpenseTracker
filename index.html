@@ -26,7 +26,6 @@
             
             <div id="month-management">
                  <p>Current Period: <strong id="current-month-display"></strong></p>
-                <button id="start-new-month">Start New Period</button>
             </div>
             
             <form id="monthly-income-form">
@@ -39,18 +38,20 @@
                 <div>Period Expenses: ₹<span id="total-expenses">0</span></div>
                 <div>Remaining Balance: ₹<span id="remaining-balance">0</span></div>
             </div>
-            <button id="clear-data">Clear All Data</button>
-            <button id="download-pdf">Download PDF</button>
+
+            <div class="summary-actions">
+                <button id="clear-data">Clear All Data</button>
+                <button id="download-pdf">Download PDF</button>
+                <button id="start-new-month">Start New Period</button>
+                <button id="show-current-month-data">View Current Period</button>
+                <button id="show-all-data">View All-Time Data</button>
+            </div>
         </section>
 
         <section id="recent-transactions" class="slide-in-bottom">
             <h2>Recent Transactions</h2>
             
             <div class="filter-container fade-in">
-                <div class="filter-group">
-                    <button id="show-current-month-data">View Current Period</button>
-                    <button id="show-all-data">View All-Time Data</button>
-                </div>
                  <div class="filter-group">
                     <label for="filter-date">View a Specific Month:</label>
                     <input type="month" id="filter-date">
