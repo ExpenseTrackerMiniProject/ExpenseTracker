@@ -7,7 +7,6 @@ if (recognition) {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    // Function to start voice command
     function startVoiceCommand() {
         recognition.start();
     }
@@ -231,10 +230,9 @@ function editTransaction(index) {
 }
 
 // =========================================================================
-// === REWRITTEN: PDF Modal and Generation Logic ===========================
+// === REWRITTEN & FIXED: PDF Modal and Generation Logic ===================
 // =========================================================================
 
-// Helper function to create a placeholder image if a chart has no data
 function createPlaceholderImage(text) {
     const canvas = document.createElement('canvas');
     canvas.width = 400;
@@ -250,49 +248,38 @@ function createPlaceholderImage(text) {
     return canvas.toDataURL();
 }
 
-// This function creates one chart and returns a Promise that resolves with the chart's image data
 function createChartPromise(canvasId, config, dataExists) {
     return new Promise(resolve => {
         if (!dataExists) {
             resolve(createPlaceholderImage('No Data for this Chart'));
             return;
         }
-        
-        const chart = new Chart(canvasId, {
-            ...config,
-            options: {
-                ...config.options,
-                animation: {
-                    onComplete: () => {
-                        resolve(chart.toBase64Image());
-                    }
-                }
-            }
-        });
+
+        const newOptions = { ...config.options, animation: false, responsive: false };
+        const chart = new Chart(canvasId, { ...config, options: newOptions });
+
+        setTimeout(() => {
+            resolve(chart.toBase64Image());
+        }, 250); // A small delay to ensure the canvas has painted
     });
 }
 
-// This function prepares all chart configurations and awaits their image data
 async function renderChartsForPdf(dataToDisplay, incomeForView) {
-    // Bar Chart Config
     const netExpenses = dataToDisplay.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0) - dataToDisplay.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
     const barConfig = { type: 'bar', data: { labels: ['Total Budget', 'Net Expenses'], datasets: [{ label: 'Amount (₹)', data: [incomeForView, netExpenses], backgroundColor: ['#28a745', '#dc3545'] }] } };
 
-    // Expense Pie Config
     const expenseData = dataToDisplay.filter(t => t.type === 'expense');
     const expenseCategories = [...new Set(expenseData.map(t => t.category))];
-    const expenseTotals = expenseCategories.map(c => expenseData.filter(t=>t.category===c).reduce((a,t)=>a+t.amount,0));
+    const expenseTotals = expenseCategories.map(c => expenseData.filter(t => t.category === c).reduce((a, t) => a + t.amount, 0));
     const expenseConfig = { type: 'pie', data: { labels: expenseCategories, datasets: [{ label: 'Expenses', data: expenseTotals, backgroundColor: generateColorPalette(expenseCategories.length) }] } };
-    
-    // Income Pie Config
+
     const incomeData = dataToDisplay.filter(t => t.type === 'income');
     const incomeCategories = [...new Set(incomeData.map(t => t.category))];
-    const incomeTotals = incomeCategories.map(c => incomeData.filter(t=>t.category===c).reduce((a,t)=>a+t.amount,0));
+    const incomeTotals = incomeCategories.map(c => incomeData.filter(t => t.category === c).reduce((a, t) => a + t.amount, 0));
     const incomeConfig = { type: 'pie', data: { labels: incomeCategories, datasets: [{ label: 'Income', data: incomeTotals, backgroundColor: generateColorPalette(incomeCategories.length).reverse() }] } };
 
-    // Create all promises and wait for them to resolve
     const promises = [
-        createChartPromise('temp-bar-chart', barConfig, true), // Bar chart is always created
+        createChartPromise('temp-bar-chart', barConfig, true),
         createChartPromise('temp-pie-expense', expenseConfig, expenseData.length > 0),
         createChartPromise('temp-pie-income', incomeConfig, incomeData.length > 0)
     ];
@@ -300,7 +287,6 @@ async function renderChartsForPdf(dataToDisplay, incomeForView) {
     const [bar, pieExpense, pieIncome] = await Promise.all(promises);
     return { bar, pieExpense, pieIncome };
 }
-
 
 async function generatePdfWithCharts(selectedMonths) {
     alert('Generating PDF... This may take a moment.');
@@ -341,7 +327,7 @@ async function generatePdfWithCharts(selectedMonths) {
         doc.setFontSize(12);
         doc.text(`Period Income: ${monthIncome.toFixed(2)}`, 15, 35);
         doc.text(`Net Expenses: ${monthNet.toFixed(2)}`, 15, 42);
-        doc.text(`Remaining Balance: ${(monthIncome - netNet).toFixed(2)}`, 15, 49);
+        doc.text(`Remaining Balance: ${(monthIncome - monthNet).toFixed(2)}`, 15, 49); // <-- FIXED TYPO HERE
 
         if (monthTransactions.length > 0) {
             doc.autoTable({
@@ -503,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
             monthSelectionDiv.innerHTML = '';
             selectAllCheckbox.checked = false;
             const availableMonths = Object.keys(monthlyIncomes).sort().reverse();
-            if (availableMonths.length === 0) {
+            if (availableMonths.length === 0 || allTransactions.length === 0) {
                 alert("No data available to generate a report.");
                 return;
             }
@@ -535,7 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // RESTORED: Analytics Page Logic
     if (document.getElementById('incomeExpenseChart')) {
         let incomeExpenseChart, expenseCategoryChart, incomeCategoryChart;
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
