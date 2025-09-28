@@ -482,7 +482,7 @@ body.dark-theme #pdf-month-selection {
     border-color: #555;
 }
 
-/* Styles for Bill Splitter Page */
+/* Styles for Bill Splitter Page
 .split-mode-toggle {
     display: flex;
     justify-content: center;
@@ -570,7 +570,8 @@ body.dark-theme #split-result .error-text {
 
 body.dark-theme .result-actions button:disabled {
     background-color: #555;
-}
+}*/
+
 
 
 
