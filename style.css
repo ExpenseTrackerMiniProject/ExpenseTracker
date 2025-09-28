@@ -49,16 +49,16 @@
 /* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: var(--background-color, #f4f4f4); /* Default light background */
-    color: var(--text-color, #333); /* Default light text color */
+    background-color: var(--background-color, #f4f4f4);
+    color: var(--text-color, #333);
     margin: 0;
     padding: 0;
-    transition: background-color 2s ease, color 2s ease, transform 2s ease; /* Smooth transition for dark mode */
+    transition: background-color 2s ease, color 2s ease, transform 2s ease;
 }
 
 /* Header Styles */
 header {
-    background-color: #007bff;
+    background-color: #007bff; /* Back to blue */
     color: white;
     padding: 20px;
     text-align: center;
@@ -86,8 +86,8 @@ section {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    color: var(--text-color); /* Ensure text color is applied */
-    transition: background-color 1s ease, color 1s ease, transform 1s ease; /* Smooth transition for dark mode */
+    color: var(--text-color);
+    transition: background-color 1s ease, color 1s ease, transform 1s ease;
 }
 
 /* Header and Subheader Styles */
@@ -124,7 +124,7 @@ form {
 
 /* Button Styles */
 button {
-    background-color: #007bff;
+    background-color: #007bff; /* Back to blue */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -133,12 +133,12 @@ button {
 }
 
     button:hover {
-        background-color: #0056b3;
-        transform: scale(1.06); /* Scales the element 10% larger */
+        background-color: #0056b3; /* Back to dark blue */
+        transform: scale(1.06);
         transition: transform 0.3s ease-in-out;
     }
 
-/* === NEW STYLES ADDED FOR BUTTON LAYOUT === */
+/* Styles for the button row in the summary section */
 .summary-actions {
     display: flex;
     flex-wrap: wrap; 
@@ -147,9 +147,21 @@ button {
 }
 
 .summary-actions button {
-    flex: 1; /* Makes all buttons in the container have the same width */
+    flex: 1; 
 }
 
+/* Styles for the buttons inside the form */
+.form-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.form-buttons button {
+    flex: 1;
+    margin-top: -10px;
+}
+
+/* Improved styling for the transaction filters */
 .filter-container {
     display: flex;
     flex-wrap: wrap;
@@ -162,6 +174,19 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* === NEW: Specific override for the three green buttons === */
+#start-new-month,
+#show-current-month-data,
+#show-all-data {
+    background-color: #77dd77; /* Pastel Green */
+}
+
+#start-new-month:hover,
+#show-current-month-data:hover,
+#show-all-data:hover {
+    background-color: #69c769; /* Darker Pastel Green */
 }
 /* === END OF NEW STYLES === */
 
@@ -178,13 +203,13 @@ button {
 
 /* Transactions List Styles */
 #transaction-container {
-    max-height: 200px; /* Set a fixed max height to allow for scrolling */
-    overflow-y: scroll; /* Ensure vertical scroll when content overflows */
+    max-height: 200px; 
+    overflow-y: scroll;
     border: 1px solid #ddd;
     border-radius: 5px;
     padding-right: 15px;
     background-color: #fff;
-    box-sizing: border-box; /* Ensures padding is included in width/height calculations */
+    box-sizing: border-box; 
     margin-top: 1%;
 }
 
@@ -201,37 +226,32 @@ button {
     padding: 10px;
     border-radius: 5px;
     display: flex;
-    justify-content: space-between; /* Space between text and button container */
+    justify-content: space-between; 
     align-items: center;
     border-bottom: 1px solid #ccc;
 }
 
-/* Style for income transactions in the list (green text) */
 #transaction-list li.income-transaction span {
-    color: #28a745; /* A pleasant green color */
+    color: #28a745; 
     font-weight: bold;
 }
 
-/* Dark mode specific style for better visibility */
 body.dark-theme #transaction-list li.income-transaction span {
-    color: #4CAF50; /* A slightly brighter green for dark backgrounds */
+    color: #4CAF50;
 }
 
-/* Container for buttons - group them together */
 #transaction-list li .button-container {
     display: flex;
-    justify-content: flex-end; /* Align both buttons to the right side */
+    justify-content: flex-end;
     align-items: center;
 }
 
-/* Ensure buttons have enough space between them but not too much */
 #transaction-list li .button-container button {
-    margin-left: 5px; /* Adjusted margin to a smaller value */
+    margin-left: 5px;
 }
 
-/* Delete button styles */
 #transaction-list li .delete-button {
-    background-color: #dc3545; /* Red for Delete button */
+    background-color: #dc3545;
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -241,9 +261,8 @@ body.dark-theme #transaction-list li.income-transaction span {
     transition: background-color 0.3s;
 }
 
-/* Edit button styles */
 #transaction-list li .edit-button {
-    background-color: #007bff; /* Green for Edit button */
+    background-color: #007bff; /* Back to blue */
     color: #fff;
     border: none;
     border-radius: 3px;
@@ -253,63 +272,20 @@ body.dark-theme #transaction-list li.income-transaction span {
     transition: background-color 0.3s;
 }
 
-/* Hover effects */
 #transaction-list li .delete-button:hover {
-    background-color: #c82333; /* Darker shade on hover for Delete button */
+    background-color: #c82333;
 }
 
 #transaction-list li .edit-button:hover {
-    background-color: #0056b3; /* Darker shade on hover for Edit button */
+    background-color: #0056b3; /* Back to dark blue */
 }
-
-
-/* Analytics Section */
-#analytics-container {
-    max-height: 200px; /* Set a max-height to make it smaller */
-    overflow-y: auto; /* Add scrolling in case analytics content overflows */
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-sizing: border-box;
-}
-
-#analytics-title {
-    font-size: 1.2em; /* Adjust font size for a smaller look */
-    margin-bottom: 10px;
-}
-
-.analytics-item {
-    font-size: 0.9em; /* Make analytics text smaller */
-    margin-bottom: 5px;
-}
-
-    .analytics-item span {
-        font-weight: bold;
-    }
 
 /* Analytics Page Styles */
 #incomeExpenseChart,
-#expenseCategoryChart {
+#expenseCategoryChart,
+#incomeCategoryChart {
     width: 100% !important;
-    height: 150px; /* Adjust the height as needed */
-}
-
-/* Media Query for Mobile Devices */
-@media (max-width: 768px) {
-    #incomeExpenseChart,
-    #expenseCategoryChart {
-        height: 120px; /* Even smaller height for mobile screens */
-    }
-
-    #analytics-container {
-        max-height: 150px; /* Adjust height for smaller screens */
-        padding: 8px;
-    }
-
-    .analytics-item {
-        font-size: 0.8em; /* Smaller font for mobile */
-    }
+    height: 150px;
 }
 
 /* Clear Data Button */
@@ -322,22 +298,6 @@ body.dark-theme #transaction-list li.income-transaction span {
         background-color: #c82333;
     }
 
-/* Footer Styles */
-footer {
-    background-color: #007bff;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
-}
-
-    footer p {
-        margin: 0;
-    }
-
 /* Dark Mode Styles */
 body.dark-theme {
     --background-color: #121212;
@@ -347,32 +307,41 @@ body.dark-theme {
     transition: background-color 2s ease, color 2s ease, transform 2s ease;
 }
 
-    /* Dark Mode Header */
     body.dark-theme header {
-        background-color: #00356e;
+        background-color: #00356e; /* Back to dark blue */
         color: #d3d3d3;
         transition: background-color 1s ease, color 1s ease, transform 1s ease;
     }
 
-    /* Dark Mode Section */
     body.dark-theme section {
         background-color: #2c2c2c;
-        color: var(--text-color); /* Ensure text color is set */
+        color: var(--text-color);
         transition: background-color 1s ease, color 1s ease, transform 1s ease;
         
     }
 
-    /* Dark Mode Buttons */
     body.dark-theme button {
-        background-color: #00356e;
+        background-color: #00356e; /* Back to dark blue */
         color: rgb(228, 228, 228);
     }
 
         body.dark-theme button:hover {
-            background-color: #0056b3;
+            background-color: #0056b3; /* Back to lighter dark blue */
         }
 
-    /* Dark Mode Transaction List */
+    /* === NEW: Dark mode override for the three green buttons === */
+    body.dark-theme #start-new-month,
+    body.dark-theme #show-current-month-data,
+    body.dark-theme #show-all-data {
+        background-color: #4a784a; /* Dark pastel green */
+    }
+
+    body.dark-theme #start-new-month:hover,
+    body.dark-theme #show-current-month-data:hover,
+    body.dark-theme #show-all-data:hover {
+        background-color: #5a8b5a; /* Lighter dark pastel green */
+    }
+
     body.dark-theme #transaction-list li {
         background-color: #333;
         color: #e0e0e0;
@@ -384,69 +353,63 @@ body.dark-theme {
             background-color: #dc3545;
         }
 
-    /* Dark Mode Analytics */
-    body.dark-theme #analytics-container {
-        background-color: #1c1c1c;
-        color: #e0e0e0;
-    }
-
-    /* Dark Mode Footer */
-    body.dark-theme footer {
-        background-color: #1f1f1f;
-    }
     body.dark-theme form {
         background-color: #2c2c2c;
     }
     body.dark-theme form input{
         background-color: #2c2c2c;
         color: #797979;
-        border: 1px solid rgb(0, 0, 0); /* Ensure all borders are black */
+        border: 1px solid rgb(0, 0, 0);
         border-width: 2px;
     }
 
-    /* Dark Mode Clear Data Button */
-    
         body.dark-theme #transaction-container{
             background-color: #232323;
         }
 
     body.dark-theme #transaction-list li .edit-button {
-        background-color: #00356e; /* Darker shade on hover for Edit button */
+        background-color: #00356e; /* Back to dark blue */
     }
     body.dark-theme #transaction-list li .edit-button:hover {
-        background-color: #0056b3; /* Darker shade on hover for Edit button */
+        background-color: #0056b3; /* Back to lighter dark blue */
     }
     body.dark-theme #theme-toggle {
-        background-color: #00356e;
+        background-color: #00356e; /* Back to dark blue */
     }
+
 /* Dark Mode Toggle Button */
 #theme-toggle {
     position: absolute;
-    top: 20px; /* Adjust this to avoid overlap on larger screens */
+    top: 20px;
     right: 20px;
-    background-color: #007bff;
+    background-color: #007bff; /* Back to blue */
     color: white;
     border: none;
     padding: 10px 15px;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease; /* Added smooth background color transition */
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
     #theme-toggle:hover {
-        background-color: #0056b3;
+        background-color: #0056b3; /* Back to dark blue */
     }
 
-/* Adjust button position on smaller screens */
+/* Media Queries for Responsiveness */
 @media (max-width: 768px) {
-    #theme-toggle {
-        top: 2px; /* Decrease top spacing to avoid overlap */
-        right: 6px; /* Adjust as needed */
+    #incomeExpenseChart,
+    #expenseCategoryChart,
+    #incomeCategoryChart {
+        height: 120px;
     }
 
-    /* Ensure the button does not overlap with the header */
+    #theme-toggle {
+        top: 2px;
+        right: 6px;
+    }
+
     body.dark-theme #theme-toggle {
-        top: 2px; /* Move further down on smaller devices to ensure it's not over the header */
-        right: 6px; /* Adjust as needed */
+        top: 2px;
+        right: 6px;
     }
 }
