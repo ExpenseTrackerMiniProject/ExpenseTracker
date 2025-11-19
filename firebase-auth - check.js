@@ -2,7 +2,7 @@
 // Auth Check for All Pages
 // -------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, linkWithPopup }
+import { getAuth, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -22,19 +22,30 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // -------------------------
+// PREVENT page from displaying early
+// -------------------------
+document.body.style.display = "none";
+
+// -------------------------
 // Redirect unauthenticated users
 // -------------------------
 const mode = localStorage.getItem("loginMode");
 
+// Case 1: No login mode chosen yet → go to login
 if (!mode) {
     window.location.href = "auth.html";
 }
 
-// -------------------------
-// If Google user Load Firestore Data
-// -------------------------
+// Case 2: Guest mode → allow page immediately
+if (mode === "guest") {
+    document.body.style.display = "block";  // SHOW PAGE
+    return;
+}
+
+// Case 3: Google login → Must check Firebase auth
 if (mode === "google") {
     onAuthStateChanged(auth, async (user) => {
+
         if (!user) {
             localStorage.clear();
             window.location.href = "auth.html";
@@ -43,6 +54,7 @@ if (mode === "google") {
 
         const uid = user.uid;
 
+        // Load Firestore data
         const userDoc = await getDoc(doc(db, "users", uid));
 
         if (userDoc.exists()) {
@@ -55,5 +67,8 @@ if (mode === "google") {
                 monthlyIncomes: {}
             });
         }
+
+        // IMPORTANT: SHOW PAGE ONLY AFTER LOADING USER
+        document.body.style.display = "block";
     });
 }
