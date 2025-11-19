@@ -1,3 +1,8 @@
+import { getFirestore, doc, setDoc } 
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth } 
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 //Voice Function Starts.....
 // Ensure the SpeechRecognition API is supported
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -125,6 +130,27 @@ function loadData() {
     
     currentView.monthKey = currentMonthKey;
 }
+
+// =====================
+// FIRESTORE SYNC FUNCTION
+// =====================
+async function syncToFirestore() {
+    const mode = localStorage.getItem("loginMode");
+    const uid = localStorage.getItem("uid");
+    if (mode !== "google" || !uid) return;
+
+    const db = getFirestore();
+    const auth = getAuth();
+
+    const data = {
+        transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
+        monthlyIncomes: JSON.parse(localStorage.getItem("monthlyIncomes")) || {}
+    };
+
+    await setDoc(doc(db, "users", uid), data, { merge: true });
+}
+
+
 
 // =========================================================================
 // === Core Display Functions ==============================================
@@ -292,6 +318,28 @@ function generatePdfReport(selectedMonths) {
 
     doc.save(`expense-report.pdf`);
 }
+
+document.getElementById("link-google").addEventListener("click", async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+
+    try {
+        const result = await linkWithPopup(auth.currentUser, provider);
+
+        localStorage.setItem("loginMode", "google");
+        localStorage.setItem("uid", result.user.uid);
+
+        await syncToFirestore();
+
+        alert("Your guest data has been linked to your Google account!");
+        location.reload();
+
+    } catch (e) {
+        console.error(e);
+        alert("Could not link account.");
+    }
+});
+
 
 
 // =========================================================================
@@ -581,7 +629,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateDashboardDisplay();
+    syncToFirestore();
 });
+
 
 
 
