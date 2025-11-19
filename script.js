@@ -1,6 +1,8 @@
-import { getFirestore, doc, setDoc } 
+import { getFirestore, doc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth } 
+import { getAuth }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 //Voice Function Starts.....
@@ -16,7 +18,7 @@ if (recognition) {
         recognition.start();
     }
 
-    recognition.onresult = function(event) {
+    recognition.onresult = function (event) {
         const voiceInput = event.results[0][0].transcript.toLowerCase();
         console.log(`Voice Command Recognized: ${voiceInput}`);
 
@@ -57,7 +59,7 @@ if (recognition) {
             }
 
             allTransactions.push({ category, amount, date: formattedDate, type: transactionType });
-            localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
+            saveAndSync();
 
             const typeCapitalized = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
             alert(`${typeCapitalized} transaction added successfully via voice command!`);
@@ -67,7 +69,7 @@ if (recognition) {
         }
     };
 
-    recognition.onerror = function(event) {
+    recognition.onerror = function (event) {
         alert(`Error occurred in speech recognition: ${event.error}`);
     };
 
@@ -120,16 +122,15 @@ function loadData() {
     allTransactions = JSON.parse(localStorage.getItem('allTransactions')) || [];
     monthlyIncomes = JSON.parse(localStorage.getItem('monthlyIncomes')) || {};
     currentMonthKey = localStorage.getItem('currentMonthKey') || getCurrentMonthKey();
-    
+
     if (typeof monthlyIncomes[currentMonthKey] === 'undefined') {
         monthlyIncomes[currentMonthKey] = 0;
     }
-    
+
     localStorage.setItem('currentMonthKey', currentMonthKey);
-    localStorage.setItem('monthlyIncomes', JSON.stringify(monthlyIncomes));
-    
     currentView.monthKey = currentMonthKey;
 }
+
 
 // =====================
 // FIRESTORE SYNC FUNCTION
@@ -149,6 +150,16 @@ async function syncToFirestore() {
 
     await setDoc(doc(db, "users", uid), data, { merge: true });
 }
+
+async function saveAndSync() {
+    localStorage.setItem("allTransactions", JSON.stringify(allTransactions));
+    localStorage.setItem("monthlyIncomes", JSON.stringify(monthlyIncomes));
+
+    if (localStorage.getItem("loginMode") === "google") {
+        await syncToFirestore();
+    }
+}
+
 
 
 
@@ -196,7 +207,7 @@ function displayTransactions(transactionsToDisplay) {
     const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
     if (!filterTypeElement) return;
     const filterType = filterTypeElement.value;
-    
+
     let finalList = transactionsToDisplay;
 
     if (filterType !== 'all') {
@@ -212,7 +223,7 @@ function displayTransactions(transactionsToDisplay) {
         } else if (transaction.type === 'expense') {
             li.classList.add('expense-transaction');
         }
-        
+
         const originalIndex = findOriginalTransactionIndex(transaction);
 
         li.innerHTML = `
@@ -250,7 +261,7 @@ function generateColorPalette(numColors) {
 function deleteTransaction(index) {
     if (confirm('Are you sure you want to delete this transaction?')) {
         allTransactions.splice(index, 1);
-        localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
+        saveAndSync();
         updateDashboardDisplay();
     }
 }
@@ -271,7 +282,7 @@ function editTransaction(index) {
 
     allTransactions[index].category = newCategory.trim();
     allTransactions[index].amount = newAmount;
-    localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
+    saveAndSync();
     updateDashboardDisplay();
 }
 
@@ -282,7 +293,7 @@ function generatePdfReport(selectedMonths) {
     alert('Generating PDF report...');
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+
     let firstPage = true;
 
     for (const month of selectedMonths.sort()) {
@@ -312,7 +323,7 @@ function generatePdfReport(selectedMonths) {
         } else {
             doc.text('No transactions were recorded for this month.', 15, 70);
         }
-        
+
         firstPage = false;
     }
 
@@ -340,6 +351,27 @@ document.getElementById("link-google").addEventListener("click", async () => {
     }
 });
 
+document.getElementById("logout-btn").addEventListener("click", async () => {
+
+    // Clear local data
+    localStorage.clear();
+
+    const auth = getAuth();
+    const mode = localStorage.getItem("loginMode");
+
+    try {
+        // If user is logged in with Google, log them out from Firebase
+        if (auth.currentUser) {
+            await signOut(auth);
+        }
+    } catch (err) {
+        console.error("Logout error:", err);
+    }
+
+    // Redirect to login page
+    window.location.href = "auth.html";
+});
+
 
 
 // =========================================================================
@@ -358,13 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (incomeVoiceBtn) {
         incomeVoiceBtn.addEventListener('click', startVoiceCommand);
     }
-    
+
     const monthlyIncomeForm = document.getElementById('monthly-income-form');
     if (monthlyIncomeForm) {
         document.getElementById('monthly-income').value = monthlyIncomes[currentMonthKey] || '';
         document.getElementById('current-month-display').textContent = currentMonthKey;
-        
-        monthlyIncomeForm.addEventListener('submit', function(e) {
+
+        monthlyIncomeForm.addEventListener('submit', function (e) {
             e.preventDefault();
             const income = parseFloat(document.getElementById('monthly-income').value);
             if (isNaN(income) || income < 0) {
@@ -372,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             monthlyIncomes[currentMonthKey] = income;
-            localStorage.setItem('monthlyIncomes', JSON.stringify(monthlyIncomes));
+            saveAndSync();
             alert('Income for this month updated!');
             updateDashboardDisplay();
         });
@@ -380,8 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const transactionForm = document.getElementById('transaction-form');
     if (transactionForm) {
-        transactionForm.addEventListener('submit', function(e) { 
-            e.preventDefault(); 
+        transactionForm.addEventListener('submit', function (e) {
+            e.preventDefault();
             const category = document.getElementById('category').value;
             const amount = parseFloat(document.getElementById('amount').value);
             const date = document.getElementById('date').value;
@@ -390,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             allTransactions.push({ category, amount, date, type: 'expense' });
-            localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
+            saveAndSync();
             alert('Expense added!');
             this.reset();
             updateDashboardDisplay();
@@ -399,8 +431,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addMoneyForm = document.getElementById('add-money-form');
     if (addMoneyForm) {
-        addMoneyForm.addEventListener('submit', function(e) { 
-            e.preventDefault(); 
+        addMoneyForm.addEventListener('submit', function (e) {
+            e.preventDefault();
             const category = document.getElementById('add-money-category').value;
             const amount = parseFloat(document.getElementById('add-money-amount').value);
             const date = document.getElementById('add-money-date').value;
@@ -409,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             allTransactions.push({ category, amount, date, type: 'income' });
-            localStorage.setItem('allTransactions', JSON.stringify(allTransactions));
+            saveAndSync();
             alert(`Credit of ₹${amount.toFixed(2)} added successfully!`);
             this.reset();
             updateDashboardDisplay();
@@ -418,12 +450,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startNewMonthBtn = document.getElementById('start-new-month');
     if (startNewMonthBtn) {
-        startNewMonthBtn.addEventListener('click', function() {
+        startNewMonthBtn.addEventListener('click', function () {
             if (confirm('Are you sure you want to end the current month and start a new one? Your current data will be saved.')) {
                 const [year, month] = currentMonthKey.split('-').map(Number);
                 const currentDate = new Date(year, month - 1, 1);
                 currentDate.setMonth(currentDate.getMonth() + 1);
-                
+
                 const newYear = currentDate.getFullYear();
                 const newMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
                 const newMonthKey = `${newYear}-${newMonth}`;
@@ -436,27 +468,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const showCurrentBtn = document.getElementById('show-current-month-data');
-    if(showCurrentBtn) {
-        showCurrentBtn.addEventListener('click', function() {
+    if (showCurrentBtn) {
+        showCurrentBtn.addEventListener('click', function () {
             currentView.mode = 'month';
             currentView.monthKey = currentMonthKey;
-            if(document.getElementById('filter-date')) document.getElementById('filter-date').value = '';
+            if (document.getElementById('filter-date')) document.getElementById('filter-date').value = '';
             updateDashboardDisplay();
         });
     }
-    
+
     const showAllDataBtn = document.getElementById('show-all-data');
-    if(showAllDataBtn) {
-        showAllDataBtn.addEventListener('click', function() {
+    if (showAllDataBtn) {
+        showAllDataBtn.addEventListener('click', function () {
             currentView.mode = 'all';
-            if(document.getElementById('filter-date')) document.getElementById('filter-date').value = '';
+            if (document.getElementById('filter-date')) document.getElementById('filter-date').value = '';
             updateDashboardDisplay();
         });
     }
 
     const filterDateInput = document.getElementById('filter-date');
     if (filterDateInput) {
-        filterDateInput.addEventListener('change', function() {
+        filterDateInput.addEventListener('change', function () {
             if (this.value) {
                 currentView.mode = 'month';
                 currentView.monthKey = this.value;
@@ -471,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const clearDataBtn = document.getElementById('clear-data');
     if (clearDataBtn) {
-        clearDataBtn.addEventListener('click', function() {
+        clearDataBtn.addEventListener('click', function () {
             if (confirm('Are you sure you want to clear ALL data for ALL periods? This cannot be undone.')) {
                 localStorage.clear();
                 alert('All data has been cleared!');
@@ -547,8 +579,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const expenseData = dataToDisplay.filter(t => t.type === 'expense');
             const expenseChartContainer = document.getElementById('expenseCategoryChart').parentElement;
             let existingMsg = expenseChartContainer.querySelector('.no-data-message');
-            if(existingMsg) existingMsg.remove();
-            
+            if (existingMsg) existingMsg.remove();
+
             if (expenseData.length === 0) {
                 document.getElementById('expenseCategoryChart').style.display = 'none';
                 const noDataMessage = document.createElement('p');
@@ -565,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const incomeData = dataToDisplay.filter(t => t.type === 'income');
             const incomeChartContainer = document.getElementById('incomeCategoryChart').parentElement;
             existingMsg = incomeChartContainer.querySelector('.no-data-message');
-            if(existingMsg) existingMsg.remove();
+            if (existingMsg) existingMsg.remove();
 
             if (incomeData.length === 0) {
                 document.getElementById('incomeCategoryChart').style.display = 'none';
@@ -585,26 +617,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const analyticsShowAllBtn = document.getElementById('analytics-show-all');
 
         if (analyticsMonthFilter) {
-            analyticsMonthFilter.addEventListener('change', function() {
+            analyticsMonthFilter.addEventListener('change', function () {
                 const selectedMonth = this.value;
                 if (selectedMonth) {
                     const filteredData = allTransactions.filter(t => t.date.startsWith(selectedMonth));
                     const incomeForMonth = monthlyIncomes[selectedMonth] || 0;
                     renderAnalyticsCharts(filteredData, incomeForMonth);
                 } else {
-                     const totalIncome = Object.values(monthlyIncomes).reduce((s, i) => s + i, 0);
-                	 renderAnalyticsCharts(allTransactions, totalIncome);
+                    const totalIncome = Object.values(monthlyIncomes).reduce((s, i) => s + i, 0);
+                    renderAnalyticsCharts(allTransactions, totalIncome);
                 }
             });
         }
         if (analyticsShowAllBtn) {
-            analyticsShowAllBtn.addEventListener('click', function() {
+            analyticsShowAllBtn.addEventListener('click', function () {
                 if (analyticsMonthFilter) analyticsMonthFilter.value = '';
                 const totalIncome = Object.values(monthlyIncomes).reduce((s, i) => s + i, 0);
                 renderAnalyticsCharts(allTransactions, totalIncome);
             });
         }
-        
+
         const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
         const initialIncome = monthlyIncomes[currentMonthKey] || 0;
         renderAnalyticsCharts(initialTransactions, initialIncome);
@@ -631,9 +663,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDashboardDisplay();
     syncToFirestore();
 });
-
-
-
-
-
-
