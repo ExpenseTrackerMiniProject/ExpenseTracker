@@ -1,136 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Tracker - Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Tracker - Login</title>
 
-    <style>
-        /* ===========================
-           Animated Gradient Background
-        ============================ */
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: "Poppins", sans-serif;
-            overflow: hidden;
-            background: linear-gradient(45deg, #ff6b6b, #f7b733, #4ecdc4, #556270);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-        }
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+    }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+    body {
+        height: 100vh;
+        overflow: hidden;
+        background: #fafafa url("https://i.imgur.com/4NJlQpl.png"); /* textured paper */
+        background-size: cover;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
 
-        /* ===========================
-           Center Login Card
-        ============================ */
-        .login-card {
-            width: 350px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            text-align: center;
-            color: white;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-            animation: fadeIn 1.2s ease;
-        }
+    /* Floating card elements (like the reference website) */
+    .tile {
+        position: absolute;
+        width: 420px;
+        height: 260px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        opacity: 0.55;
+        backdrop-filter: blur(4px);
+        transition: 0.2s ease-out;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .t1 { top: 10%; left: 5%; }
+    .t2 { top: 65%; left: 15%; }
+    .t3 { top: 20%; right: 10%; }
+    .t4 { bottom: 10%; right: 5%; }
 
-        .login-card h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+    /* Center container */
+    .auth-box {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        padding: 40px 50px;
+        background: rgba(255,255,255,0.85);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
+        width: 380px;
+        animation: fadeIn 1.2s ease;
+    }
 
-        .login-card p {
-            margin-bottom: 20px;
-            opacity: 0.9;
-        }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-        /* ===========================
-           Buttons
-        ============================ */
-        button {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s ease;
-        }
+    h1 {
+        font-size: 34px;
+        font-weight: 700;
+    }
 
-        #guest-btn {
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
-        }
+    .metric-number {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 10px 0;
+        color: #007bff;
+    }
 
-        #guest-btn:hover {
-            background: rgba(255, 255, 255, 1);
-        }
+    p {
+        font-size: 15px;
+        color: #444;
+        margin-bottom: 15px;
+    }
 
-        #google-btn {
-            background: #dd4b39;
-            color: white;
-        }
+    button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 10px;
+        border: none;
+        margin-top: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.25s ease;
+    }
 
-        #google-btn:hover {
-            background: #c0392b;
-        }
+    #guest-btn {
+        background: white;
+        border: 2px solid #007bff;
+        color: #007bff;
+    }
 
-        /* ===========================
-           Floating subtle circles
-        ============================ */
-        .circle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            animation: float 8s infinite ease-in-out;
-        }
+    #guest-btn:hover {
+        background: #007bff;
+        color: white;
+    }
 
-        @keyframes float {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-25px); }
-            100% { transform: translateY(0); }
-        }
+    #google-btn {
+        background: #007bff;
+        color: white;
+        border: 2px solid transparent;
+    }
 
-        .c1 { width: 120px; height: 120px; top: 10%; left: 15%; animation-delay: 0s; }
-        .c2 { width: 80px; height: 80px; bottom: 15%; right: 20%; animation-delay: 2s; }
-        .c3 { width: 60px; height: 60px; top: 60%; left: 30%; animation-delay: 4s; }
+    #google-btn:hover {
+        background: #0056c7;
+    }
 
-    </style>
+</style>
 </head>
-
 <body>
 
-    <!-- Background floating circles -->
-    <div class="circle c1"></div>
-    <div class="circle c2"></div>
-    <div class="circle c3"></div>
+    <!-- Floating background tiles -->
+    <div class="tile t1"></div>
+    <div class="tile t2"></div>
+    <div class="tile t3"></div    >
+    <div class="tile t4"></div>
 
-    <!-- Login box -->
-    <div class="login-card">
-        <h1>Welcome</h1>
-        <p>Continue to your Expense Tracker</p>
+    <!-- Login Card -->
+    <div class="auth-box">
+        <h1>Expense Tracker</h1>
+        <div class="metric-number" id="counter">0</div>
+        <p>Users managing expenses smarter</p>
 
         <button id="guest-btn">Continue as Guest</button>
         <button id="google-btn">Sign in with Google</button>
     </div>
 
-    <script type="module" src="firebase-auth.js"></script>
+<script type="module" src="firebase-auth.js"></script>
+
+<script>
+/* ============================
+   Mouse Parallax Floating Effect
+============================ */
+document.addEventListener("mousemove", (e) => {
+    const x = (window.innerWidth / 2 - e.pageX) / 40;
+    const y = (window.innerHeight / 2 - e.pageY) / 40;
+
+    document.querySelectorAll(".tile").forEach((tile, i) => {
+        let factor = (i + 1) * 1.4;
+        tile.style.transform = `translate(${x / factor}px, ${y / factor}px)`;
+    });
+});
+
+/* ============================
+   Number Counter Animation
+============================ */
+function animateCounter() {
+    const counter = document.getElementById("counter");
+    let target = 12457;  // sample number
+    let current = 0;
+    let speed = 20;
+
+    const update = () => {
+        current += Math.ceil((target - current) / speed);
+        counter.textContent = current.toLocaleString();
+
+        if (current < target) requestAnimationFrame(update);
+    };
+
+    update();
+}
+animateCounter();
+</script>
+
 </body>
 </html>
