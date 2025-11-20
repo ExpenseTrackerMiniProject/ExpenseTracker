@@ -2,7 +2,7 @@
 // Auth Check for All Pages
 // -------------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, linkWithPopup }
+import { getAuth, onAuthStateChanged }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -31,7 +31,7 @@ if (!mode) {
 }
 
 // -------------------------
-// If Google user Load Firestore Data
+// If Google user Load Firestore Data SAFELY
 // -------------------------
 if (mode === "google") {
     onAuthStateChanged(auth, async (user) => {
@@ -42,18 +42,22 @@ if (mode === "google") {
         }
 
         const uid = user.uid;
+        localStorage.setItem("uid", uid);
 
-        const userDoc = await getDoc(doc(db, "users", uid));
+        const userRef = doc(db, "users", uid);
+        const userDoc = await getDoc(userRef);
 
-        if (userDoc.exists()) {
+        if (!userDoc.exists()) {
+            // Create the doc ONCE without deleting other data
+            await setDoc(userRef, {
+                transactions: [],
+                monthlyIncomes: {}
+            }, { merge: true });
+        } else {
+            // Load Firestore → localStorage
             const data = userDoc.data();
             localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
             localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
-        } else {
-            await setDoc(doc(db, "users", uid), {
-                transactions: [],
-                monthlyIncomes: {}
-            });
         }
     });
 }
