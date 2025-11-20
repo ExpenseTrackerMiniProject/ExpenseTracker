@@ -1,7 +1,13 @@
 import { getFirestore, doc, setDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signOut }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+    getAuth,
+    signOut,
+    GoogleAuthProvider,
+    linkWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 
 //Voice Function Starts.....
 // Ensure the SpeechRecognition API is supported
@@ -328,47 +334,8 @@ function generatePdfReport(selectedMonths) {
     doc.save(`expense-report.pdf`);
 }
 
-document.getElementById("link-google").addEventListener("click", async () => {
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider();
+// Safe Link Google handler (only attach if the element exists)
 
-    try {
-        const result = await linkWithPopup(auth.currentUser, provider);
-
-        localStorage.setItem("loginMode", "google");
-        localStorage.setItem("uid", result.user.uid);
-
-        await syncToFirestore();
-
-        alert("Your guest data has been linked to your Google account!");
-        location.reload();
-
-    } catch (e) {
-        console.error(e);
-        alert("Could not link account.");
-    }
-});
-
-document.getElementById("logout-btn").addEventListener("click", async () => {
-
-    // Clear local data
-    localStorage.clear();
-
-    const auth = getAuth();
-    const mode = localStorage.getItem("loginMode");
-
-    try {
-        // If user is logged in with Google, log them out from Firebase
-        if (auth.currentUser) {
-            await signOut(auth);
-        }
-    } catch (err) {
-        console.error("Logout error:", err);
-    }
-
-    // Redirect to login page
-    window.location.href = "auth.html";
-});
 
 
 
@@ -378,6 +345,45 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
+
+    const linkGoogleBtn = document.getElementById("link-google");
+    if (linkGoogleBtn) {
+        linkGoogleBtn.addEventListener("click", async () => {
+            try {
+                const auth = getAuth();
+                const provider = new GoogleAuthProvider();
+                const result = await linkWithPopup(auth.currentUser, provider);
+
+                localStorage.setItem("loginMode", "google");
+                localStorage.setItem("uid", result.user.uid);
+                await syncToFirestore();
+
+                alert("Your guest data has been linked to your Google account!");
+                location.reload();
+
+            } catch (e) {
+                console.error(e);
+                alert("Could not link account.");
+            }
+        });
+    }
+
+    // Safe Logout handler
+    const logoutBtn = document.getElementById("logout-btn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+            localStorage.clear();
+            try {
+                const auth = getAuth();
+                if (auth.currentUser) {
+                    await signOut(auth);
+                }
+            } catch (err) {
+                console.error("Logout error:", err);
+            }
+            window.location.href = "auth.html";
+        });
+    }
 
     // Event Listeners for BOTH voice command buttons
     const expenseVoiceBtn = document.getElementById('voice-command-btn');
@@ -661,4 +667,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDashboardDisplay();
     syncToFirestore();
 });
-
