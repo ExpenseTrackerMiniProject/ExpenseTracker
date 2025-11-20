@@ -31,7 +31,7 @@ if (!mode) {
 }
 
 // -------------------------
-// If Google user Load Firestore Data SAFELY
+// Load Firestore Data
 // -------------------------
 if (mode === "google") {
     onAuthStateChanged(auth, async (user) => {
@@ -48,16 +48,18 @@ if (mode === "google") {
         const userDoc = await getDoc(userRef);
 
         if (!userDoc.exists()) {
-            // Create the doc ONCE without deleting other data
             await setDoc(userRef, {
                 transactions: [],
                 monthlyIncomes: {}
             }, { merge: true });
         } else {
-            // Load Firestore → localStorage
             const data = userDoc.data();
+
             localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
             localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
         }
+
+        // Notify script.js that Firestore data is ready
+        window.dispatchEvent(new Event("firestore-data-loaded"));
     });
 }
