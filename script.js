@@ -1,21 +1,13 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import "./firebase-auth-check.js";
+import { getFirestore, doc, setDoc }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCSyxnlJDrLCzXLt_ozdDD-XVipVNtpQjA",
-    authDomain: "expense-tracker-d4b45.firebaseapp.com",
-    projectId: "expense-tracker-d4b45",
-    storageBucket: "expense-tracker-d4b45.firebasestorage.app",
-    messagingSenderId: "455721176179",
-    appId: "1:455721176179:web:9c875458413a5445816e06",
-    measurementId: "G-7N5VX2GBCC"
-};
-
-const app = initializeApp(firebaseConfig);
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const db = getFirestore(app);
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-const auth = getAuth(app);
-
+import {
+    getAuth,
+    signOut,
+    GoogleAuthProvider,
+    linkWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
 //Voice Function Starts.....
@@ -676,4 +668,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDashboardDisplay();
     syncToFirestore();
 });
-
