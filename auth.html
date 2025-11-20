@@ -16,48 +16,71 @@
     body {
         height: 100vh;
         overflow: hidden;
-        background: #fafafa url("https://i.imgur.com/4NJlQpl.png"); /* textured paper */
-        background-size: cover;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        background: linear-gradient(135deg, #f8f9fb, #eef1f7);
         position: relative;
     }
 
-    /* Floating card elements (like the reference website) */
+    /* Subtle grain noise texture (NO external image) */
+    body::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z8BQDwAFgwJ/lLQjaxAAAAAASUVORK5CYII=");
+        opacity: 0.27;
+        z-index: 0;
+    }
+
+    /* BIG Background Text */
+    .bg-big-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 160px;
+        font-weight: 800;
+        color: rgba(0,0,0,0.04);
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        pointer-events: none;
+        transition: transform 0.2s ease-out;
+        z-index: 1;
+        letter-spacing: -3px;
+    }
+
+    /* Floating tiles */
     .tile {
         position: absolute;
         width: 420px;
         height: 260px;
-        background: white;
-        border-radius: 20px;
+        background: rgba(255,255,255,0.85);
+        border-radius: 22px;
         box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-        opacity: 0.55;
-        backdrop-filter: blur(4px);
-        transition: 0.2s ease-out;
+        backdrop-filter: blur(6px);
+        transition: 0.25s ease-out;
+        z-index: 2;
     }
 
-    .t1 { top: 10%; left: 5%; }
-    .t2 { top: 65%; left: 15%; }
-    .t3 { top: 20%; right: 10%; }
+    .t1 { top: 8%; left: 6%; }
+    .t2 { top: 65%; left: 14%; }
+    .t3 { top: 18%; right: 10%; }
     .t4 { bottom: 10%; right: 5%; }
 
-    /* Center container */
+    /* Center Login Box */
     .auth-box {
         position: relative;
         z-index: 10;
         text-align: center;
         padding: 40px 50px;
-        background: rgba(255,255,255,0.85);
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.95);
+        border-radius: 18px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+        backdrop-filter: blur(15px);
         width: 380px;
         animation: fadeIn 1.2s ease;
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
+        from { opacity: 0; transform: translateY(30px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
@@ -111,15 +134,17 @@
     #google-btn:hover {
         background: #0056c7;
     }
-
 </style>
 </head>
 <body>
 
-    <!-- Floating background tiles -->
+    <!-- BIG Faint Background Text -->
+    <div class="bg-big-text" id="bgText">Expense Tracker</div>
+
+    <!-- Floating Tiles -->
     <div class="tile t1"></div>
     <div class="tile t2"></div>
-    <div class="tile t3"></div    >
+    <div class="tile t3"></div>
     <div class="tile t4"></div>
 
     <!-- Login Card -->
@@ -127,7 +152,6 @@
         <h1>Expense Tracker</h1>
         <div class="metric-number" id="counter">0</div>
         <p>Users managing expenses smarter</p>
-
         <button id="guest-btn">Continue as Guest</button>
         <button id="google-btn">Sign in with Google</button>
     </div>
@@ -135,35 +159,36 @@
 <script type="module" src="firebase-auth.js"></script>
 
 <script>
-/* ============================
-   Mouse Parallax Floating Effect
-============================ */
+/* ======================
+   Mouse Parallax Effect
+====================== */
 document.addEventListener("mousemove", (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 40;
     const y = (window.innerHeight / 2 - e.pageY) / 40;
 
     document.querySelectorAll(".tile").forEach((tile, i) => {
-        let factor = (i + 1) * 1.4;
-        tile.style.transform = `translate(${x / factor}px, ${y / factor}px)`;
+        tile.style.transform = `translate(${x / (i + 1)}px, ${y / (i + 1)}px)`;
     });
+
+    // Move background text slightly
+    const bgText = document.getElementById("bgText");
+    bgText.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
 });
 
-/* ============================
-   Number Counter Animation
-============================ */
+/* ======================
+   Counter Animation
+====================== */
 function animateCounter() {
     const counter = document.getElementById("counter");
-    let target = 12457;  // sample number
+    let target = 12457;
     let current = 0;
     let speed = 20;
 
-    const update = () => {
+    function update() {
         current += Math.ceil((target - current) / speed);
         counter.textContent = current.toLocaleString();
-
         if (current < target) requestAnimationFrame(update);
-    };
-
+    }
     update();
 }
 animateCounter();
