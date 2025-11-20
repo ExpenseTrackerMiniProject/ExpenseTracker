@@ -16,142 +16,127 @@
     body {
         height: 100vh;
         overflow: hidden;
-        background: linear-gradient(135deg, #f8f9fb, #eef1f7);
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe, #93c5fd);
+        background-size: 200% 200%;
+        animation: gradientShift 12s ease infinite;
         position: relative;
     }
 
-    /* Subtle grain noise texture (NO external image) */
+    /* Animated gradient */
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Noise texture */
     body::before {
         content: "";
         position: absolute;
         inset: 0;
         pointer-events: none;
         background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2P8z8BQDwAFgwJ/lLQjaxAAAAAASUVORK5CYII=");
-        opacity: 0.27;
-        z-index: 0;
+        opacity: 0.2;
+        z-index: 1;
     }
 
-    /* BIG Background Text */
+    /* Big background text */
     .bg-big-text {
         position: absolute;
         top: 50%;
         left: 50%;
-        font-size: 160px;
+        font-size: 18vw;
         font-weight: 800;
-        color: rgba(0,0,0,0.04);
+        color: rgba(255, 255, 255, 0.1);
         transform: translate(-50%, -50%);
         white-space: nowrap;
         pointer-events: none;
-        transition: transform 0.2s ease-out;
-        z-index: 1;
-        letter-spacing: -3px;
-    }
-
-    /* Floating tiles */
-    .tile {
-        position: absolute;
-        width: 420px;
-        height: 260px;
-        background: rgba(255,255,255,0.85);
-        border-radius: 22px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-        backdrop-filter: blur(6px);
-        transition: 0.25s ease-out;
         z-index: 2;
+        transition: transform 0.2s ease-out;
+        letter-spacing: -4px;
     }
 
-    .t1 { top: 8%; left: 6%; }
-    .t2 { top: 65%; left: 14%; }
-    .t3 { top: 18%; right: 10%; }
-    .t4 { bottom: 10%; right: 5%; }
-
-    /* Center Login Box */
-    .auth-box {
-        position: relative;
-        z-index: 10;
+    /* Center content */
+    .auth-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         text-align: center;
-        padding: 40px 50px;
-        background: rgba(255,255,255,0.95);
-        border-radius: 18px;
-        box-shadow: 0 12px 40px rgba(0,0,0,0.18);
-        backdrop-filter: blur(15px);
-        width: 380px;
-        animation: fadeIn 1.2s ease;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+        z-index: 10;
+        color: white;
     }
 
     h1 {
-        font-size: 34px;
+        font-size: 42px;
         font-weight: 700;
+        text-shadow: 0px 3px 12px rgba(0,0,0,0.2);
     }
 
     .metric-number {
-        font-size: 32px;
+        font-size: 34px;
         font-weight: 800;
-        margin: 10px 0;
-        color: #007bff;
+        margin: 8px 0;
+        color: #ffffff;
+        text-shadow: 0px 4px 14px rgba(0,0,0,0.25);
     }
 
     p {
-        font-size: 15px;
-        color: #444;
-        margin-bottom: 15px;
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 24px;
     }
 
     button {
-        width: 100%;
+        width: 260px;
         padding: 12px;
         font-size: 16px;
         border-radius: 10px;
         border: none;
-        margin-top: 12px;
+        margin: 12px 0;
         font-weight: bold;
         cursor: pointer;
-        transition: 0.25s ease;
+        transition: 0.25s;
     }
 
     #guest-btn {
-        background: white;
-        border: 2px solid #007bff;
-        color: #007bff;
-    }
-
-    #guest-btn:hover {
-        background: #007bff;
+        background: transparent;
         color: white;
+        border: 2px solid white;
+    }
+    #guest-btn:hover {
+        background: white;
+        color: #1d4ed8;
     }
 
     #google-btn {
-        background: #007bff;
-        color: white;
-        border: 2px solid transparent;
+        background: white;
+        color: #1d4ed8;
+    }
+    #google-btn:hover {
+        background: #e5e7eb;
     }
 
-    #google-btn:hover {
-        background: #0056c7;
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+        h1 { font-size: 32px; }
+        .metric-number { font-size: 28px; }
+        button { width: 80%; }
+        .bg-big-text { font-size: 28vw; }
     }
 </style>
 </head>
 <body>
 
-    <!-- BIG Faint Background Text -->
+    <!-- Big Faint Text -->
     <div class="bg-big-text" id="bgText">Expense Tracker</div>
 
-    <!-- Floating Tiles -->
-    <div class="tile t1"></div>
-    <div class="tile t2"></div>
-    <div class="tile t3"></div>
-    <div class="tile t4"></div>
-
-    <!-- Login Card -->
-    <div class="auth-box">
+    <!-- Center Login -->
+    <div class="auth-center">
         <h1>Expense Tracker</h1>
         <div class="metric-number" id="counter">0</div>
         <p>Users managing expenses smarter</p>
+
         <button id="guest-btn">Continue as Guest</button>
         <button id="google-btn">Sign in with Google</button>
     </div>
@@ -159,30 +144,25 @@
 <script type="module" src="firebase-auth.js"></script>
 
 <script>
-/* ======================
-   Mouse Parallax Effect
-====================== */
+/* ============================
+   Parallax background movement
+=============================*/
 document.addEventListener("mousemove", (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 40;
-    const y = (window.innerHeight / 2 - e.pageY) / 40;
+    const x = (window.innerWidth / 2 - e.pageX) / 30;
+    const y = (window.innerHeight / 2 - e.pageY) / 30;
 
-    document.querySelectorAll(".tile").forEach((tile, i) => {
-        tile.style.transform = `translate(${x / (i + 1)}px, ${y / (i + 1)}px)`;
-    });
-
-    // Move background text slightly
-    const bgText = document.getElementById("bgText");
-    bgText.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    document.getElementById("bgText").style.transform =
+        `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
 });
 
-/* ======================
-   Counter Animation
-====================== */
+/* ============================
+   Counter animation
+=============================*/
 function animateCounter() {
     const counter = document.getElementById("counter");
     let target = 12457;
     let current = 0;
-    let speed = 20;
+    let speed = 22;
 
     function update() {
         current += Math.ceil((target - current) / speed);
