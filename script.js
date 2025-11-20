@@ -14,14 +14,19 @@ import {
 // Ensure the SpeechRecognition API is supported
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
+// Make startVoiceCommand ALWAYS exist
+function startVoiceCommand() {
+    if (!recognition) {
+        alert("Speech recognition is not supported on this browser.");
+        return;
+    }
+    recognition.start();
+}
+
 if (recognition) {
     recognition.lang = 'en-US';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
-
-    function startVoiceCommand() {
-        recognition.start();
-    }
 
     recognition.onresult = function (event) {
         const voiceInput = event.results[0][0].transcript.toLowerCase();
