@@ -9,13 +9,22 @@ import {
     linkWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// --- 1. THEME INITIALIZATION (Must be at the very top) ---
+// This ensures the theme applies before the rest of the page renders
+(function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else {
+        document.body.classList.remove('dark-theme');
+    }
+})();
 
 //Voice Function Starts.....
-// Ensure the SpeechRecognition API is supported
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
 // Make startVoiceCommand ALWAYS exist
-function startVoiceCommand() {
+window.startVoiceCommand = function() {
     if (!recognition) {
         alert("Speech recognition is not supported on this browser.");
         return;
@@ -32,9 +41,7 @@ if (recognition) {
         const voiceInput = event.results[0][0].transcript.toLowerCase();
         console.log(`Voice Command Recognized: ${voiceInput}`);
 
-        // Regex for expenses (e.g., "add 250 food on today")
         const expenseRegex = /add (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
-        // Regex for income (e.g., "credit 5000 salary on today")
         const incomeRegex = /(credit|credited|deposit) (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
 
         const expenseMatches = voiceInput.match(expenseRegex);
@@ -52,7 +59,6 @@ if (recognition) {
         }
 
         if (matches) {
-            // Amount and category indices are shifted for the income regex
             const amount = parseFloat(matches[2] || matches[1]);
             const category = matches[3].trim();
             let dateString = matches[4];
@@ -84,8 +90,10 @@ if (recognition) {
     };
 
 } else {
-    if (document.getElementById('voice-command-btn')) {
-        alert('Speech recognition is not supported in your browser.');
+    // Fallback if element exists but browser doesn't support it
+    const btn = document.getElementById('voice-command-btn');
+    if (btn) {
+        btn.addEventListener('click', () => alert('Speech recognition is not supported in your browser.'));
     }
 }
 
@@ -273,7 +281,7 @@ function generateColorPalette(numColors) {
 // === Data Manipulation Functions =========================================
 // =========================================================================
 
-function deleteTransaction(index) {
+window.deleteTransaction = function(index) {
     if (confirm('Are you sure you want to delete this transaction?')) {
         allTransactions.splice(index, 1);
         saveAndSync();
@@ -281,7 +289,7 @@ function deleteTransaction(index) {
     }
 }
 
-function editTransaction(index) {
+window.editTransaction = function(index) {
     const transaction = allTransactions[index];
     const newCategory = prompt('Edit Category:', transaction.category);
     if (newCategory === null) return;
@@ -345,11 +353,6 @@ function generatePdfReport(selectedMonths) {
     doc.save(`expense-report.pdf`);
 }
 
-// Safe Link Google handler (only attach if the element exists)
-
-
-
-
 // =========================================================================
 // === EVENT LISTENERS =====================================================
 // =========================================================================
@@ -357,6 +360,33 @@ function generatePdfReport(selectedMonths) {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
+    // === THEME TOGGLE HANDLER (UPDATED) ===
+    const themeToggleButton = document.getElementById('theme-toggle');
+    if (themeToggleButton) {
+        const themeIcon = themeToggleButton.querySelector('i');
+        
+        // Set initial icon state
+        if (document.body.classList.contains('dark-theme')) {
+            if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            
+            if (themeIcon) {
+                if (isDark) {
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
+                }
+            }
+            // Sync with LocalStorage for all pages
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    }
+
+    // Link Google Logic
     const linkGoogleBtn = document.getElementById("link-google");
     if (linkGoogleBtn) {
         linkGoogleBtn.addEventListener("click", async () => {
@@ -379,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Safe Logout handler
+    // Logout Logic
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
@@ -396,14 +426,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Event Listeners for BOTH voice command buttons
+    // Event Listeners for Voice Commands
     const expenseVoiceBtn = document.getElementById('voice-command-btn');
     if (expenseVoiceBtn) {
-        expenseVoiceBtn.addEventListener('click', startVoiceCommand);
+        expenseVoiceBtn.addEventListener('click', window.startVoiceCommand);
     }
     const incomeVoiceBtn = document.getElementById('voice-command-income-btn');
     if (incomeVoiceBtn) {
-        incomeVoiceBtn.addEventListener('click', startVoiceCommand);
+        incomeVoiceBtn.addEventListener('click', window.startVoiceCommand);
     }
 
     const monthlyIncomeForm = document.getElementById('monthly-income-form');
@@ -527,6 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // PDF Generation Events
     const downloadPdfBtn = document.getElementById('download-pdf');
     const pdfModal = document.getElementById('pdf-modal');
     if (downloadPdfBtn && pdfModal) {
@@ -656,23 +687,4 @@ document.addEventListener('DOMContentLoaded', () => {
         const initialIncome = monthlyIncomes[currentMonthKey] || 0;
         renderAnalyticsCharts(initialTransactions, initialIncome);
     }
-
-    const themeToggleButton = document.getElementById('theme-toggle');
-    if (themeToggleButton) {
-        const themeIcon = themeToggleButton.querySelector('i');
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-theme');
-            if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
-        }
-        themeToggleButton.addEventListener('click', () => {
-            document.body.classList.toggle('dark-theme');
-            const isDark = document.body.classList.contains('dark-theme');
-            if (themeIcon) {
-                themeIcon.classList.toggle('fa-sun', isDark);
-                themeIcon.classList.toggle('fa-moon', !isDark);
-            }
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        });
-    }
 });
-
