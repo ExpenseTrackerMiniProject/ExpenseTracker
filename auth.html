@@ -4,226 +4,197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* RESET */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* --- CSS STYLES --- */
         body {
+            margin: 0;
             height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
             font-family: "Inter", sans-serif;
-            background: #ffffff;
-            position: relative;
+
+            /* STRONGER LIVE GRADIENT so you can see it working */
+            background: linear-gradient(-45deg, #ffffff, #cce0ff, #e6f0ff, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
         }
 
-        /* FLOATING BLUE GRADIENT BACKGROUND */
-        #animated-bg {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background: radial-gradient(circle at 30% 30%, #cfe0ff 0%, transparent 60%),
-                        radial-gradient(circle at 70% 70%, #d8e7ff 0%, transparent 55%);
-            animation: floatGradient 18s ease-in-out infinite alternate;
-            z-index: 0;
-            opacity: 0.7;
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        @keyframes floatGradient {
-            0% { transform: translate(0px, 0px) scale(1); }
-            50% { transform: translate(60px, -40px) scale(1.1); }
-            100% { transform: translate(-40px, 50px) scale(1.05); }
-        }
-
-        /* HUGE BACKGROUND TEXT */
-        /* HUGE BACKGROUND TEXT */
-#bg-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: 900;
-    white-space: nowrap;
-    color: rgba(0,0,0,0.05);
-    pointer-events: none;
-    user-select: none;
-    z-index: 1;
-
-    /* NEW: Dynamically scale to fill width without cropping */
-    font-size: min(22vw, 22vh);
-    line-height: 1;
-}
-
-/* Ultra-wide screens */
-@media (min-aspect-ratio: 16 / 9) {
-    #bg-text {
-        font-size: 22vh;
-    }
-}
-
-/* Tall mobile screens */
-@media (max-aspect-ratio: 9 / 16) {
-    #bg-text {
-        font-size: 35vw;
-    }
-}
-
-
-
-        /* MAIN UI */
-        .center-box {
+        /* Giant background text */
+        .bg-text {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); /* Centered by default */
+            font-size: 18vw; 
+            font-weight: 800;
+            color: rgba(0, 50, 120, 0.04); /* Slightly darker so it's visible */
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+            user-select: none;
+        }
+
+        /* Center login box */
+        .center-box {
+            position: relative;
             text-align: center;
             z-index: 5;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.65); /* Glass effect */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            max-width: 400px;
+            width: 90%;
         }
 
-        h1 {
-            font-size: 40px;
+        .center-box h1 {
+            font-size: 2.2rem;
+            margin: 0;
+            color: #0a2342;
             font-weight: 800;
-            color: #000;
+            letter-spacing: -0.5px;
         }
 
-        #user-count {
-            font-size: 38px;
+        /* Animated user count */
+        .user-count {
+            font-size: 3.5rem;
+            color: #006cff;
+            margin: 5px 0;
             font-weight: 800;
-            color: #0066ff;
-            margin-top: 10px;
+            line-height: 1.2;
+            letter-spacing: -1px;
         }
 
-        p {
-            font-size: 14px;
-            opacity: 0.7;
+        .center-box p {
+            color: #556;
             margin-bottom: 25px;
-            margin-top: 5px;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
 
-        /* BUTTONS */
-        .btn {
-            padding: 12px 30px;
-            border-radius: 10px;
+        /* Button Container */
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Buttons */
+        .btn-outline, .btn-google {
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 16px;
-            border: 2px solid #0d6efd;
-            margin: 6px;
-            transition: 0.2s;
+            width: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .guest-btn {
+        .btn-outline {
+            border: 2px solid #1e78ff;
             background: transparent;
-            color: #0d6efd;
-        }
-        .guest-btn:hover {
-            background: #e8f0ff;
+            color: #1e78ff;
         }
 
-        .google-btn {
-            background: #0d6efd;
+        .btn-outline:hover {
+            background: #1e78ff;
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 120, 255, 0.2);
+        }
+
+        .btn-google {
             border: none;
+            background: #1e78ff;
+            color: white;
         }
-        .google-btn:hover {
+
+        .btn-google:hover {
             background: #005ae0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 120, 255, 0.3);
         }
 
-        /* RESPONSIVE */
         @media (max-width: 600px) {
-    h1 {
-        font-size: 32px;
-    }
-    #user-count {
-        font-size: 32px;
-    }
-}
-
+            .bg-text { font-size: 25vw; }
+            .user-count { font-size: 2.8rem; }
+        }
     </style>
 </head>
-
 <body>
 
-    <!-- MOVING BLUE GRADIENT -->
-    <div id="animated-bg"></div>
+    <div class="bg-text" id="bgText">Expense Tracker</div>
 
-    <!-- BACKGROUND TEXT -->
-    <div id="bg-text">Expense Tracker</div>
-
-    <!-- MAIN UI -->
     <div class="center-box">
         <h1>Expense Tracker</h1>
-        <div id="user-count">0</div>
+        
+        <div class="user-count" id="userCount" data-target="12457">0</div>
+        
         <p>Users managing expenses smarter</p>
 
-        <button id="guest-btn" class="btn guest-btn">Continue as Guest</button>
-        <button id="google-btn" class="btn google-btn">Sign in with Google</button>
+        <div class="btn-container">
+            <button id="guest-btn" class="btn-outline">Continue as Guest</button>
+            <button id="google-btn" class="btn-google">Sign in with Google</button>
+        </div>
     </div>
 
-    <!-- FIREBASE AUTH -->
     <script type="module" src="firebase-auth.js"></script>
 
     <script>
-/* ===== SMOOTH PARALLAX BACKGROUND TEXT ===== */
-const bgText = document.getElementById("bg-text");
+        /* --- JAVASCRIPT LOGIC --- */
 
-let targetX = 0, targetY = 0;
-let currentX = 0, currentY = 0;
+        // 1. Parallax Background Logic
+        const bgText = document.getElementById("bgText");
 
-/* Capture mouse position */
-document.addEventListener("mousemove", (e) => {
-    const xRatio = (e.clientX / window.innerWidth - 0.5);
-    const yRatio = (e.clientY / window.innerHeight - 0.5);
+        document.addEventListener("mousemove", (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 30;
+            const y = (e.clientY / window.innerHeight - 0.5) * 30;
+            
+            // Keeps it centered (-50%) while adding movement
+            bgText.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+        });
 
-    targetX = xRatio * 40;
-    targetY = yRatio * 40;
-});
+        // 2. Counter Animation Logic
+        const counterElement = document.getElementById("userCount");
 
-/* Smooth follow (prevents snapping) */
-function animateParallax() {
-    currentX += (targetX - currentX) * 0.08; 
-    currentY += (targetY - currentY) * 0.08;
+        function startCounter() {
+            const target = +counterElement.getAttribute('data-target'); // Get 12457
+            const duration = 2500; // 2.5 seconds
+            const increment = target / (duration / 16); // ~60 FPS
 
-    bgText.style.transform = 
-        `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`;
+            let current = 0;
 
-    requestAnimationFrame(animateParallax);
-}
-animateParallax();
+            const updateCount = () => {
+                current += increment;
+                if (current < target) {
+                    counterElement.innerText = Math.ceil(current).toLocaleString();
+                    requestAnimationFrame(updateCount);
+                } else {
+                    counterElement.innerText = target.toLocaleString();
+                }
+            };
 
-/* ===== MOUSE-DRIVEN GRADIENT MOTION ===== */
-const animatedBG = document.getElementById("animated-bg");
+            updateCount();
+        }
 
-document.addEventListener("mousemove", (e) => {
-    const moveX = (e.clientX / window.innerWidth - 0.5) * 30;
-    const moveY = (e.clientY / window.innerHeight - 0.5) * 30;
-
-    animatedBG.style.transform = 
-        `translate(${moveX}px, ${moveY}px) scale(1.05)`;
-});
-
-/* ===== COUNT UP ANIMATION ===== */
-let target = 12457;
-let current = 0;
-
-function updateCounter() {
-    if (current < target) {
-        current += Math.ceil((target - current) / 20);
-        document.getElementById("user-count").innerText =
-            current.toLocaleString();
-        requestAnimationFrame(updateCounter);
-    }
-}
-updateCounter();
-</script>
-
+        // Run immediately when page is ready
+        document.addEventListener("DOMContentLoaded", startCounter);
+    </script>
 
 </body>
 </html>
-
-
