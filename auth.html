@@ -169,32 +169,61 @@
     <script type="module" src="firebase-auth.js"></script>
 
     <script>
-        /* ===== PARALLAX BACKGROUND TEXT ===== */
-        const bgText = document.getElementById("bg-text");
+/* ===== SMOOTH PARALLAX BACKGROUND TEXT ===== */
+const bgText = document.getElementById("bg-text");
 
-        document.addEventListener("mousemove", (e) => {
-            let moveX = (e.clientX / window.innerWidth - 0.5) * 40;
-            let moveY = (e.clientY / window.innerHeight - 0.5) * 40;
+let targetX = 0, targetY = 0;
+let currentX = 0, currentY = 0;
 
-            bgText.style.transform =
-                `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
-        });
+/* Capture mouse position */
+document.addEventListener("mousemove", (e) => {
+    const xRatio = (e.clientX / window.innerWidth - 0.5);
+    const yRatio = (e.clientY / window.innerHeight - 0.5);
 
-        /* ===== COUNT UP ANIMATION ===== */
-        let target = 12457;
-        let current = 0;
+    targetX = xRatio * 40;
+    targetY = yRatio * 40;
+});
 
-        function updateCounter() {
-            if (current < target) {
-                current += Math.ceil((target - current) / 20);
-                document.getElementById("user-count").innerText =
-                    current.toLocaleString();
-                requestAnimationFrame(updateCounter);
-            }
-        }
-        updateCounter();
-    </script>
+/* Smooth follow (prevents snapping) */
+function animateParallax() {
+    currentX += (targetX - currentX) * 0.08; 
+    currentY += (targetY - currentY) * 0.08;
+
+    bgText.style.transform = 
+        `translate(calc(-50% + ${currentX}px), calc(-50% + ${currentY}px))`;
+
+    requestAnimationFrame(animateParallax);
+}
+animateParallax();
+
+/* ===== MOUSE-DRIVEN GRADIENT MOTION ===== */
+const animatedBG = document.getElementById("animated-bg");
+
+document.addEventListener("mousemove", (e) => {
+    const moveX = (e.clientX / window.innerWidth - 0.5) * 30;
+    const moveY = (e.clientY / window.innerHeight - 0.5) * 30;
+
+    animatedBG.style.transform = 
+        `translate(${moveX}px, ${moveY}px) scale(1.05)`;
+});
+
+/* ===== COUNT UP ANIMATION ===== */
+let target = 12457;
+let current = 0;
+
+function updateCounter() {
+    if (current < target) {
+        current += Math.ceil((target - current) / 20);
+        document.getElementById("user-count").innerText =
+            current.toLocaleString();
+        requestAnimationFrame(updateCounter);
+    }
+}
+updateCounter();
+</script>
+
 
 </body>
 </html>
+
 
