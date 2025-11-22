@@ -2,198 +2,148 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta-name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker - Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CSS STYLES --- */
+        /* RESET */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            margin: 0;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
             font-family: "Inter", sans-serif;
-
-            /* STRONGER LIVE GRADIENT so you can see it working */
-            background: linear-gradient(-45deg, #ffffff, #cce0ff, #e6f0ff, #ffffff);
-            background-size: 400% 400%;
-            animation: gradientBG 10s ease infinite;
+            background: #ffffff;
+            position: relative;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* FIXED FLOATING BACKGROUND GRADIENT */
+        #animated-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+
+            background: radial-gradient(circle at 30% 30%, #cfe0ff 0%, transparent 60%),
+                        radial-gradient(circle at 70% 70%, #d8e7ff 0%, transparent 55%);
+            animation: floatGradient 16s ease-in-out infinite alternate;
         }
 
-        /* Giant background text */
-        .bg-text {
-            position: absolute;
+        @keyframes floatGradient {
+            0% { transform: translate3d(0,0,0); }
+            50% { transform: translate3d(40px,-25px,0); }
+            100% { transform: translate3d(-30px,30px,0); }
+        }
+
+        /* HUGE BACKGROUND TEXT – NOW ALWAYS VISIBLE */
+        #bg-text {
+            position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%); /* Centered by default */
-            font-size: 18vw; 
-            font-weight: 800;
-            color: rgba(0, 50, 120, 0.04); /* Slightly darker so it's visible */
+            transform: translate3d(-50%, -50%, 0);
+            font-weight: 900;
+            color: rgba(0,0,0,0.06);
             white-space: nowrap;
             pointer-events: none;
-            z-index: 1;
             user-select: none;
+            z-index: 1;
+
+            font-size: 22vmin; /* BEST universal sizing */
+            line-height: 1;
         }
 
-        /* Center login box */
+        /* LOGIN PANEL — FIXED CENTERED — NEVER MOVES */
         .center-box {
-            position: relative;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
             z-index: 5;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.65); /* Glass effect */
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            max-width: 400px;
-            width: 90%;
+
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(10px);
+            padding: 35px 45px;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.1);
         }
 
-        .center-box h1 {
-            font-size: 2.2rem;
-            margin: 0;
-            color: #0a2342;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
+        h1 { font-size: 40px; font-weight: 800; }
+        #user-count { font-size: 38px; font-weight: 800; color: #0066ff; margin-top: 10px; }
+        p { font-size: 14px; opacity: 0.7; margin-bottom: 25px; margin-top: 5px; }
 
-        /* Animated user count */
-        .user-count {
-            font-size: 3.5rem;
-            color: #006cff;
-            margin: 5px 0;
-            font-weight: 800;
-            line-height: 1.2;
-            letter-spacing: -1px;
-        }
-
-        .center-box p {
-            color: #556;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        /* Button Container */
-        .btn-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
-            width: 100%;
-        }
-
-        /* Buttons */
-        .btn-outline, .btn-google {
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
+        /* BUTTONS */
+        .btn {
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 10px;
             cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 6px;
+            transition: 0.2s ease;
+            border: 2px solid #0d6efd;
         }
 
-        .btn-outline {
-            border: 2px solid #1e78ff;
-            background: transparent;
-            color: #1e78ff;
-        }
+        .guest-btn { background: transparent; color: #0d6efd; }
+        .guest-btn:hover { background: #e8f0ff; }
 
-        .btn-outline:hover {
-            background: #1e78ff;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(30, 120, 255, 0.2);
-        }
+        .google-btn { background: #0d6efd; color: white; border: none; }
+        .google-btn:hover { background: #005ae0; }
 
-        .btn-google {
-            border: none;
-            background: #1e78ff;
-            color: white;
-        }
-
-        .btn-google:hover {
-            background: #005ae0;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(30, 120, 255, 0.3);
-        }
-
+        /* MOBILE */
         @media (max-width: 600px) {
-            .bg-text { font-size: 25vw; }
-            .user-count { font-size: 2.8rem; }
+            h1 { font-size: 32px; }
+            #user-count { font-size: 32px; }
+            .center-box { width: 85%; padding: 25px; }
         }
     </style>
 </head>
+
 <body>
 
-    <div class="bg-text" id="bgText">Expense Tracker</div>
+    <!-- FLOATING BG -->
+    <div id="animated-bg"></div>
 
+    <!-- BACKGROUND TEXT -->
+    <div id="bg-text">Expense Tracker</div>
+
+    <!-- LOGIN UI -->
     <div class="center-box">
         <h1>Expense Tracker</h1>
-        
-        <div class="user-count" id="userCount" data-target="12457">0</div>
-        
+        <div id="user-count">0</div>
         <p>Users managing expenses smarter</p>
 
-        <div class="btn-container">
-            <button id="guest-btn" class="btn-outline">Continue as Guest</button>
-            <button id="google-btn" class="btn-google">Sign in with Google</button>
-        </div>
+        <button id="guest-btn" class="btn guest-btn">Continue as Guest</button>
+        <button id="google-btn" class="btn google-btn">Sign in with Google</button>
     </div>
 
+    <!-- FIREBASE -->
     <script type="module" src="firebase-auth.js"></script>
 
     <script>
-        /* --- JAVASCRIPT LOGIC --- */
-
-        // 1. Parallax Background Logic
-        const bgText = document.getElementById("bgText");
+        /* PARALLAX BACKGROUND TEXT (SAFE VERSION) */
+        const bgText = document.getElementById("bg-text");
 
         document.addEventListener("mousemove", (e) => {
             const x = (e.clientX / window.innerWidth - 0.5) * 30;
             const y = (e.clientY / window.innerHeight - 0.5) * 30;
-            
-            // Keeps it centered (-50%) while adding movement
-            bgText.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+            bgText.style.transform =
+                `translate3d(calc(-50% + ${x}px), calc(-50% + ${y}px), 0)`;
         });
 
-        // 2. Counter Animation Logic
-        const counterElement = document.getElementById("userCount");
-
-        function startCounter() {
-            const target = +counterElement.getAttribute('data-target'); // Get 12457
-            const duration = 2500; // 2.5 seconds
-            const increment = target / (duration / 16); // ~60 FPS
-
-            let current = 0;
-
-            const updateCount = () => {
-                current += increment;
-                if (current < target) {
-                    counterElement.innerText = Math.ceil(current).toLocaleString();
-                    requestAnimationFrame(updateCount);
-                } else {
-                    counterElement.innerText = target.toLocaleString();
-                }
-            };
-
-            updateCount();
+        /* COUNT UP */
+        let target = 12457;
+        let current = 0;
+        function updateCounter() {
+            if (current < target) {
+                current += Math.ceil((target - current) / 20);
+                document.getElementById("user-count").innerText = current.toLocaleString();
+                requestAnimationFrame(updateCounter);
+            }
         }
-
-        // Run immediately when page is ready
-        document.addEventListener("DOMContentLoaded", startCounter);
+        updateCounter();
     </script>
 
 </body>
