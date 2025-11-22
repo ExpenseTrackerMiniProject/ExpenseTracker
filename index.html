@@ -13,24 +13,14 @@
 <body>
     <header>
         <h1>Expense Tracker Dashboard</h1>
-        
-        <nav style="display: flex; align-items: center; width: 100%; position: relative; padding: 10px 0;">
+        <nav>
+            <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
+            <a href="index.html">Dashboard</a>
+            <a href="add-transaction.html">Add Transaction</a>
+            <a href="analytics.html">Analytics</a>
             
-            <div>
-                <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
-            </div>
-
-            <div style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: 25px;">
-                <a href="index.html" style="text-decoration: none; font-weight: 600;">Dashboard</a>
-                <a href="add-transaction.html" style="text-decoration: none; font-weight: 600;">Add Transaction</a>
-                <a href="analytics.html" style="text-decoration: none; font-weight: 600;">Analytics</a>
-            </div>
-
-            <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
-                <button id="link-google" style="display: none;">Link Google Account</button>
-                <button id="logout-btn">Logout</button>
-            </div>
-
+            <button id="link-google" style="display: none;">Link Google Account</button>
+            <button id="logout-btn">Logout</button>
         </nav>
     </header>
 
@@ -113,10 +103,9 @@
             const linkBtn = document.getElementById('link-google');
 
             // Only show the "Link Google" button if user is a GUEST
+            // Otherwise it stays hidden (display: none)
             if (loginMode === 'guest' && linkBtn) {
                 linkBtn.style.display = 'inline-block'; 
-            } else if (linkBtn) {
-                linkBtn.style.display = 'none'; 
             }
         });
     </script>
