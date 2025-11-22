@@ -1,4 +1,6 @@
-/* Pure white background */
+/* Import Inter Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+
 body {
     margin: 0;
     height: 100vh;
@@ -7,17 +9,34 @@ body {
     align-items: center;
     overflow: hidden;
     font-family: "Inter", sans-serif;
-    background: #ffffff; /* <-- White background */
+    
+    /* LIVE BLUE & WHITE GRADIENT BACKGROUND */
+    background: linear-gradient(-45deg, #ffffff, #e6f0ff, #dbeafe, #ffffff);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+/* Animation for the live background */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* Giant background text */
 .bg-text {
     position: absolute;
-    font-size: 22vw;
+    top: 50%;
+    left: 50%;
+    /* Initial center transform (JS will append to this) */
+    transform: translate(-50%, -50%);
+    
+    font-size: 15vw; /* Reduced slightly to fit better */
     font-weight: 800;
-    color: rgba(0, 0, 0, 0.05); /* soft gray shadow */
+    color: rgba(0, 30, 80, 0.03); /* Slight blue tint to shadow */
     white-space: nowrap;
     pointer-events: none;
+    z-index: 1;
     transition: transform 0.1s ease-out;
 }
 
@@ -26,7 +45,12 @@ body {
     position: relative;
     text-align: center;
     z-index: 5;
-    padding: 20px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.6); /* Glassmorphism effect */
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
     /* Heading */
@@ -39,59 +63,65 @@ body {
 
 /* Animated user count */
 .user-count {
-    font-size: 2.2rem;
+    font-size: 3rem;
     color: #006cff;
     margin: 10px 0;
     font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.center-box p {
+    color: #667;
+    margin-bottom: 30px;
+}
+
+/* Button Container to align them nicely */
+.btn-container {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 /* Buttons */
+.btn-outline, .btn-google {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 220px; /* Fixed width for consistency */
+    transition: all 0.3s ease;
+}
+
 .btn-outline {
-    padding: 12px 30px;
     border: 2px solid #1e78ff;
-    border-radius: 10px;
     background: transparent;
     color: #1e78ff;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 250px;
-    margin-top: 20px;
-    transition: 0.2s;
 }
 
     .btn-outline:hover {
         background: #1e78ff;
         color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 120, 255, 0.2);
     }
 
 .btn-google {
-    padding: 12px 30px;
     border: none;
-    border-radius: 10px;
     background: #1e78ff;
     color: white;
-    font-size: 1rem;
-    cursor: pointer;
-    width: 250px;
-    margin-top: 10px;
-    transition: 0.2s;
 }
 
     .btn-google:hover {
         background: #005ae0;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(30, 120, 255, 0.3);
     }
 
 /* Mobile */
 @media (max-width: 600px) {
-    .center-box h1 {
-        font-size: 2rem;
-    }
-
-    .user-count {
-        font-size: 1.8rem;
-    }
-
-    .bg-text {
-        font-size: 40vw;
-    }
+    .bg-text { font-size: 25vw; }
+    .center-box { padding: 20px; width: 90%; }
+    .btn-outline, .btn-google { width: 100%; }
 }
