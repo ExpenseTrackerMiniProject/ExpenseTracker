@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker - Login</title>
     <link rel="stylesheet" href="auth-style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Background giant title -->
     <div class="bg-text" id="bgText">Expense Tracker</div>
 
-    <!-- Center Login UI -->
     <div class="center-box">
         <h1>Expense Tracker</h1>
-        <h2 class="user-count" id="userCount">12,457</h2>
+        <h2 class="user-count" id="userCount" data-target="12457">0</h2>
         <p>Users managing expenses smarter</p>
 
-        <button id="guest-btn" class="btn-outline">Continue as Guest</button>
-        <button id="google-btn" class="btn-google">Sign in with Google</button>
+        <div class="btn-container">
+            <button id="guest-btn" class="btn-outline">Continue as Guest</button>
+            <button id="google-btn" class="btn-google">Sign in with Google</button>
+        </div>
     </div>
 
     <script type="module" src="firebase-auth.js"></script>
