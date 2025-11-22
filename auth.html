@@ -42,20 +42,39 @@
         }
 
         /* HUGE BACKGROUND TEXT */
-        #bg-text {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 22vw;
-            font-weight: 900;
-            color: rgba(0, 0, 0, 0.06);
-            white-space: nowrap;
-            pointer-events: none;
-            user-select: none;
-            z-index: 1;
-            transition: transform 0.2s ease-out;
-        }
+        /* HUGE BACKGROUND TEXT */
+#bg-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 900;
+    white-space: nowrap;
+    color: rgba(0,0,0,0.05);
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+
+    /* NEW: Dynamically scale to fill width without cropping */
+    font-size: min(22vw, 22vh);
+    line-height: 1;
+}
+
+/* Ultra-wide screens */
+@media (min-aspect-ratio: 16 / 9) {
+    #bg-text {
+        font-size: 22vh;
+    }
+}
+
+/* Tall mobile screens */
+@media (max-aspect-ratio: 9 / 16) {
+    #bg-text {
+        font-size: 35vw;
+    }
+}
+
+
 
         /* MAIN UI */
         .center-box {
@@ -117,16 +136,14 @@
 
         /* RESPONSIVE */
         @media (max-width: 600px) {
-            #bg-text {
-                font-size: 45vw;
-            }
-            h1 {
-                font-size: 32px;
-            }
-            #user-count {
-                font-size: 32px;
-            }
-        }
+    h1 {
+        font-size: 32px;
+    }
+    #user-count {
+        font-size: 32px;
+    }
+}
+
     </style>
 </head>
 
@@ -180,3 +197,4 @@
 
 </body>
 </html>
+
