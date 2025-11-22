@@ -176,61 +176,40 @@
 
     <script type="module" src="firebase-auth.js"></script>
 
-    <script>
-        // --- 1. THEME SYNC SYSTEM ---
+    <script type="module">
+        import "./firebase-auth-check.js";
+        import { getFirestore, doc, getDoc, setDoc } 
+            from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GoogleAuthProvider 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // --- 1. THEME PERSISTENCE LOGIC ---
         const themeBtn = document.getElementById('themeBtn');
-        
-        // Dark Mode Colors (Matte Blue)
-        const darkColors = [
-            'rgb(20, 80, 160)', 'rgb(30, 90, 180)',
-            'rgb(15, 60, 130)', 'rgb(25, 85, 170)',
-            'rgb(10, 40, 100)', 'rgb(5, 30, 80)'
-        ];
-
-        // Light Mode Colors (Darker Blue/Grey for contrast against white bg)
-        const lightColors = [
-            'rgb(10, 50, 120)', 'rgb(20, 60, 140)',
-            'rgb(5, 30, 80)',   'rgb(60, 60, 60)'
-        ];
-
-        let currentPalette = darkColors;
-
-        // Check Saved Theme immediately
         const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-theme');
-            currentPalette = darkColors;
-        } else {
-            // Default to light or standard
-            document.body.classList.remove('dark-theme');
-            currentPalette = lightColors;
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
         }
 
-        // Toggle Logic
         themeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-theme');
-            
-            if (document.body.classList.contains('dark-theme')) {
-                localStorage.setItem('theme', 'dark');
-                currentPalette = darkColors;
-            } else {
+            document.body.classList.toggle('light-mode');
+            if (document.body.classList.contains('light-mode')) {
                 localStorage.setItem('theme', 'light');
-                currentPalette = lightColors;
+            } else {
+                localStorage.setItem('theme', 'dark');
             }
-            
-            // Trigger particle color update
-            updateParticleColors();
         });
 
-        // --- 2. CANVAS PARTICLE SYSTEM ---
+        // --- 2. NATIVE CANVAS PARTICLE SYSTEM (Your Existing Visuals) ---
         const canvas = document.getElementById('scene');
         const ctx = canvas.getContext('2d');
-        
         let width, height;
         let particles = [];
-        
         const text = "Expense Tracker";
         const gap = 4; 
+        const colors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
 
         class Particle {
             constructor(x, y, targetX, targetY) {
@@ -238,56 +217,39 @@
                 this.y = Math.random() * height;
                 this.targetX = targetX;
                 this.targetY = targetY;
-                // Assign color based on current palette
-                this.color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
                 this.size = (Math.random() * 2 + 2); 
                 this.ease = Math.random() * 0.02 + 0.02; 
                 this.jitterSpeed = Math.random() * 0.05;
                 this.angle = Math.random() * Math.PI * 2;
             }
-
             update(time) {
                 const dx = this.targetX - this.x;
                 const dy = this.targetY - this.y;
-                
                 this.x += dx * this.ease;
                 this.y += dy * this.ease;
-
                 if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
                     this.angle += this.jitterSpeed;
                     this.x = this.targetX + Math.cos(this.angle + time) * 1.5; 
                     this.y = this.targetY + Math.sin(this.angle + time) * 1.5;
                 }
             }
-
             draw() {
                 ctx.fillStyle = this.color;
                 ctx.fillRect(this.x, this.y, this.size, this.size);
             }
         }
 
-        function updateParticleColors() {
-            // Updates all existing particles to the new theme colors
-            particles.forEach(p => {
-                p.color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
-            });
-        }
-
         function init() {
             resize(); 
-            
             ctx.font = 'bold ' + (width < 600 ? '50px' : '100px') + ' Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
             ctx.fillStyle = 'white';
             ctx.fillText(text, width / 2, height / 2 - 20); 
-
             const textCoordinates = ctx.getImageData(0, 0, width, height);
             const data = textCoordinates.data;
-
             particles = [];
-
             for (let y = 0; y < height; y += gap) {
                 for (let x = 0; x < width; x += gap) {
                     if (data[(y * 4 * textCoordinates.width) + (x * 4) + 3] > 128) {
@@ -295,9 +257,6 @@
                     }
                 }
             }
-            
-            // Ensure particles have correct initial color
-            updateParticleColors();
             ctx.clearRect(0, 0, width, height);
         }
 
@@ -317,13 +276,78 @@
             height = canvas.height = window.innerHeight;
         }
 
-        window.addEventListener('resize', () => {
-            resize();
-            init(); 
-        });
-
+        window.addEventListener('resize', () => { resize(); init(); });
         init();
         animate();
+
+
+        // ======================================================
+        // === 3. AUTHENTICATION LOGIC (FIXED) ===
+        // ======================================================
+        
+        // Guest Button
+        document.getElementById('guest-btn').addEventListener('click', () => {
+            localStorage.setItem('loginMode', 'guest');
+            // Keep existing guest data if it exists, or start fresh
+            if(!localStorage.getItem('allTransactions')) {
+                localStorage.setItem('allTransactions', JSON.stringify([]));
+            }
+            window.location.href = "index.html";
+        });
+
+        // Google Sign-In Button
+        document.getElementById('google-btn').addEventListener('click', async () => {
+            const auth = getAuth();
+            const db = getFirestore();
+            const provider = new GoogleAuthProvider();
+
+            // --- FIX 1: FORCE ACCOUNT SELECTION ---
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+
+            try {
+                // Use signInWithPopup instead of linkWithPopup for the main login page
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+
+                console.log("User signed in:", user.email);
+
+                // --- FIX 2: FETCH DATA FROM FIREBASE & UPDATE LOCAL STORAGE ---
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    // Cloud data exists! Download it to browser cache
+                    const data = docSnap.data();
+                    localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
+                    localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
+                    console.log("Data synced FROM cloud TO local.");
+                } else {
+                    // New user (or no data yet). Create empty doc or merge existing guest data
+                    console.log("No cloud data found. Creating new record.");
+                    const currentLocalTrans = JSON.parse(localStorage.getItem("allTransactions")) || [];
+                    const currentLocalInc = JSON.parse(localStorage.getItem("monthlyIncomes")) || {};
+                    
+                    await setDoc(docRef, {
+                        transactions: currentLocalTrans,
+                        monthlyIncomes: currentLocalInc
+                    }, { merge: true });
+                }
+
+                // Set Session Flags
+                localStorage.setItem("loginMode", "google");
+                localStorage.setItem("uid", user.uid);
+
+                alert(`Welcome back, ${user.displayName}!`);
+                window.location.href = "index.html";
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("Login failed: " + error.message);
+            }
+        });
     </script>
 </body>
 </html>
+
