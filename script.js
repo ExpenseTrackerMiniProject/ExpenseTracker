@@ -250,11 +250,11 @@ function displayTransactions(transactionsToDisplay) {
         const originalIndex = findOriginalTransactionIndex(transaction);
 
         li.innerHTML = `
-            <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
-            <div class="button-container">
-                <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
-                <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
-            </div>`;
+<span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
+<div class="button-container">
+    <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
+    <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
+</div>`;
         transactionList.appendChild(li);
     });
 }
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggleButton = document.getElementById('theme-toggle');
     if (themeToggleButton) {
         const themeIcon = themeToggleButton.querySelector('i');
-        
+
         // Set initial icon state
         if (document.body.classList.contains('dark-theme')) {
             if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
         themeToggleButton.addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
             const isDark = document.body.classList.contains('dark-theme');
-            
+
             if (themeIcon) {
                 if (isDark) {
                     themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -410,18 +410,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Logout Logic
+    // Safe Logout handler
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
+
+            // 1. Clear Browser Cache (Local Storage)
+            // We save 'theme' so the user doesn't get flashed with light mode if they like dark
+            const currentTheme = localStorage.getItem('theme');
             localStorage.clear();
+            if(currentTheme) localStorage.setItem('theme', currentTheme);
+
             try {
                 const auth = getAuth();
                 if (auth.currentUser) {
+                    // 2. Sign out from Firebase
                     await signOut(auth);
                 }
             } catch (err) {
                 console.error("Logout error:", err);
             }
+
+            // 3. Redirect
             window.location.href = "auth.html";
         });
     }
@@ -688,3 +698,4 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAnalyticsCharts(initialTransactions, initialIncome);
     }
 });
+
