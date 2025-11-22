@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Expense Tracker Login</title>
     <style>
-        /* --- RESET & VARIABLES --- */
+        /* --- 1. CSS VARIABLES & RESET --- */
         html, body {
             height: 100%;
             width: 100%;
@@ -14,7 +14,7 @@
             overflow: hidden;
             position: fixed;
             
-            /* DEFAULT: LIGHT MODE (Matches your app's default) */
+            /* DEFAULT: LIGHT MODE (White Background) */
             --bg-color: #ffffff;
             --text-color: #444444;
             --btn-border: #333333;
@@ -28,7 +28,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- DARK MODE OVERRIDES (Applied when body has .dark-theme) --- */
+        /* --- DARK MODE OVERRIDES (Triggered by .dark-theme class) --- */
         body.dark-theme {
             --bg-color: #000000;
             --text-color: #bbbbbb;
@@ -71,7 +71,7 @@
             transition: fill 0.3s ease;
         }
 
-        /* --- ICON LOGIC --- */
+        /* --- ICON SWITCHING LOGIC --- */
         /* Default (Light Mode) -> Show Moon */
         .icon-moon { display: block; }
         .icon-sun { display: none; }
@@ -79,6 +79,7 @@
         /* Dark Mode -> Show Sun */
         body.dark-theme .icon-moon { display: none !important; }
         body.dark-theme .icon-sun { display: block !important; }
+
 
         /* --- UI CONTAINER --- */
         .ui-container {
@@ -91,7 +92,7 @@
             max-width: 380px;
             padding: 20px;
             opacity: 0;
-            animation: fadeInUp 1.0s ease-out 0.5s forwards; /* Faster load for auth */
+            animation: fadeInUp 1.0s ease-out 0.5s forwards;
         }
         
         .ui-container.visible { pointer-events: auto; }
@@ -173,10 +174,9 @@
     </div>
 
     <canvas id="scene"></canvas>
-    <script type="module" src="firebase-auth-check.js"></script>
 
     <script type="module">
-        import "./firebase-auth-check.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc } 
             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { 
@@ -185,30 +185,77 @@
             GoogleAuthProvider 
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // --- 1. THEME PERSISTENCE LOGIC ---
+        // Initialize Firebase (Required for this script to work independently)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSyxnlJDrLCzXLt_ozdDD-XVipVNtpQjA",
+            authDomain: "expense-tracker-d4b45.firebaseapp.com",
+            projectId: "expense-tracker-d4b45",
+            storageBucket: "expense-tracker-d4b45.firebasestorage.app",
+            messagingSenderId: "455721176179",
+            appId: "1:455721176179:web:9c875458413a5445816e06",
+            measurementId: "G-7N5VX2GBCC"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // 1. THEME LOGIC (Synced with script.js)
+        // ==========================================
         const themeBtn = document.getElementById('themeBtn');
+        
+        // Color Palettes for Particles
+        const darkColors = [
+            'rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'
+        ];
+        const lightColors = [
+            'rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'
+        ];
+        
+        let currentPalette = darkColors;
+
+        // Load Theme on Start
         const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-mode');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            currentPalette = darkColors;
+        } else {
+            document.body.classList.remove('dark-theme');
+            currentPalette = lightColors;
         }
 
+        // Toggle Theme
         themeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            if (document.body.classList.contains('light-mode')) {
-                localStorage.setItem('theme', 'light');
-            } else {
+            document.body.classList.toggle('dark-theme');
+            
+            if (document.body.classList.contains('dark-theme')) {
                 localStorage.setItem('theme', 'dark');
+                currentPalette = darkColors;
+            } else {
+                localStorage.setItem('theme', 'light');
+                currentPalette = lightColors;
             }
+            
+            // Update Particles Instantly
+            updateParticleColors();
         });
 
-        // --- 2. NATIVE CANVAS PARTICLE SYSTEM (Your Existing Visuals) ---
+        function updateParticleColors() {
+            particles.forEach(p => {
+                p.color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
+            });
+        }
+
+
+        // ==========================================
+        // 2. NATIVE PARTICLE SYSTEM
+        // ==========================================
         const canvas = document.getElementById('scene');
         const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
+        let width, height, particles = [];
         const text = "Expense Tracker";
         const gap = 4; 
-        const colors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
 
         class Particle {
             constructor(x, y, targetX, targetY) {
@@ -216,7 +263,7 @@
                 this.y = Math.random() * height;
                 this.targetX = targetX;
                 this.targetY = targetY;
-                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
                 this.size = (Math.random() * 2 + 2); 
                 this.ease = Math.random() * 0.02 + 0.02; 
                 this.jitterSpeed = Math.random() * 0.05;
@@ -256,6 +303,8 @@
                     }
                 }
             }
+            // Ensure colors are correct on init
+            updateParticleColors();
             ctx.clearRect(0, 0, width, height);
         }
 
@@ -280,65 +329,64 @@
         animate();
 
 
-        // ======================================================
-        // === 3. AUTHENTICATION LOGIC (FIXED) ===
-        // ======================================================
+        // ==========================================
+        // 3. AUTHENTICATION LOGIC (WITH DATA SYNC)
+        // ==========================================
         
-        // Guest Button
+        // Guest Mode
         document.getElementById('guest-btn').addEventListener('click', () => {
             localStorage.setItem('loginMode', 'guest');
-            // Keep existing guest data if it exists, or start fresh
+            // Only init empty arrays if they don't exist (preserve local data)
             if(!localStorage.getItem('allTransactions')) {
                 localStorage.setItem('allTransactions', JSON.stringify([]));
             }
             window.location.href = "index.html";
         });
 
-        // Google Sign-In Button
+        // Google Sign In
         document.getElementById('google-btn').addEventListener('click', async () => {
-            const auth = getAuth();
-            const db = getFirestore();
             const provider = new GoogleAuthProvider();
-
-            // --- FIX 1: FORCE ACCOUNT SELECTION ---
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
+            
+            // Force account selection
+            provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
-                // Use signInWithPopup instead of linkWithPopup for the main login page
+                console.log("Starting sign-in...");
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
+                
+                console.log("User signed in. UID:", user.uid);
+                
+                // 1. Save session basics
+                localStorage.setItem("loginMode", "google");
+                localStorage.setItem("uid", user.uid);
 
-                console.log("User signed in:", user.email);
-
-                // --- FIX 2: FETCH DATA FROM FIREBASE & UPDATE LOCAL STORAGE ---
+                // 2. FETCH DATA FROM FIRESTORE
+                console.log("Fetching data from Firestore...");
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Cloud data exists! Download it to browser cache
+                    // DATA EXISTS: Download to Local Storage
                     const data = docSnap.data();
+                    console.log("Data retrieved from cloud!", data);
+                    
                     localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
-                    console.log("Data synced FROM cloud TO local.");
                 } else {
-                    // New user (or no data yet). Create empty doc or merge existing guest data
-                    console.log("No cloud data found. Creating new record.");
-                    const currentLocalTrans = JSON.parse(localStorage.getItem("allTransactions")) || [];
-                    const currentLocalInc = JSON.parse(localStorage.getItem("monthlyIncomes")) || {};
+                    // NO DATA: Create new user record
+                    console.log("No cloud data. Creating new user record.");
+                    await setDoc(docRef, { 
+                        transactions: [], 
+                        monthlyIncomes: {} 
+                    });
                     
-                    await setDoc(docRef, {
-                        transactions: currentLocalTrans,
-                        monthlyIncomes: currentLocalInc
-                    }, { merge: true });
+                    // Also clear local storage to ensure clean slate
+                    localStorage.setItem("allTransactions", JSON.stringify([]));
+                    localStorage.setItem("monthlyIncomes", JSON.stringify({}));
                 }
 
-                // Set Session Flags
-                localStorage.setItem("loginMode", "google");
-                localStorage.setItem("uid", user.uid);
-
-                alert(`Welcome back, ${user.displayName}!`);
+                console.log("Redirecting to dashboard...");
                 window.location.href = "index.html";
 
             } catch (error) {
@@ -349,6 +397,3 @@
     </script>
 </body>
 </html>
-
-
-
