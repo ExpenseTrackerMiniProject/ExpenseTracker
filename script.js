@@ -411,30 +411,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout Logic
     // Safe Logout handler
-    const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async () => {
+const logoutBtn = document.getElementById("logout-btn");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+        const auth = getAuth();
 
-            // 1. Clear Browser Cache (Local Storage)
-            // We save 'theme' so the user doesn't get flashed with light mode if they like dark
-            const currentTheme = localStorage.getItem('theme');
+        try {
+            // 1. Sign out from Firebase FIRST
+            await signOut(auth);
+            console.log("Firebase Signed Out");
+
+            // 2. Clear Browser Data SECOND
             localStorage.clear();
-            if(currentTheme) localStorage.setItem('theme', currentTheme);
+            sessionStorage.clear();
 
-            try {
-                const auth = getAuth();
-                if (auth.currentUser) {
-                    // 2. Sign out from Firebase
-                    await signOut(auth);
-                }
-            } catch (err) {
-                console.error("Logout error:", err);
-            }
-
-            // 3. Redirect
+            // 3. Redirect LAST
+            window.location.replace("auth.html"); // .replace() prevents back-button issues
+        } catch (err) {
+            console.error("Logout error:", err);
+            // Force redirect even if error occurs to prevent getting stuck
+            localStorage.clear();
             window.location.href = "auth.html";
-        });
-    }
+        }
+    });
+}
 
     // Event Listeners for Voice Commands
     const expenseVoiceBtn = document.getElementById('voice-command-btn');
