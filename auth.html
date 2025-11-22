@@ -6,7 +6,7 @@
     <title>Expense Tracker - Login</title>
 
     <style>
-        /* ===== PAGE RESET ===== */
+        /* RESET */
         * {
             margin: 0;
             padding: 0;
@@ -17,11 +17,31 @@
             height: 100vh;
             overflow: hidden;
             font-family: "Inter", sans-serif;
-            background: linear-gradient(135deg, #e9f0ff, #f5f8ff);
+            background: #ffffff;
             position: relative;
         }
 
-        /* ===== BACKGROUND BIG TEXT ===== */
+        /* FLOATING BLUE GRADIENT BACKGROUND */
+        #animated-bg {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle at 30% 30%, #cfe0ff 0%, transparent 60%),
+                        radial-gradient(circle at 70% 70%, #d8e7ff 0%, transparent 55%);
+            animation: floatGradient 18s ease-in-out infinite alternate;
+            z-index: 0;
+            opacity: 0.7;
+        }
+
+        @keyframes floatGradient {
+            0% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(60px, -40px) scale(1.1); }
+            100% { transform: translate(-40px, 50px) scale(1.05); }
+        }
+
+        /* HUGE BACKGROUND TEXT */
         #bg-text {
             position: absolute;
             top: 50%;
@@ -29,25 +49,28 @@
             transform: translate(-50%, -50%);
             font-size: 22vw;
             font-weight: 900;
-            color: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.06);
             white-space: nowrap;
             pointer-events: none;
             user-select: none;
+            z-index: 1;
             transition: transform 0.2s ease-out;
         }
 
-        /* ===== MAIN UI CENTER ===== */
+        /* MAIN UI */
         .center-box {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            z-index: 5;
         }
 
         h1 {
             font-size: 40px;
             font-weight: 800;
+            color: #000;
         }
 
         #user-count {
@@ -64,7 +87,7 @@
             margin-top: 5px;
         }
 
-        /* ===== BUTTONS ===== */
+        /* BUTTONS */
         .btn {
             padding: 12px 30px;
             border-radius: 10px;
@@ -92,7 +115,7 @@
             background: #005ae0;
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* RESPONSIVE */
         @media (max-width: 600px) {
             #bg-text {
                 font-size: 45vw;
@@ -109,10 +132,13 @@
 
 <body>
 
-    <!-- Huge Background Text -->
+    <!-- MOVING BLUE GRADIENT -->
+    <div id="animated-bg"></div>
+
+    <!-- BACKGROUND TEXT -->
     <div id="bg-text">Expense Tracker</div>
 
-    <!-- Center Login UI -->
+    <!-- MAIN UI -->
     <div class="center-box">
         <h1>Expense Tracker</h1>
         <div id="user-count">0</div>
@@ -122,15 +148,17 @@
         <button id="google-btn" class="btn google-btn">Sign in with Google</button>
     </div>
 
+    <!-- FIREBASE AUTH -->
     <script type="module" src="firebase-auth.js"></script>
 
     <script>
-        /* ===== MOUSE PARALLAX BACKGROUND TEXT ===== */
+        /* ===== PARALLAX BACKGROUND TEXT ===== */
         const bgText = document.getElementById("bg-text");
 
         document.addEventListener("mousemove", (e) => {
-            let moveX = (e.clientX / window.innerWidth - 0.5) * 20;
-            let moveY = (e.clientY / window.innerHeight - 0.5) * 20;
+            let moveX = (e.clientX / window.innerWidth - 0.5) * 40;
+            let moveY = (e.clientY / window.innerHeight - 0.5) * 40;
+
             bgText.style.transform =
                 `translate(calc(-50% + ${moveX}px), calc(-50% + ${moveY}px))`;
         });
@@ -138,12 +166,12 @@
         /* ===== COUNT UP ANIMATION ===== */
         let target = 12457;
         let current = 0;
-        let speed = 35; // smaller = faster
 
         function updateCounter() {
             if (current < target) {
                 current += Math.ceil((target - current) / 20);
-                document.getElementById("user-count").innerText = current.toLocaleString();
+                document.getElementById("user-count").innerText =
+                    current.toLocaleString();
                 requestAnimationFrame(updateCounter);
             }
         }
