@@ -28,7 +28,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- LIGHT MODE OVERRIDES (Triggered by .light-theme class) --- */
+        /* --- LIGHT MODE OVERRIDES --- */
         body.light-theme {
             --bg-color: #ffffff;
             --text-color: #444444;
@@ -56,7 +56,7 @@
             padding: 10px;
             border-radius: 50%;
             z-index: 100; 
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.5s ease; /* Added opacity transition */
             -webkit-tap-highlight-color: transparent;
             outline: none;
         }
@@ -71,15 +71,10 @@
             transition: fill 0.3s ease;
         }
 
-        /* --- ICON SWITCHING LOGIC --- */
-        /* Default (Dark Mode) -> Show Sun */
         .icon-moon { display: none; }
         .icon-sun { display: block; }
-
-        /* Light Mode -> Show Moon */
         body.light-theme .icon-moon { display: block !important; }
         body.light-theme .icon-sun { display: none !important; }
-
 
         /* --- UI CONTAINER --- */
         .ui-container {
@@ -93,9 +88,17 @@
             padding: 20px;
             opacity: 0;
             animation: fadeInUp 1.0s ease-out 0.5s forwards;
+            transition: opacity 0.8s ease, transform 0.8s ease; /* Added transitions for exit */
         }
         
         .ui-container.visible { pointer-events: auto; }
+
+        /* Class to trigger fade out animation */
+        .ui-fade-out {
+            opacity: 0 !important;
+            transform: translate(-50%, 50px) scale(0.9);
+            pointer-events: none;
+        }
 
         .subtitle {
             color: var(--text-color);
@@ -157,7 +160,7 @@
         </svg>
     </button>
 
-    <div class="ui-container">
+    <div class="ui-container" id="auth-ui">
         <p class="subtitle">Managing expenses smarter</p>
         <div class="btn-group">
             <button id="guest-btn" class="btn btn-guest">Continue as Guest</button>
@@ -201,16 +204,13 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- THEME LOGIC (UPDATED: Default is Dark) ---
+        // --- THEME LOGIC ---
         const themeBtn = document.getElementById('themeBtn');
-        
-        // Dark colors are now the default
         const darkColors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
         const lightColors = ['rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'];
         let currentPalette = darkColors;
 
         const savedTheme = localStorage.getItem('theme');
-        // Logic flipped: check if 'light', otherwise default to dark
         if (savedTheme === 'light') {
             document.body.classList.add('light-theme');
             currentPalette = lightColors;
@@ -239,12 +239,15 @@
             }
         }
 
-        // --- PARTICLE SYSTEM ---
+        // --- PARTICLE SYSTEM (WITH EXPLOSION LOGIC) ---
         const canvas = document.getElementById('scene');
         const ctx = canvas.getContext('2d');
         let width, height, particles = [];
         const text = "Expense Tracker";
         const gap = 4; 
+        
+        // ANIMATION STATE
+        let isExploding = false;
 
         class Particle {
             constructor(x, y, targetX, targetY) {
@@ -257,16 +260,39 @@
                 this.ease = Math.random() * 0.02 + 0.02; 
                 this.jitterSpeed = Math.random() * 0.05;
                 this.angle = Math.random() * Math.PI * 2;
+                
+                // Explosion Velocity (Z-axis zoom simulation)
+                this.vx = 0;
+                this.vy = 0;
             }
             update(time) {
-                const dx = this.targetX - this.x;
-                const dy = this.targetY - this.y;
-                this.x += dx * this.ease;
-                this.y += dy * this.ease;
-                if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
-                    this.angle += this.jitterSpeed;
-                    this.x = this.targetX + Math.cos(this.angle + time) * 1.5; 
-                    this.y = this.targetY + Math.sin(this.angle + time) * 1.5;
+                if (isExploding) {
+                    // EXPLOSION LOGIC: Move away from center quickly
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const dx = this.x - centerX;
+                    const dy = this.y - centerY;
+                    
+                    // Normalize and apply speed
+                    const distance = Math.sqrt(dx*dx + dy*dy) || 1;
+                    this.vx = (dx / distance) * (15 + Math.random() * 20); // Speed multiplier
+                    this.vy = (dy / distance) * (15 + Math.random() * 20);
+                    
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.size += 0.5; // "Zooming in" effect
+                    
+                } else {
+                    // NORMAL TEXT FORMATION LOGIC
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    this.x += dx * this.ease;
+                    this.y += dy * this.ease;
+                    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+                        this.angle += this.jitterSpeed;
+                        this.x = this.targetX + Math.cos(this.angle + time) * 1.5; 
+                        this.y = this.targetY + Math.sin(this.angle + time) * 1.5;
+                    }
                 }
             }
             draw() {
@@ -280,7 +306,7 @@
             ctx.font = 'bold ' + (width < 600 ? '50px' : '100px') + ' Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'white'; // Keep text white for contrast generation
+            ctx.fillStyle = 'white'; 
             ctx.fillText(text, width / 2, height / 2 - 20); 
             const textCoordinates = ctx.getImageData(0, 0, width, height);
             const data = textCoordinates.data;
@@ -316,18 +342,34 @@
         init();
         animate();
 
+        // --- FUNCTION TO TRIGGER EXPLOSION & TRANSITION ---
+        function triggerSuccessAnimation(redirectUrl) {
+            console.log("Triggering Animation...");
+            isExploding = true; // Starts particle blast
+            
+            // Fade out UI
+            const ui = document.getElementById('auth-ui');
+            const toggle = document.getElementById('themeBtn');
+            if(ui) ui.classList.add('ui-fade-out');
+            if(toggle) toggle.style.opacity = '0';
+
+            // Redirect after 1.5 seconds
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 1500);
+        }
+
 
         // ==========================================
-        // 3. AUTH LOGIC (ANONYMOUS + GOOGLE)
+        // 3. AUTH LOGIC (WITH ANIMATION)
         // ==========================================
         
-        // --- GUEST LOGIN (Anonymous Auth) ---
+        // --- GUEST LOGIN ---
         document.getElementById('guest-btn').addEventListener('click', async () => {
             try {
                 console.log("Signing in anonymously...");
                 const result = await signInAnonymously(auth);
                 const user = result.user;
-                console.log("Anonymous ID:", user.uid);
 
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
@@ -340,14 +382,16 @@
                 localStorage.setItem("uid", user.uid);
                 if(!localStorage.getItem('allTransactions')) localStorage.setItem("allTransactions", JSON.stringify([]));
                 
-                window.location.href = "index.html";
+                // TRIGGER ANIMATION INSTEAD OF IMMEDIATE REDIRECT
+                triggerSuccessAnimation("index.html");
+
             } catch (error) {
                 console.error(error);
                 alert("Error signing in as guest: " + error.message);
             }
         });
 
-        // --- GOOGLE LOGIN (Wait for Data Fetch) ---
+        // --- GOOGLE LOGIN ---
         document.getElementById('google-btn').addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
@@ -373,7 +417,8 @@
                     localStorage.setItem("monthlyIncomes", JSON.stringify({}));
                 }
 
-                window.location.href = "index.html";
+                // TRIGGER ANIMATION INSTEAD OF IMMEDIATE REDIRECT
+                triggerSuccessAnimation("index.html");
 
             } catch (error) {
                 console.error("Login Error:", error);
