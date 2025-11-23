@@ -179,7 +179,7 @@
         import { 
             getAuth, 
             signInWithPopup, 
-            signInAnonymously, 
+            signInAnonymously,
             GoogleAuthProvider 
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
@@ -313,28 +313,36 @@
         // 3. AUTH LOGIC (ANONYMOUS + GOOGLE)
         // ==========================================
         
-        // --- GUEST LOGIN (Anonymous Auth) ---
+        // --- GUEST LOGIN (Now uses Firebase Anonymous Auth) ---
         document.getElementById('guest-btn').addEventListener('click', async () => {
             try {
                 console.log("Signing in anonymously...");
+                // This creates a real user in Firebase but without credentials
                 const result = await signInAnonymously(auth);
                 const user = result.user;
-                console.log("Anonymous ID:", user.uid);
-
-                // Create initial data in Firestore
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
                 
-                if (!docSnap.exists()) {
-                    await setDoc(docRef, { transactions: [], monthlyIncomes: {} });
-                }
-
+                // 1. Save session as 'guest' so UI knows to show Link button
                 localStorage.setItem("loginMode", "guest");
                 localStorage.setItem("uid", user.uid);
-                // Initialize empty storage
-                if(!localStorage.getItem('allTransactions')) localStorage.setItem("allTransactions", JSON.stringify([]));
-                
+
+                // 2. Check/Create Firestore Record for this Anonymous User
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    // If they logged in before (and browser remembered session), fetch data
+                    const data = docSnap.data();
+                    localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
+                    localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
+                } else {
+                    // New anonymous user - Create empty record
+                    await setDoc(docRef, { transactions: [], monthlyIncomes: {} });
+                    localStorage.setItem("allTransactions", JSON.stringify([]));
+                    localStorage.setItem("monthlyIncomes", JSON.stringify({}));
+                }
+
                 window.location.href = "index.html";
+
             } catch (error) {
                 console.error(error);
                 alert("Error signing in as guest: " + error.message);
@@ -353,7 +361,6 @@
                 localStorage.setItem("loginMode", "google");
                 localStorage.setItem("uid", user.uid);
 
-                // FETCH DATA
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
