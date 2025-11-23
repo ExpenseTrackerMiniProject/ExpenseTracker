@@ -14,7 +14,7 @@
             overflow: hidden;
             position: fixed;
             
-            /* DEFAULT: LIGHT MODE (White Background) */
+            /* DEFAULT: LIGHT MODE */
             --bg-color: #ffffff;
             --text-color: #444444;
             --btn-border: #333333;
@@ -28,7 +28,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- DARK MODE OVERRIDES (Triggered by .dark-theme class) --- */
+        /* --- DARK MODE OVERRIDES --- */
         body.dark-theme {
             --bg-color: #000000;
             --text-color: #bbbbbb;
@@ -71,12 +71,9 @@
             transition: fill 0.3s ease;
         }
 
-        /* --- ICON SWITCHING LOGIC --- */
-        /* Default (Light Mode) -> Show Moon */
         .icon-moon { display: block; }
         .icon-sun { display: none; }
 
-        /* Dark Mode -> Show Sun */
         body.dark-theme .icon-moon { display: none !important; }
         body.dark-theme .icon-sun { display: block !important; }
 
@@ -182,10 +179,11 @@
         import { 
             getAuth, 
             signInWithPopup, 
+            signInAnonymously, 
             GoogleAuthProvider 
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // Initialize Firebase (Required for this script to work independently)
+        // --- FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyCSyxnlJDrLCzXLt_ozdDD-XVipVNtpQjA",
             authDomain: "expense-tracker-d4b45.firebaseapp.com",
@@ -200,22 +198,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ==========================================
-        // 1. THEME LOGIC (Synced with script.js)
-        // ==========================================
+        // --- THEME LOGIC ---
         const themeBtn = document.getElementById('themeBtn');
-        
-        // Color Palettes for Particles
-        const darkColors = [
-            'rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'
-        ];
-        const lightColors = [
-            'rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'
-        ];
-        
+        const darkColors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
+        const lightColors = ['rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'];
         let currentPalette = darkColors;
 
-        // Load Theme on Start
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-theme');
@@ -225,10 +213,8 @@
             currentPalette = lightColors;
         }
 
-        // Toggle Theme
         themeBtn.addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
-            
             if (document.body.classList.contains('dark-theme')) {
                 localStorage.setItem('theme', 'dark');
                 currentPalette = darkColors;
@@ -236,8 +222,6 @@
                 localStorage.setItem('theme', 'light');
                 currentPalette = lightColors;
             }
-            
-            // Update Particles Instantly
             updateParticleColors();
         });
 
@@ -247,10 +231,7 @@
             });
         }
 
-
-        // ==========================================
-        // 2. NATIVE PARTICLE SYSTEM
-        // ==========================================
+        // --- PARTICLE SYSTEM ---
         const canvas = document.getElementById('scene');
         const ctx = canvas.getContext('2d');
         let width, height, particles = [];
@@ -303,7 +284,6 @@
                     }
                 }
             }
-            // Ensure colors are correct on init
             updateParticleColors();
             ctx.clearRect(0, 0, width, height);
         }
@@ -330,63 +310,63 @@
 
 
         // ==========================================
-        // 3. AUTHENTICATION LOGIC (WITH DATA SYNC)
+        // 3. AUTH LOGIC (ANONYMOUS + GOOGLE)
         // ==========================================
         
-        // Guest Mode
-        document.getElementById('guest-btn').addEventListener('click', () => {
-            localStorage.setItem('loginMode', 'guest');
-            // Only init empty arrays if they don't exist (preserve local data)
-            if(!localStorage.getItem('allTransactions')) {
-                localStorage.setItem('allTransactions', JSON.stringify([]));
+        // --- GUEST LOGIN (Anonymous Auth) ---
+        document.getElementById('guest-btn').addEventListener('click', async () => {
+            try {
+                console.log("Signing in anonymously...");
+                const result = await signInAnonymously(auth);
+                const user = result.user;
+                console.log("Anonymous ID:", user.uid);
+
+                // Create initial data in Firestore
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (!docSnap.exists()) {
+                    await setDoc(docRef, { transactions: [], monthlyIncomes: {} });
+                }
+
+                localStorage.setItem("loginMode", "guest");
+                localStorage.setItem("uid", user.uid);
+                // Initialize empty storage
+                if(!localStorage.getItem('allTransactions')) localStorage.setItem("allTransactions", JSON.stringify([]));
+                
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error(error);
+                alert("Error signing in as guest: " + error.message);
             }
-            window.location.href = "index.html";
         });
 
-        // Google Sign In
+        // --- GOOGLE LOGIN ---
         document.getElementById('google-btn').addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
-            
-            // Force account selection
             provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
-                console.log("Starting sign-in...");
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 
-                console.log("User signed in. UID:", user.uid);
-                
-                // 1. Save session basics
                 localStorage.setItem("loginMode", "google");
                 localStorage.setItem("uid", user.uid);
 
-                // 2. FETCH DATA FROM FIRESTORE
-                console.log("Fetching data from Firestore...");
+                // FETCH DATA
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // DATA EXISTS: Download to Local Storage
                     const data = docSnap.data();
-                    console.log("Data retrieved from cloud!", data);
-                    
                     localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
                 } else {
-                    // NO DATA: Create new user record
-                    console.log("No cloud data. Creating new user record.");
-                    await setDoc(docRef, { 
-                        transactions: [], 
-                        monthlyIncomes: {} 
-                    });
-                    
-                    // Also clear local storage to ensure clean slate
+                    await setDoc(docRef, { transactions: [], monthlyIncomes: {} });
                     localStorage.setItem("allTransactions", JSON.stringify([]));
                     localStorage.setItem("monthlyIncomes", JSON.stringify({}));
                 }
 
-                console.log("Redirecting to dashboard...");
                 window.location.href = "index.html";
 
             } catch (error) {
