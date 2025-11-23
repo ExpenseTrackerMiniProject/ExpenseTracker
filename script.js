@@ -10,10 +10,9 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// --- 1. THEME INITIALIZATION (Default: Black/Dark) ---
+// --- 1. THEME INITIALIZATION ---
 (function initTheme() {
     const savedTheme = localStorage.getItem('theme');
-    // Logic: Only remove dark mode if user EXPLICITLY set it to 'light'
     if (savedTheme === 'light') {
         document.body.classList.remove('dark-theme');
     } else {
@@ -22,20 +21,24 @@ import {
 })();
 
 // =========================================================================
-// === DATA FETCHING LOGIC (THE FIX) =======================================
+// === DATA FETCHING LOGIC (With Protection) ===============================
 // =========================================================================
 const auth = getAuth();
 const db = getFirestore();
 
-// Listen for login state changes
 onAuthStateChanged(auth, async (user) => {
+    // PROTECTIVE CHECK: If we are currently linking accounts, DO NOT FETCH.
+    // This prevents the empty database from overwriting local guest data.
+    if (sessionStorage.getItem('isLinking') === 'true') {
+        console.log("🔒 Linking in progress... Auto-fetch paused to preserve data.");
+        return;
+    }
+
     if (user) {
         console.log("✅ User detected:", user.uid);
-        
-        // Ensure we handle Guest vs Google login modes correctly
         const loginMode = localStorage.getItem('loginMode');
         
-        // If we are logged in (Google or Guest), try to fetch data
+        // Only fetch if logged in via Google/Guest
         if(loginMode === 'google' || loginMode === 'guest') {
             try {
                 const docRef = doc(db, "users", user.uid);
@@ -45,21 +48,17 @@ onAuthStateChanged(auth, async (user) => {
                     console.log("🔥 FIREBASE DATA FOUND!");
                     const data = docSnap.data();
                     
-                    // 1. Force update Local Storage with Cloud Data
-                    // We use || [] and || {} to ensure we don't crash if fields are missing
                     const transactionsFromDB = data.transactions || [];
                     const incomesFromDB = data.monthlyIncomes || {};
 
+                    // Only overwrite local if DB actually has data, or if we are securely logged in as Google
+                    // (This prevents a rare edge case where a glitch wipes local data)
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
                     
-                    // 2. Refresh the variables in memory
                     loadData();
-                    
-                    // 3. Force UI Update
                     updateDashboardDisplay();
                     
-                    // 4. Update Charts if they are on screen
                     if (document.getElementById('incomeExpenseChart')) {
                         const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
                         const initialIncome = monthlyIncomes[currentMonthKey] || 0;
@@ -68,14 +67,12 @@ onAuthStateChanged(auth, async (user) => {
                         }
                     }
                 } else {
-                    console.log("⚠️ User logged in, but no data found in Firestore (New user?).");
+                    console.log("⚠️ New user or Guest: No cloud data found yet. Keeping local data.");
                 }
             } catch (error) {
                 console.error("❌ Error fetching data:", error);
             }
         }
-    } else {
-        console.log("User is signed out.");
     }
 });
 
@@ -205,10 +202,9 @@ async function syncToFirestore() {
     const mode = localStorage.getItem("loginMode");
     const uid = localStorage.getItem("uid");
     
-    // Safety check: ensure we have a UID before writing
     if (!uid) return;
     
-    // Only write if we are in a valid online mode
+    // Allow syncing for Google OR Guest to keep data safe
     if (mode === "google" || mode === "guest") {
         const data = {
             transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
@@ -385,22 +381,18 @@ function generatePdfReport(selectedMonths) {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
-    // === THEME TOGGLE (Fixed: Default Dark) ===
+    // === THEME TOGGLE ===
     const themeToggleButton = document.getElementById('theme-toggle');
     if (themeToggleButton) {
         const themeIcon = themeToggleButton.querySelector('i');
-
-        // Check current state from body class
         if (document.body.classList.contains('dark-theme')) {
-            if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun'); // Show sun to switch to light
+            if (themeIcon) themeIcon.classList.replace('fa-moon', 'fa-sun');
         } else {
-            if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon'); // Show moon to switch to dark
+            if (themeIcon) themeIcon.classList.replace('fa-sun', 'fa-moon');
         }
-
         themeToggleButton.addEventListener('click', () => {
             document.body.classList.toggle('dark-theme');
             const isDark = document.body.classList.contains('dark-theme');
-
             if (themeIcon) {
                 if (isDark) themeIcon.classList.replace('fa-moon', 'fa-sun');
                 else themeIcon.classList.replace('fa-sun', 'fa-moon');
@@ -409,21 +401,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Link Account Logic
+    // === UPDATED LINK ACCOUNT LOGIC ===
     const linkGoogleBtn = document.getElementById("link-google");
     if (linkGoogleBtn) {
         linkGoogleBtn.addEventListener("click", async () => {
             try {
+                // 1. SET LOCK to stop Auto-Fetch from overwriting local data
+                sessionStorage.setItem('isLinking', 'true');
+                
+                // 2. Capture current local data safely
+                const currentData = {
+                    transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
+                    monthlyIncomes: JSON.parse(localStorage.getItem("monthlyIncomes")) || {}
+                };
+
                 const provider = new GoogleAuthProvider();
+                
+                // 3. Link the account
                 const result = await linkWithPopup(auth.currentUser, provider);
+                const user = result.user;
+                
                 localStorage.setItem("loginMode", "google");
-                await syncToFirestore(); // Ensure current local data is pushed to the new account
-                alert("Account linked! Data saved.");
+                
+                // 4. FORCE SAVE LOCAL DATA TO CLOUD immediately
+                // This ensures the empty cloud data doesn't wipe our local work
+                console.log("Forcing save of Guest data to Google Account...");
+                await setDoc(doc(db, "users", user.uid), currentData, { merge: true });
+
+                alert("Account linked successfully! Your guest data is saved.");
+                
+                // 5. Remove lock and Reload
+                sessionStorage.removeItem('isLinking');
                 location.reload(); 
+
             } catch (e) {
                 console.error(e);
+                sessionStorage.removeItem('isLinking'); // Remove lock on error
+                
                 if(e.code === 'auth/credential-already-in-use') {
-                    alert("This Google account is already in use. Please logout and sign in with Google.");
+                    alert("This Google account is already used by another user. Please logout and sign in with Google directly.");
                 } else {
                     alert("Error: " + e.message);
                 }
@@ -530,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('input[name="transaction-type"]').forEach(radio => radio.addEventListener('change', () => updateDashboardDisplay()));
 
-    // === CLEAR DATA LOGIC (DB + LOCAL) ===
+    // === CLEAR DATA LOGIC ===
     const clearDataBtn = document.getElementById('clear-data');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', async function () {
@@ -538,10 +554,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const uid = localStorage.getItem('uid');
                 
-                // Try to wipe Firestore
                 if (uid) {
                     try {
-                        // We write empty arrays to the user's document
                         await setDoc(doc(db, "users", uid), {
                             transactions: [],
                             monthlyIncomes: {}
@@ -556,7 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.clear();
                 sessionStorage.clear();
                 alert('All data cleared.');
-                // Add timestamp to force cache refresh
                 window.location.href = window.location.pathname + '?t=' + new Date().getTime();
             }
         });
@@ -615,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
             
-            // Pie Charts Logic
             const drawPie = (ctx, data, type) => {
                 const categories = [...new Set(data.map(t => t.category))];
                 const totals = categories.map(cat => data.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
@@ -647,7 +659,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // Expose function globally for the Fetch logic to use
         window.renderAnalyticsCharts = renderAnalyticsCharts;
 
         const analyticsMonthFilter = document.getElementById('analytics-month-filter');
