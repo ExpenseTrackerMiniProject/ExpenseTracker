@@ -28,7 +28,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- LIGHT MODE OVERRIDES (Triggered by .light-theme class) --- */
+        /* --- LIGHT MODE OVERRIDES --- */
         body.light-theme {
             --bg-color: #ffffff;
             --text-color: #444444;
@@ -71,15 +71,10 @@
             transition: fill 0.3s ease;
         }
 
-        /* --- ICON SWITCHING LOGIC --- */
-        /* Default (Dark Mode) -> Show Sun */
         .icon-moon { display: none; }
         .icon-sun { display: block; }
-
-        /* Light Mode -> Show Moon */
         body.light-theme .icon-moon { display: block !important; }
         body.light-theme .icon-sun { display: none !important; }
-
 
         /* --- UI CONTAINER --- */
         .ui-container {
@@ -121,6 +116,13 @@
             border: none;
             font-weight: 600;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Disabled state style */
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
         }
 
         .btn-guest {
@@ -201,16 +203,13 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- THEME LOGIC (UPDATED: Default is Dark) ---
+        // --- THEME LOGIC ---
         const themeBtn = document.getElementById('themeBtn');
-        
-        // Dark colors are now the default
         const darkColors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
         const lightColors = ['rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'];
         let currentPalette = darkColors;
 
         const savedTheme = localStorage.getItem('theme');
-        // Logic flipped: check if 'light', otherwise default to dark
         if (savedTheme === 'light') {
             document.body.classList.add('light-theme');
             currentPalette = lightColors;
@@ -280,7 +279,7 @@
             ctx.font = 'bold ' + (width < 600 ? '50px' : '100px') + ' Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'white'; // Keep text white for contrast generation
+            ctx.fillStyle = 'white';
             ctx.fillText(text, width / 2, height / 2 - 20); 
             const textCoordinates = ctx.getImageData(0, 0, width, height);
             const data = textCoordinates.data;
@@ -318,16 +317,29 @@
 
 
         // ==========================================
-        // 3. AUTH LOGIC (ANONYMOUS + GOOGLE)
+        // 3. AUTH LOGIC (With Button Locking)
         // ==========================================
         
-        // --- GUEST LOGIN (Anonymous Auth) ---
+        function toggleLoading(isLoading) {
+            const guestBtn = document.getElementById('guest-btn');
+            const googleBtn = document.getElementById('google-btn');
+            if(isLoading) {
+                guestBtn.disabled = true;
+                googleBtn.disabled = true;
+                guestBtn.innerHTML = "Signing in...";
+            } else {
+                guestBtn.disabled = false;
+                googleBtn.disabled = false;
+                guestBtn.innerHTML = "Continue as Guest";
+            }
+        }
+
+        // --- GUEST LOGIN ---
         document.getElementById('guest-btn').addEventListener('click', async () => {
+            toggleLoading(true); // Disable buttons
             try {
-                console.log("Signing in anonymously...");
                 const result = await signInAnonymously(auth);
                 const user = result.user;
-                console.log("Anonymous ID:", user.uid);
 
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
@@ -344,11 +356,13 @@
             } catch (error) {
                 console.error(error);
                 alert("Error signing in as guest: " + error.message);
+                toggleLoading(false); // Re-enable on error
             }
         });
 
-        // --- GOOGLE LOGIN (Wait for Data Fetch) ---
+        // --- GOOGLE LOGIN ---
         document.getElementById('google-btn').addEventListener('click', async () => {
+            toggleLoading(true); // Disable buttons
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -359,7 +373,6 @@
                 localStorage.setItem("loginMode", "google");
                 localStorage.setItem("uid", user.uid);
 
-                // Wait for data fetch
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
@@ -377,7 +390,10 @@
 
             } catch (error) {
                 console.error("Login Error:", error);
-                alert("Login failed: " + error.message);
+                toggleLoading(false); // Re-enable on error
+                if(error.code !== 'auth/popup-closed-by-user') {
+                    alert("Login failed: " + error.message);
+                }
             }
         });
     </script>
