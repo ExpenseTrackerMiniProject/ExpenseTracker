@@ -3,7 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Expense Tracker Login</title>
+    
+    <title>Free Personal Expense Tracker | Manage Budget & Track Spending</title>
+    <meta name="description" content="A simple, free, and secure expense tracker dashboard. Track your daily income and expenses, view analytics, and manage your monthly budget efficiently.">
+    <meta name="keywords" content="expense tracker, budget manager, free spending tracker, personal finance dashboard, daily expense log, Pixelaks">
+    <meta name="author" content="Pixelaks">
+    <meta name="robots" content="index, follow"> 
+    <link rel="canonical" href="https://expense-tracker-d4b45.web.app/" /> <meta property="og:type" content="website">
+    <meta property="og:title" content="Free Personal Expense Tracker">
+    <meta property="og:description" content="Track your daily income and expenses effortlessly with this simple dashboard.">
+    <meta property="og:image" content="https://expense-tracker-d4b45.web.app/assets/preview.jpg"> <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Free Personal Expense Tracker">
+    <meta property="twitter:description" content="Manage your budget and track expenses effortlessly.">
     <style>
         /* --- 1. CSS VARIABLES & RESET --- */
         html, body {
@@ -92,13 +103,28 @@
         
         .ui-container.visible { pointer-events: auto; }
 
+        /* SEO Title Style */
+        .main-title {
+            color: var(--btn-text); /* Adapts to theme */
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
         .subtitle {
             color: var(--text-color);
             font-size: 1rem;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             letter-spacing: 0.5px;
             font-weight: 400;
             transition: color 0.3s ease;
+        }
+        
+        .subtitle.small {
+            font-size: 0.85rem;
+            margin-bottom: 25px;
+            opacity: 0.8;
         }
 
         .btn-group {
@@ -160,8 +186,11 @@
     </button>
 
     <div class="ui-container">
+        <h1 class="main-title">Expense Tracker</h1>
+        
         <p class="subtitle">Manage expenses smarter</p>
-        <p class="subtitle">From Pixelaks</p>
+        <p class="subtitle small">From Pixelaks</p>
+        
         <div class="btn-group">
             <button id="guest-btn" class="btn btn-guest">Continue as Guest</button>
             <button id="google-btn" class="btn btn-google">
@@ -177,6 +206,23 @@
     </div>
 
     <canvas id="scene"></canvas>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Expense Tracker Dashboard",
+      "operatingSystem": "Web",
+      "applicationCategory": "FinanceApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "A free, web-based expense tracker to manage monthly budgets, track income and expenses, and view financial analytics.",
+      "featureList": "Income tracking, Expense logging, Monthly Analytics, PDF Reports, Dark Mode, Guest Mode"
+    }
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -400,4 +446,3 @@
     </script>
 </body>
 </html>
-
