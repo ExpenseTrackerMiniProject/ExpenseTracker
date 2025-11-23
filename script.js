@@ -21,38 +21,33 @@ import {
 })();
 
 // =========================================================================
-// === DATA FETCHING LOGIC (With Protection) ===============================
+// === DATA FETCHING LOGIC ===
 // =========================================================================
 const auth = getAuth();
 const db = getFirestore();
 
 onAuthStateChanged(auth, async (user) => {
-    // PROTECTIVE CHECK: If we are currently linking accounts, DO NOT FETCH.
-    // This prevents the empty database from overwriting local guest data.
     if (sessionStorage.getItem('isLinking') === 'true') {
-        console.log("🔒 Linking in progress... Auto-fetch paused to preserve data.");
+        console.log("Linking in progress... Auto-fetch paused.");
         return;
     }
 
     if (user) {
-        console.log("✅ User detected:", user.uid);
+        console.log("User detected:", user.uid);
         const loginMode = localStorage.getItem('loginMode');
         
-        // Only fetch if logged in via Google/Guest
         if(loginMode === 'google' || loginMode === 'guest') {
             try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    console.log("🔥 FIREBASE DATA FOUND!");
+                    console.log("FIREBASE DATA FOUND!");
                     const data = docSnap.data();
                     
                     const transactionsFromDB = data.transactions || [];
                     const incomesFromDB = data.monthlyIncomes || {};
 
-                    // Only overwrite local if DB actually has data, or if we are securely logged in as Google
-                    // (This prevents a rare edge case where a glitch wipes local data)
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
                     
@@ -66,11 +61,9 @@ onAuthStateChanged(auth, async (user) => {
                             renderAnalyticsCharts(initialTransactions, initialIncome);
                         }
                     }
-                } else {
-                    console.log("⚠️ New user or Guest: No cloud data found yet. Keeping local data.");
                 }
             } catch (error) {
-                console.error("❌ Error fetching data:", error);
+                console.error("Error fetching data:", error);
             }
         }
     }
@@ -97,8 +90,7 @@ if (recognition) {
 
     recognition.onresult = function (event) {
         const voiceInput = event.results[0][0].transcript.toLowerCase();
-        console.log(`Voice Command: ${voiceInput}`);
-
+        
         const expenseRegex = /add (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
         const incomeRegex = /(credit|credited|deposit) (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
 
@@ -118,10 +110,7 @@ if (recognition) {
             const category = matches[3].trim();
             let dateString = matches[4];
 
-            if (dateString.toLowerCase() === 'today') {
-                dateString = getCurrentDate();
-            }
-
+            if (dateString.toLowerCase() === 'today') dateString = getCurrentDate();
             const formattedDate = formatDateToYYYYMMDD(dateString);
 
             if (!category || isNaN(amount) || amount <= 0 || !formattedDate) {
@@ -131,12 +120,10 @@ if (recognition) {
 
             allTransactions.push({ category, amount, date: formattedDate, type: transactionType });
             saveAndSync();
-
-            const typeCapitalized = transactionType.charAt(0).toUpperCase() + transactionType.slice(1);
-            alert(`${typeCapitalized} added successfully!`);
+            alert(`${transactionType.charAt(0).toUpperCase() + transactionType.slice(1)} added successfully!`);
             updateDashboardDisplay();
         } else {
-            alert('Command not recognized. Try "Add 100 food on today".');
+            alert('Command not recognized.');
         }
     };
 
@@ -197,14 +184,12 @@ function loadData() {
     currentView.monthKey = currentMonthKey;
 }
 
-// === SYNC TO FIRESTORE ===
 async function syncToFirestore() {
     const mode = localStorage.getItem("loginMode");
     const uid = localStorage.getItem("uid");
     
     if (!uid) return;
     
-    // Allow syncing for Google OR Guest to keep data safe
     if (mode === "google" || mode === "guest") {
         const data = {
             transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
@@ -221,7 +206,7 @@ async function saveAndSync() {
 }
 
 // =========================================================================
-// === DISPLAY & UI FUNCTIONS ==============================================
+// === DISPLAY & UI FUNCTIONS (UPDATED FOR SUBTOTALS) ======================
 // =========================================================================
 
 function updateDashboardDisplay() {
@@ -243,13 +228,38 @@ function updateDashboardDisplay() {
         incomeForView = monthlyIncomes[monthKey] || 0;
     }
 
+    // Calculate totals
     const totalCredit = transactionsForView.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const totalDebit = transactionsForView.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const netExpenses = totalDebit - totalCredit;
 
+    // Update Top Summary Box
     totalIncomeElem.textContent = incomeForView.toFixed(2);
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (incomeForView - netExpenses).toFixed(2);
+
+    // --- NEW: DYNAMIC SUBTOTAL LOGIC ---
+    const subtotalText = document.getElementById('dynamic-subtotal');
+    const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
+    
+    if (subtotalText && filterTypeElement) {
+        const type = filterTypeElement.value;
+        if (type === 'all') {
+            // Hide text if All is selected
+            subtotalText.style.display = 'none';
+        } else if (type === 'income') {
+            // Show Credit Total in Green
+            subtotalText.style.display = 'inline';
+            subtotalText.style.color = '#2ecc71'; // Green
+            subtotalText.textContent = `Total Credit: ₹${totalCredit.toFixed(2)}`;
+        } else if (type === 'expense') {
+            // Show Debit Total in Red
+            subtotalText.style.display = 'inline';
+            subtotalText.style.color = '#e74c3c'; // Red
+            subtotalText.textContent = `Total Debit: ₹${totalDebit.toFixed(2)}`;
+        }
+    }
+    // -----------------------------------
 
     if (document.getElementById('transaction-list')) {
         displayTransactions(transactionsForView);
@@ -401,43 +411,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === UPDATED LINK ACCOUNT LOGIC ===
+    // === LINK ACCOUNT LOGIC ===
     const linkGoogleBtn = document.getElementById("link-google");
     if (linkGoogleBtn) {
         linkGoogleBtn.addEventListener("click", async () => {
             try {
-                // 1. SET LOCK to stop Auto-Fetch from overwriting local data
                 sessionStorage.setItem('isLinking', 'true');
                 
-                // 2. Capture current local data safely
                 const currentData = {
                     transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
                     monthlyIncomes: JSON.parse(localStorage.getItem("monthlyIncomes")) || {}
                 };
 
                 const provider = new GoogleAuthProvider();
-                
-                // 3. Link the account
                 const result = await linkWithPopup(auth.currentUser, provider);
                 const user = result.user;
                 
                 localStorage.setItem("loginMode", "google");
-                
-                // 4. FORCE SAVE LOCAL DATA TO CLOUD immediately
-                // This ensures the empty cloud data doesn't wipe our local work
                 console.log("Forcing save of Guest data to Google Account...");
                 await setDoc(doc(db, "users", user.uid), currentData, { merge: true });
 
                 alert("Account linked successfully! Your guest data is saved.");
-                
-                // 5. Remove lock and Reload
                 sessionStorage.removeItem('isLinking');
                 location.reload(); 
 
             } catch (e) {
                 console.error(e);
-                sessionStorage.removeItem('isLinking'); // Remove lock on error
-                
+                sessionStorage.removeItem('isLinking');
                 if(e.code === 'auth/credential-already-in-use') {
                     alert("This Google account is already used by another user. Please logout and sign in with Google directly.");
                 } else {
@@ -546,30 +546,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('input[name="transaction-type"]').forEach(radio => radio.addEventListener('change', () => updateDashboardDisplay()));
 
-    // === CLEAR DATA LOGIC ===
+    // Clear Data
     const clearDataBtn = document.getElementById('clear-data');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', async function () {
-            if (confirm('WARNING: This will delete ALL data from the Database and this device.\n\nClick OK to proceed.')) {
-                
+            if (confirm('WARNING: This will delete ALL data.\n\nClick OK to proceed.')) {
                 const uid = localStorage.getItem('uid');
-                
                 if (uid) {
                     try {
-                        await setDoc(doc(db, "users", uid), {
-                            transactions: [],
-                            monthlyIncomes: {}
-                        });
-                        console.log("DB Cleared");
-                    } catch (err) {
-                        console.error("DB Clear Error:", err);
-                        alert("Could not clear database (offline?), but clearing local data.");
-                    }
+                        await setDoc(doc(db, "users", uid), { transactions: [], monthlyIncomes: {} });
+                    } catch (err) { console.error(err); }
                 }
-
                 localStorage.clear();
                 sessionStorage.clear();
-                alert('All data cleared.');
                 window.location.href = window.location.pathname + '?t=' + new Date().getTime();
             }
         });
