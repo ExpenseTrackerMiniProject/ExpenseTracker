@@ -11,42 +11,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* --- 1. HEADER STYLES (MATCHING ANALYTICS) --- */
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        /* --- HEADER STYLES (EXACT ANALYTICS MATCH) --- */
+        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
         header {
-            /* Exact Dark Blue background from your Analytics image */
-            background-color: #003366; 
+            background-color: #003366; /* Dark Blue from Analytics Page */
             color: white;
-            padding: 20px 20px;
+            padding: 20px 40px;
             display: flex;
-            flex-direction: column; /* Stack Title on top of Nav */
-            align-items: center;    /* Center everything horizontally */
-            justify-content: center;
-            position: relative;     /* To position the toggle absolute */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-direction: column;
+            align-items: center;
+            position: relative;
         }
 
+        /* 1. Title Centered */
         header h1 {
-            margin: 0;
+            margin: 0 0 15px 0;
             font-size: 1.8rem;
             font-weight: 700;
-            letter-spacing: 0.5px;
         }
 
+        /* 2. Navigation Container (The Row) */
         nav {
-            margin-top: 15px; /* Space between Title and Links */
+            width: 100%;
+            display: flex;
+            justify-content: center; /* Centers the main links */
+            align-items: center;
+            position: relative; /* Anchor for the absolute right buttons */
+        }
+
+        /* 3. The Links (Centered Group) */
+        .nav-center-links {
             display: flex;
             gap: 25px;
-            align-items: center;
-            flex-wrap: wrap; /* Mobile friendly wrapping */
-            justify-content: center;
         }
 
-        nav a {
+        .nav-center-links a {
             text-decoration: none;
             color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
@@ -54,13 +54,20 @@
             transition: color 0.2s;
         }
 
-        nav a:hover {
+        .nav-center-links a:hover {
             color: #ffffff;
             text-decoration: underline;
         }
 
-        /* Buttons inside nav (Logout/Link) */
-        nav button {
+        /* 4. Auth Buttons (Pinned to Far Right of the Nav Row) */
+        .nav-right-buttons {
+            position: absolute;
+            right: 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-right-buttons button {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
@@ -70,11 +77,11 @@
             font-size: 0.9rem;
             transition: background 0.3s;
         }
-        nav button:hover {
+        .nav-right-buttons button:hover {
             background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Theme Toggle - Top Right Absolute Position */
+        /* Theme Toggle (Absolute Top Right of Header) */
         #theme-toggle {
             position: absolute;
             top: 20px;
@@ -86,11 +93,21 @@
             cursor: pointer;
             padding: 5px;
         }
-        #theme-toggle:hover {
-            transform: scale(1.1);
+        #theme-toggle:hover { transform: scale(1.1); }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .nav-right-buttons {
+                position: static; /* Stack them on mobile */
+                margin-top: 10px;
+            }
         }
 
-        /* --- 2. FILTER & SUBTOTAL CSS --- */
+        /* --- SUBTOTAL & FILTER STYLES --- */
         .filter-container {
             display: flex;
             align-items: center;
@@ -98,7 +115,6 @@
             flex-wrap: wrap; 
             margin-bottom: 15px;
         }
-
         #subtotal-display {
             margin-left: auto; 
             font-weight: bold;
@@ -106,24 +122,8 @@
             padding-right: 10px;
             transition: all 0.3s ease;
         }
-
-        /* Mobile adjustment for subtotal */
         @media (max-width: 600px) {
-            #subtotal-display {
-                margin-left: 0;
-                width: 100%;
-                text-align: right;
-                margin-top: 10px;
-            }
-            header {
-                padding: 15px;
-            }
-            header h1 {
-                font-size: 1.5rem;
-                text-align: center;
-                margin-right: 30px; /* Space for toggle */
-                margin-left: 30px;
-            }
+            #subtotal-display { margin-left: 0; width: 100%; text-align: right; margin-top: 10px; }
         }
     </style>
 </head>
@@ -135,12 +135,16 @@
         <h1>Expense Tracker Dashboard</h1>
         
         <nav>
-            <a href="index.html">Dashboard</a>
-            <a href="add-transaction.html">Add Transaction</a>
-            <a href="analytics.html">Analytics</a>
-            
-            <button id="link-google" style="display: none;">Link Google</button>
-            <button id="logout-btn">Logout</button>
+            <div class="nav-center-links">
+                <a href="index.html">Dashboard</a>
+                <a href="add-transaction.html">Add Transaction</a>
+                <a href="analytics.html">Analytics</a>
+            </div>
+
+            <div class="nav-right-buttons">
+                <button id="link-google" style="display: none;">Link Google</button>
+                <button id="logout-btn">Logout</button>
+            </div>
         </nav>
     </header>
 
