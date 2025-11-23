@@ -20,12 +20,22 @@
         .nav-links a { text-decoration: none; font-weight: 600; font-size: 1.1rem; }
         .auth-buttons { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px; }
         
-        /* New Style for the Subtotal Text */
-        #dynamic-subtotal {
-            margin-left: 15px;
+        /* --- NEW LAYOUT FOR FILTER BAR --- */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            /* This ensures items stay on one line if possible */
+            flex-wrap: wrap; 
+        }
+
+        /* This forces the subtotal to the FAR RIGHT */
+        #subtotal-display {
+            margin-left: auto; 
             font-weight: bold;
-            font-size: 1rem;
-            transition: color 0.3s ease;
+            font-size: 1.2rem;
+            padding-right: 10px;
+            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -92,9 +102,9 @@
                     <label><input type="radio" name="transaction-type" value="all" checked> All</label>
                     <label><input type="radio" name="transaction-type" value="income"> Credit</label>
                     <label><input type="radio" name="transaction-type" value="expense"> Debit</label>
-                    
-                    <span id="dynamic-subtotal"></span>
                 </div>
+                
+                <div id="subtotal-display"></div>
             </div>
             
             <div id="transaction-container" class="fade-in">
