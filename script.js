@@ -206,7 +206,7 @@ async function saveAndSync() {
 }
 
 // =========================================================================
-// === DISPLAY & UI FUNCTIONS (UPDATED FOR SUBTOTALS) ======================
+// === DISPLAY & UI FUNCTIONS ==============================================
 // =========================================================================
 
 function updateDashboardDisplay() {
@@ -228,7 +228,7 @@ function updateDashboardDisplay() {
         incomeForView = monthlyIncomes[monthKey] || 0;
     }
 
-    // Calculate totals for the current view
+    // Calculate totals
     const totalCredit = transactionsForView.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const totalDebit = transactionsForView.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const netExpenses = totalDebit - totalCredit;
@@ -238,28 +238,24 @@ function updateDashboardDisplay() {
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (incomeForView - netExpenses).toFixed(2);
 
-    // --- NEW: FAR RIGHT DYNAMIC SUBTOTAL LOGIC ---
+    // --- FAR RIGHT DYNAMIC SUBTOTAL LOGIC ---
     const subtotalText = document.getElementById('subtotal-display');
     const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
     
     if (subtotalText && filterTypeElement) {
         const type = filterTypeElement.value;
         if (type === 'all') {
-            // Hide text if All is selected
             subtotalText.style.display = 'none';
         } else if (type === 'income') {
-            // Show Credit Total in Green
             subtotalText.style.display = 'block';
-            subtotalText.style.color = '#2ecc71'; // Bright Green
+            subtotalText.style.color = '#2ecc71'; 
             subtotalText.textContent = `Total Credit: ₹${totalCredit.toFixed(2)}`;
         } else if (type === 'expense') {
-            // Show Debit Total in Red
             subtotalText.style.display = 'block';
-            subtotalText.style.color = '#e74c3c'; // Red
+            subtotalText.style.color = '#e74c3c'; 
             subtotalText.textContent = `Total Debit: ₹${totalDebit.toFixed(2)}`;
         }
     }
-    // ---------------------------------------------
 
     if (document.getElementById('transaction-list')) {
         displayTransactions(transactionsForView);
@@ -447,10 +443,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Logout Logic
+    // === UPDATED LOGOUT LOGIC (WITH GUEST WARNING) ===
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
+            const loginMode = localStorage.getItem('loginMode');
+            
+            // 1. WARNING FOR GUESTS
+            if (loginMode === 'guest') {
+                const confirmGuestLogout = confirm("⚠️ WARNING: You are signed in as a Guest.\n\nLogging out will PERMANENTLY DELETE all your data unless you link a Google account first.\n\nAre you sure you want to logout and lose your data?");
+                if (!confirmGuestLogout) {
+                    return; // Stop logout if user cancels
+                }
+            }
+
+            // 2. PROCEED WITH LOGOUT
             try {
                 await signOut(auth);
                 localStorage.clear();
