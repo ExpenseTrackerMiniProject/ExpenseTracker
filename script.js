@@ -1,26 +1,81 @@
 import "./firebase-auth-check.js";
-import { getFirestore, doc, setDoc }
+// 1. Added 'getDoc' to imports so we can read from the database
+import { getFirestore, doc, setDoc, getDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// 2. Added 'onAuthStateChanged' to imports to detect login status
 import {
     getAuth,
     signOut,
     GoogleAuthProvider,
-    linkWithPopup
+    linkWithPopup,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // --- 1. THEME INITIALIZATION (Must be at the very top) ---
-// UPDATED: Defaults to Dark Mode (Black)
 (function initTheme() {
     const savedTheme = localStorage.getItem('theme');
-    // Logic: If 'light' is explicitly saved, remove the dark class.
-    // Otherwise (if 'dark' or null/new user), ADD the dark class to make Black default.
+    // Defaults to Dark Mode (Black)
     if (savedTheme === 'light') {
         document.body.classList.remove('dark-theme');
     } else {
         document.body.classList.add('dark-theme');
     }
 })();
+
+// =======================================================
+// === NEW: AUTO-FETCH DATA ON LOGIN =====================
+// =======================================================
+const auth = getAuth();
+const db = getFirestore();
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // User is signed in. Check if we need to fetch cloud data.
+        const loginMode = localStorage.getItem('loginMode');
+        
+        // Only fetch if logged in via Google (or linked account)
+        if (loginMode === 'google') {
+            console.log("User detected. Fetching data from Firestore...");
+            try {
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Update Local Storage with Cloud Data
+                    if (data.transactions) {
+                        localStorage.setItem("allTransactions", JSON.stringify(data.transactions));
+                    }
+                    if (data.monthlyIncomes) {
+                        localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes));
+                    }
+                    
+                    console.log("Data fetched successfully.");
+                    // Reload data into variables and update UI
+                    loadData();
+                    updateDashboardDisplay();
+                    
+                    // Update charts if they exist
+                    if (document.getElementById('incomeExpenseChart')) {
+                        const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
+                        const initialIncome = monthlyIncomes[currentMonthKey] || 0;
+                        if(typeof renderAnalyticsCharts === 'function') {
+                            renderAnalyticsCharts(initialTransactions, initialIncome);
+                        }
+                    }
+                } else {
+                    console.log("No data found for this user in Cloud.");
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+    }
+});
+// =======================================================
+
 
 //Voice Function Starts.....
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
@@ -99,6 +154,7 @@ if (recognition) {
     }
 }
 
+// Kept this for compatibility, but the onAuthStateChanged above does the heavy lifting now
 window.addEventListener("firestore-data-loaded", () => {
     loadData();
     updateDashboardDisplay();
@@ -163,12 +219,10 @@ function loadData() {
 async function syncToFirestore() {
     const mode = localStorage.getItem("loginMode");
     const uid = localStorage.getItem("uid");
-    // Removed strict check for google only, allows guest sync if logic supports it, otherwise keeps original
-    if (mode !== "google" && mode !== "guest") return; 
-    if (!uid) return;
-
-    const db = getFirestore();
     
+    // Allow syncing if google OR guest (if guest logic requires it later)
+    if ((mode !== "google" && mode !== "guest") || !uid) return;
+
     const data = {
         transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
         monthlyIncomes: JSON.parse(localStorage.getItem("monthlyIncomes")) || {}
@@ -181,9 +235,9 @@ async function saveAndSync() {
     localStorage.setItem("allTransactions", JSON.stringify(allTransactions));
     localStorage.setItem("monthlyIncomes", JSON.stringify(monthlyIncomes));
 
-    // Updated to support Guest/Google sync logic if needed, or defaults to existing
     const loginMode = localStorage.getItem("loginMode");
-    if (loginMode === "google" || loginMode === "guest") {
+    // Sync for Google users. Guests generally use local storage until linked.
+    if (loginMode === "google") {
         await syncToFirestore();
     }
 }
@@ -398,7 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (linkGoogleBtn) {
         linkGoogleBtn.addEventListener("click", async () => {
             try {
-                const auth = getAuth();
                 const provider = new GoogleAuthProvider();
                 
                 // This automatically upgrades the Anonymous account to a Google account
@@ -426,8 +479,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
-            const auth = getAuth();
-
             try {
                 // 1. Sign out from Firebase FIRST
                 await signOut(auth);
