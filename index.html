@@ -11,25 +11,71 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Local Header Overrides */
-        header { position: relative; padding: 20px 40px; text-align: center; }
-        #theme-toggle { position: absolute; top: 20px; right: 40px; margin: 0; }
-        header h1 { margin-bottom: 20px; }
-        nav { position: relative; display: flex; justify-content: center; align-items: center; height: 40px; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { text-decoration: none; font-weight: 600; font-size: 1.1rem; }
-        .auth-buttons { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px; }
-        
-        /* --- NEW LAYOUT FOR FILTER BAR --- */
+        /* --- 1. NEW HEADER CSS (Matches Analytics Layout) --- */
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            gap: 1rem;
+            background-color: var(--bg-color); /* Uses your theme variable */
+            /* If you have a specific header color in style.css, this inherits it */
+        }
+
+        /* Desktop View: Spread them out (Title Left, Nav Right) */
+        @media (min-width: 768px) {
+            header {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 1rem 2rem;
+            }
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap; /* Allows items to wrap on small phones */
+            justify-content: center;
+        }
+
+        nav a {
+            text-decoration: none;
+            font-weight: 600;
+            color: var(--text-color); /* Ensures links match theme */
+        }
+
+        /* Adjust buttons to sit nicely in the nav */
+        nav button {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* Theme toggle specific adjustment */
+        #theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            padding: 5px;
+            color: var(--text-color);
+        }
+
+        /* --- 2. FILTER & SUBTOTAL CSS --- */
         .filter-container {
             display: flex;
             align-items: center;
             gap: 20px;
-            /* This ensures items stay on one line if possible */
             flex-wrap: wrap; 
+            margin-bottom: 15px;
         }
 
-        /* This forces the subtotal to the FAR RIGHT */
         #subtotal-display {
             margin-left: auto; 
             font-weight: bold;
@@ -37,25 +83,30 @@
             padding-right: 10px;
             transition: all 0.3s ease;
         }
+
+        /* Mobile adjustment for subtotal */
+        @media (max-width: 600px) {
+            #subtotal-display {
+                margin-left: 0;
+                width: 100%;
+                text-align: right;
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
+    
     <header>
-        <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
-
         <h1>Expense Tracker Dashboard</h1>
-        
         <nav>
-            <div class="nav-links">
-                <a href="index.html">Dashboard</a>
-                <a href="add-transaction.html">Add Transaction</a>
-                <a href="analytics.html">Analytics</a>
-            </div>
-
-            <div class="auth-buttons">
-                <button id="link-google" style="display: none;">Link Google Account</button>
-                <button id="logout-btn">Logout</button>
-            </div>
+            <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
+            <a href="index.html">Dashboard</a>
+            <a href="add-transaction.html">Add Transaction</a>
+            <a href="analytics.html">Analytics</a>
+            
+            <button id="link-google" style="display: none;">Link Google</button>
+            <button id="logout-btn">Logout</button>
         </nav>
     </header>
 
