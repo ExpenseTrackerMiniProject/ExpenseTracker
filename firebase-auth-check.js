@@ -20,8 +20,7 @@ const isAuthPage = currentPage.includes("auth.html");
 
 onAuthStateChanged(auth, (user) => {
     const loginMode = localStorage.getItem("loginMode");
-    
-    // Valid if: User exists (Anonymous or Google) AND loginMode is set
+    // User is valid if logged in (Google OR Anonymous) AND loginMode is set
     const isAuthenticated = user && (loginMode === 'google' || loginMode === 'guest');
 
     if (isAuthPage) {
