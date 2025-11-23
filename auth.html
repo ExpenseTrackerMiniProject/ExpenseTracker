@@ -14,7 +14,7 @@
             overflow: hidden;
             position: fixed;
             
-            /* DEFAULT: LIGHT MODE */
+            /* DEFAULT: LIGHT MODE (White Background) */
             --bg-color: #ffffff;
             --text-color: #444444;
             --btn-border: #333333;
@@ -28,7 +28,7 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- DARK MODE OVERRIDES --- */
+        /* --- DARK MODE OVERRIDES (Triggered by .dark-theme class) --- */
         body.dark-theme {
             --bg-color: #000000;
             --text-color: #bbbbbb;
@@ -71,9 +71,12 @@
             transition: fill 0.3s ease;
         }
 
+        /* --- ICON SWITCHING LOGIC --- */
+        /* Default (Light Mode) -> Show Moon */
         .icon-moon { display: block; }
         .icon-sun { display: none; }
 
+        /* Dark Mode -> Show Sun */
         body.dark-theme .icon-moon { display: none !important; }
         body.dark-theme .icon-sun { display: block !important; }
 
@@ -145,6 +148,7 @@
 </head>
 <body>
 
+    <!-- THEME TOGGLE -->
     <button class="theme-toggle" id="themeBtn" aria-label="Toggle Theme">
         <svg class="icon-sun" viewBox="0 0 24 24">
             <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
@@ -154,6 +158,7 @@
         </svg>
     </button>
 
+    <!-- MAIN UI -->
     <div class="ui-container">
         <p class="subtitle">Managing expenses smarter</p>
         <div class="btn-group">
@@ -171,6 +176,8 @@
     </div>
 
     <canvas id="scene"></canvas>
+
+    <!-- NOTE: Removed firebase-auth-check.js import to prevent redirect loops -->
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -200,6 +207,7 @@
 
         // --- THEME LOGIC ---
         const themeBtn = document.getElementById('themeBtn');
+        // Define palettes first
         const darkColors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
         const lightColors = ['rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'];
         let currentPalette = darkColors;
@@ -226,9 +234,11 @@
         });
 
         function updateParticleColors() {
-            particles.forEach(p => {
-                p.color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
-            });
+            if (typeof particles !== 'undefined') {
+                particles.forEach(p => {
+                    p.color = currentPalette[Math.floor(Math.random() * currentPalette.length)];
+                });
+            }
         }
 
         // --- PARTICLE SYSTEM ---
@@ -313,43 +323,33 @@
         // 3. AUTH LOGIC (ANONYMOUS + GOOGLE)
         // ==========================================
         
-        // --- GUEST LOGIN (Now uses Firebase Anonymous Auth) ---
+        // --- GUEST LOGIN (Anonymous Auth) ---
         document.getElementById('guest-btn').addEventListener('click', async () => {
             try {
                 console.log("Signing in anonymously...");
-                // This creates a real user in Firebase but without credentials
                 const result = await signInAnonymously(auth);
                 const user = result.user;
-                
-                // 1. Save session as 'guest' so UI knows to show Link button
-                localStorage.setItem("loginMode", "guest");
-                localStorage.setItem("uid", user.uid);
+                console.log("Anonymous ID:", user.uid);
 
-                // 2. Check/Create Firestore Record for this Anonymous User
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    // If they logged in before (and browser remembered session), fetch data
-                    const data = docSnap.data();
-                    localStorage.setItem("allTransactions", JSON.stringify(data.transactions || []));
-                    localStorage.setItem("monthlyIncomes", JSON.stringify(data.monthlyIncomes || {}));
-                } else {
-                    // New anonymous user - Create empty record
+                
+                if (!docSnap.exists()) {
                     await setDoc(docRef, { transactions: [], monthlyIncomes: {} });
-                    localStorage.setItem("allTransactions", JSON.stringify([]));
-                    localStorage.setItem("monthlyIncomes", JSON.stringify({}));
                 }
 
+                localStorage.setItem("loginMode", "guest");
+                localStorage.setItem("uid", user.uid);
+                if(!localStorage.getItem('allTransactions')) localStorage.setItem("allTransactions", JSON.stringify([]));
+                
                 window.location.href = "index.html";
-
             } catch (error) {
                 console.error(error);
                 alert("Error signing in as guest: " + error.message);
             }
         });
 
-        // --- GOOGLE LOGIN ---
+        // --- GOOGLE LOGIN (Wait for Data Fetch) ---
         document.getElementById('google-btn').addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
@@ -361,6 +361,7 @@
                 localStorage.setItem("loginMode", "google");
                 localStorage.setItem("uid", user.uid);
 
+                // Wait for data fetch
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
