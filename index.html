@@ -11,103 +11,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* --- HEADER STYLES (EXACT ANALYTICS MATCH) --- */
-        body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-
-        header {
-            background-color: #003366; /* Dark Blue from Analytics Page */
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-
-        /* 1. Title Centered */
-        header h1 {
-            margin: 0 0 15px 0;
-            font-size: 1.8rem;
-            font-weight: 700;
-        }
-
-        /* 2. Navigation Container (The Row) */
+        /* --- NAVIGATION LAYOUT OVERRIDES --- */
+        /* We use position relative on nav to anchor the right-side buttons */
         nav {
-            width: 100%;
+            position: relative; 
             display: flex;
-            justify-content: center; /* Centers the main links */
+            justify-content: center; /* Keeps links in the middle */
             align-items: center;
-            position: relative; /* Anchor for the absolute right buttons */
+            width: 100%;
         }
 
-        /* 3. The Links (Centered Group) */
-        .nav-center-links {
-            display: flex;
-            gap: 25px;
-        }
-
-        .nav-center-links a {
-            text-decoration: none;
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: color 0.2s;
-        }
-
-        .nav-center-links a:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-
-        /* 4. Auth Buttons (Pinned to Far Right of the Nav Row) */
-        .nav-right-buttons {
+        /* This container sits on the far right of the nav line */
+        .auth-buttons {
             position: absolute;
             right: 0;
+            top: 50%;
+            transform: translateY(-50%);
             display: flex;
             gap: 10px;
         }
 
-        .nav-right-buttons button {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
-        .nav-right-buttons button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Theme Toggle (Absolute Top Right of Header) */
-        #theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 5px;
-        }
-        #theme-toggle:hover { transform: scale(1.1); }
-
-        /* --- MOBILE RESPONSIVENESS --- */
+        /* Mobile adjustments: Stack them if screen is too small */
         @media (max-width: 768px) {
             nav {
                 flex-direction: column;
-                gap: 15px;
+                gap: 10px;
             }
-            .nav-right-buttons {
-                position: static; /* Stack them on mobile */
+            .auth-buttons {
+                position: static;
+                transform: none;
                 margin-top: 10px;
             }
         }
 
-        /* --- SUBTOTAL & FILTER STYLES --- */
+        /* --- FILTER & SUBTOTAL CSS --- */
         .filter-container {
             display: flex;
             align-items: center;
@@ -115,6 +52,8 @@
             flex-wrap: wrap; 
             margin-bottom: 15px;
         }
+
+        /* Forces the subtotal to the FAR RIGHT */
         #subtotal-display {
             margin-left: auto; 
             font-weight: bold;
@@ -122,26 +61,30 @@
             padding-right: 10px;
             transition: all 0.3s ease;
         }
+        
         @media (max-width: 600px) {
-            #subtotal-display { margin-left: 0; width: 100%; text-align: right; margin-top: 10px; }
+            #subtotal-display {
+                margin-left: 0;
+                width: 100%;
+                text-align: right;
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
-
         <h1>Expense Tracker Dashboard</h1>
         
         <nav>
-            <div class="nav-center-links">
-                <a href="index.html">Dashboard</a>
-                <a href="add-transaction.html">Add Transaction</a>
-                <a href="analytics.html">Analytics</a>
-            </div>
+            <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
 
-            <div class="nav-right-buttons">
+            <a href="index.html">Dashboard</a>
+            <a href="add-transaction.html">Add Transaction</a>
+            <a href="analytics.html">Analytics</a>
+            
+            <div class="auth-buttons">
                 <button id="link-google" style="display: none;">Link Google</button>
                 <button id="logout-btn">Logout</button>
             </div>
