@@ -393,18 +393,24 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const auth = getAuth();
                 const provider = new GoogleAuthProvider();
+                
+                // This automatically upgrades the Anonymous account to a Google account
+                // The UID remains the SAME, so the Firestore data stays connected!
                 const result = await linkWithPopup(auth.currentUser, provider);
 
+                // Update session to hide the button next time
                 localStorage.setItem("loginMode", "google");
-                localStorage.setItem("uid", result.user.uid);
-                await syncToFirestore();
-
-                alert("Your guest data has been linked to your Google account!");
-                location.reload();
+                
+                alert("Account successfully linked! Your guest data is now permanent.");
+                location.reload(); 
 
             } catch (e) {
                 console.error(e);
-                alert("Could not link account.");
+                if(e.code === 'auth/credential-already-in-use') {
+                    alert("This Google account is already used by another user. Please logout and sign in with Google directly to access that account.");
+                } else {
+                    alert("Could not link account: " + e.message);
+                }
             }
         });
     }
@@ -698,4 +704,5 @@ if (logoutBtn) {
         renderAnalyticsCharts(initialTransactions, initialIncome);
     }
 });
+
 
