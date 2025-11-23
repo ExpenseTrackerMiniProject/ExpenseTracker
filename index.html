@@ -11,57 +11,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Local Header Overrides to match specific layout request */
-        header {
-            position: relative; /* Anchor for absolute elements */
-            padding: 20px 40px;
-            text-align: center;
-        }
-
-        /* 1. Theme Toggle: Top Right */
-        #theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            margin: 0;
-        }
-
-        /* 2. Title: Centered */
-        header h1 {
-            margin-bottom: 20px; /* Space between title and nav */
-        }
-
-        /* 3. Nav Bar Container */
-        nav {
-            position: relative; /* Anchor for the logout button */
-            display: flex;
-            justify-content: center; /* Center the links */
-            align-items: center;
-            height: 40px; /* Fixed height to align items */
-        }
-
-        /* 4. The Links Group (Centered) */
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
+        /* Local Header Overrides */
+        header { position: relative; padding: 20px 40px; text-align: center; }
+        #theme-toggle { position: absolute; top: 20px; right: 40px; margin: 0; }
+        header h1 { margin-bottom: 20px; }
+        nav { position: relative; display: flex; justify-content: center; align-items: center; height: 40px; }
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a { text-decoration: none; font-weight: 600; font-size: 1.1rem; }
+        .auth-buttons { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 10px; }
         
-        .nav-links a {
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            /* color is handled by style.css */
-        }
-
-        /* 5. Auth Buttons: Right side, same level as links */
-        .auth-buttons {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* New Style for the Subtotal Text */
+        #dynamic-subtotal {
+            margin-left: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: color 0.3s ease;
         }
     </style>
 </head>
@@ -128,6 +92,8 @@
                     <label><input type="radio" name="transaction-type" value="all" checked> All</label>
                     <label><input type="radio" name="transaction-type" value="income"> Credit</label>
                     <label><input type="radio" name="transaction-type" value="expense"> Debit</label>
+                    
+                    <span id="dynamic-subtotal"></span>
                 </div>
             </div>
             
