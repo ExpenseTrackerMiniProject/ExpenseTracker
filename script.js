@@ -228,7 +228,7 @@ function updateDashboardDisplay() {
         incomeForView = monthlyIncomes[monthKey] || 0;
     }
 
-    // Calculate totals
+    // Calculate totals for the current view
     const totalCredit = transactionsForView.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const totalDebit = transactionsForView.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const netExpenses = totalDebit - totalCredit;
@@ -238,8 +238,8 @@ function updateDashboardDisplay() {
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (incomeForView - netExpenses).toFixed(2);
 
-    // --- NEW: DYNAMIC SUBTOTAL LOGIC ---
-    const subtotalText = document.getElementById('dynamic-subtotal');
+    // --- NEW: FAR RIGHT DYNAMIC SUBTOTAL LOGIC ---
+    const subtotalText = document.getElementById('subtotal-display');
     const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
     
     if (subtotalText && filterTypeElement) {
@@ -249,17 +249,17 @@ function updateDashboardDisplay() {
             subtotalText.style.display = 'none';
         } else if (type === 'income') {
             // Show Credit Total in Green
-            subtotalText.style.display = 'inline';
-            subtotalText.style.color = '#2ecc71'; // Green
+            subtotalText.style.display = 'block';
+            subtotalText.style.color = '#2ecc71'; // Bright Green
             subtotalText.textContent = `Total Credit: ₹${totalCredit.toFixed(2)}`;
         } else if (type === 'expense') {
             // Show Debit Total in Red
-            subtotalText.style.display = 'inline';
+            subtotalText.style.display = 'block';
             subtotalText.style.color = '#e74c3c'; // Red
             subtotalText.textContent = `Total Debit: ₹${totalDebit.toFixed(2)}`;
         }
     }
-    // -----------------------------------
+    // ---------------------------------------------
 
     if (document.getElementById('transaction-list')) {
         displayTransactions(transactionsForView);
