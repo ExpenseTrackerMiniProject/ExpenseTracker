@@ -11,60 +11,83 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* --- 1. NEW HEADER CSS (Matches Analytics Layout) --- */
-        header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem;
-            gap: 1rem;
-            background-color: var(--bg-color); /* Uses your theme variable */
-            /* If you have a specific header color in style.css, this inherits it */
+        /* --- 1. HEADER STYLES (MATCHING ANALYTICS) --- */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* Desktop View: Spread them out (Title Left, Nav Right) */
-        @media (min-width: 768px) {
-            header {
-                flex-direction: row;
-                justify-content: space-between;
-                padding: 1rem 2rem;
-            }
+        header {
+            /* Exact Dark Blue background from your Analytics image */
+            background-color: #003366; 
+            color: white;
+            padding: 20px 20px;
+            display: flex;
+            flex-direction: column; /* Stack Title on top of Nav */
+            align-items: center;    /* Center everything horizontally */
+            justify-content: center;
+            position: relative;     /* To position the toggle absolute */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         header h1 {
             margin: 0;
-            font-size: 1.5rem;
-            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
         nav {
+            margin-top: 15px; /* Space between Title and Links */
             display: flex;
+            gap: 25px;
             align-items: center;
-            gap: 15px;
-            flex-wrap: wrap; /* Allows items to wrap on small phones */
+            flex-wrap: wrap; /* Mobile friendly wrapping */
             justify-content: center;
         }
 
         nav a {
             text-decoration: none;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 600;
-            color: var(--text-color); /* Ensures links match theme */
+            font-size: 1.1rem;
+            transition: color 0.2s;
         }
 
-        /* Adjust buttons to sit nicely in the nav */
+        nav a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        /* Buttons inside nav (Logout/Link) */
         nav button {
-            padding: 8px 12px;
-            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+        nav button:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
-        /* Theme toggle specific adjustment */
+        /* Theme Toggle - Top Right Absolute Position */
         #theme-toggle {
-            background: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
             border: none;
+            color: white;
             font-size: 1.2rem;
+            cursor: pointer;
             padding: 5px;
-            color: var(--text-color);
+        }
+        #theme-toggle:hover {
+            transform: scale(1.1);
         }
 
         /* --- 2. FILTER & SUBTOTAL CSS --- */
@@ -92,15 +115,26 @@
                 text-align: right;
                 margin-top: 10px;
             }
+            header {
+                padding: 15px;
+            }
+            header h1 {
+                font-size: 1.5rem;
+                text-align: center;
+                margin-right: 30px; /* Space for toggle */
+                margin-left: 30px;
+            }
         }
     </style>
 </head>
 <body>
-    
+
     <header>
+        <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
+
         <h1>Expense Tracker Dashboard</h1>
+        
         <nav>
-            <button id="theme-toggle"><i id="theme-icon" class="fas fa-moon"></i></button>
             <a href="index.html">Dashboard</a>
             <a href="add-transaction.html">Add Transaction</a>
             <a href="analytics.html">Analytics</a>
