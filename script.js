@@ -682,21 +682,21 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#monthly-income',
             title: 'Income Input',
-            msg: 'Enter your expected income here.',
+            msg: 'Enter your income here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#monthly-income-form button[type="submit"]',
             title: 'Update Budget',
-            msg: 'Click this to set your budget baseline.',
+            msg: 'Click this to update your income.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#start-new-month',
             title: 'New Month',
-            msg: 'Click here when a month ends to start fresh.',
+            msg: 'Click here to archieve previous month data and start a fresh new month.',
             position: 'bottom'
         },
         {
@@ -710,14 +710,14 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#clear-data',
             title: 'Reset',
-            msg: 'Wipe all data (Caution!).',
+            msg: 'Wipe all data (Caution!), This will clear all data permanently.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#download-pdf',
             title: 'Export',
-            msg: 'Download a PDF report.',
+            msg: 'Download a PDF report of the selected month or all month.',
             position: 'top'
         },
         {
@@ -731,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#show-all-data',
             title: 'All-Time View',
-            msg: 'Show history from all months.',
+            msg: 'Show transaction data from all months.',
             position: 'top'
         },
         {
@@ -953,3 +953,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initTutorial();
 });
+
