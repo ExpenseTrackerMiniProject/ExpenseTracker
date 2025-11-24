@@ -21,10 +21,13 @@ import {
 })();
 
 // =========================================================================
-// === DATA FETCHING LOGIC (Updated to sync Tutorial Status) ===============
+// === DATA FETCHING LOGIC & INIT ===
 // =========================================================================
 const auth = getAuth();
 const db = getFirestore();
+
+// Flag to prevent tutorial from starting twice
+let dataLoaded = false;
 
 onAuthStateChanged(auth, async (user) => {
     if (sessionStorage.getItem('isLinking') === 'true') return;
@@ -32,7 +35,8 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         const loginMode = localStorage.getItem('loginMode');
         
-        if(loginMode === 'google' || loginMode === 'guest') {
+        // If Google User, Fetch Data FIRST, then decide on Tutorial
+        if(loginMode === 'google') {
             try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
@@ -45,15 +49,13 @@ onAuthStateChanged(auth, async (user) => {
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
                     
-                    // --- NEW: SYNC TUTORIAL STATUS FROM CLOUD ---
+                    // SYNC TUTORIAL STATUS
                     if (data.tutorialComplete === true) {
                         localStorage.setItem('tutorialComplete', 'true');
                     }
-                    // --------------------------------------------
 
                     loadData();
                     updateDashboardDisplay();
-                    
                     if (document.getElementById('incomeExpenseChart')) {
                         const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
                         const initialIncome = monthlyIncomes[currentMonthKey] || 0;
@@ -65,7 +67,15 @@ onAuthStateChanged(auth, async (user) => {
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
+        } else if (loginMode === 'guest') {
+            // If Guest, just load local data
+            loadData();
+            updateDashboardDisplay();
         }
+
+        // NOW that data (and tutorial status) is synced, try to start tutorial
+        dataLoaded = true;
+        initTutorial();
     }
 });
 
@@ -675,28 +685,28 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#month-management',
             title: 'Welcome!',
-            msg: 'This shows the currently active month for your financial tracking.',
+            msg: 'This dashboard tracks your finances. The current active month is shown here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#monthly-income',
             title: 'Income Input',
-            msg: 'Enter your income here.',
+            msg: 'Enter your expected income here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#monthly-income-form button[type="submit"]',
             title: 'Update Budget',
-            msg: 'Click this to update your income.',
+            msg: 'Click this to set your budget baseline.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#start-new-month',
             title: 'New Month',
-            msg: 'Click here to archieve previous month data and start a fresh new month.',
+            msg: 'Click here when a month ends to start fresh.',
             position: 'bottom'
         },
         {
@@ -710,14 +720,14 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#clear-data',
             title: 'Reset',
-            msg: 'Wipe all data (Caution!), This will clear all data permanently.',
+            msg: 'Wipe all data (Caution!).',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#download-pdf',
             title: 'Export',
-            msg: 'Download a PDF report of the selected month or all month.',
+            msg: 'Download a PDF report.',
             position: 'top'
         },
         {
@@ -731,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#show-all-data',
             title: 'All-Time View',
-            msg: 'Show transaction data from all months.',
+            msg: 'Show history from all months.',
             position: 'top'
         },
         {
@@ -951,6 +961,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    initTutorial();
+    // REMOVE initTutorial() here. It is now triggered inside onAuthStateChanged
 });
-
