@@ -21,13 +21,10 @@ import {
 })();
 
 // =========================================================================
-// === DATA FETCHING LOGIC & INIT ===
+// === DATA FETCHING & INIT LOGIC ==========================================
 // =========================================================================
 const auth = getAuth();
 const db = getFirestore();
-
-// Flag to prevent tutorial from starting twice
-let dataLoaded = false;
 
 onAuthStateChanged(auth, async (user) => {
     if (sessionStorage.getItem('isLinking') === 'true') return;
@@ -35,8 +32,8 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         const loginMode = localStorage.getItem('loginMode');
         
-        // If Google User, Fetch Data FIRST, then decide on Tutorial
-        if(loginMode === 'google') {
+        // 1. FETCH CLOUD DATA (Only if Google/Guest exists in DB)
+        if(loginMode === 'google' || loginMode === 'guest') {
             try {
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
@@ -49,33 +46,30 @@ onAuthStateChanged(auth, async (user) => {
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
                     
-                    // SYNC TUTORIAL STATUS
+                    // Sync Tutorial Status from Cloud
                     if (data.tutorialComplete === true) {
                         localStorage.setItem('tutorialComplete', 'true');
-                    }
-
-                    loadData();
-                    updateDashboardDisplay();
-                    if (document.getElementById('incomeExpenseChart')) {
-                        const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
-                        const initialIncome = monthlyIncomes[currentMonthKey] || 0;
-                        if(typeof renderAnalyticsCharts === 'function') {
-                            renderAnalyticsCharts(initialTransactions, initialIncome);
-                        }
                     }
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
-        } else if (loginMode === 'guest') {
-            // If Guest, just load local data
-            loadData();
-            updateDashboardDisplay();
         }
 
-        // NOW that data (and tutorial status) is synced, try to start tutorial
-        dataLoaded = true;
-        initTutorial();
+        // 2. LOAD LOCAL DATA & UI (Runs for everyone)
+        loadData();
+        updateDashboardDisplay();
+        
+        if (document.getElementById('incomeExpenseChart')) {
+            const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
+            const initialIncome = monthlyIncomes[currentMonthKey] || 0;
+            if(typeof renderAnalyticsCharts === 'function') {
+                renderAnalyticsCharts(initialTransactions, initialIncome);
+            }
+        }
+
+        // 3. START TUTORIAL (Added Delay to ensure UI is ready)
+        setTimeout(initTutorial, 1000);
     }
 });
 
@@ -960,6 +954,4 @@ document.addEventListener('DOMContentLoaded', () => {
              } catch(e) { console.error(e); }
         }
     };
-
-    // REMOVE initTutorial() here. It is now triggered inside onAuthStateChanged
 });
