@@ -481,6 +481,74 @@ body.dark-theme .modal-content {
 body.dark-theme #pdf-month-selection {
     border-color: #555;
 }
+/* --- TUTORIAL WALKTHROUGH STYLES --- */
+#tutorial-spotlight {
+    position: absolute;
+    border-radius: 4px;
+    /* This creates the dark overlay using a massive shadow */
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85); 
+    pointer-events: none; /* Allows clicking through to the element */
+    z-index: 10000;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 2px solid #fff; /* Highlight border */
+}
+
+#tutorial-tooltip {
+    position: absolute;
+    background: #ffffff;
+    color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    width: 280px;
+    z-index: 10001;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    font-family: 'Segoe UI', sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#tutorial-tooltip.visible {
+    opacity: 1;
+}
+
+#tutorial-tooltip h3 {
+    margin: 0 0 10px 0;
+    color: #003366;
+    font-size: 1.1rem;
+}
+
+#tutorial-tooltip p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    color: #555;
+}
+
+.tutorial-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tut-btn-next {
+    background: #003366;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.tut-btn-skip {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.tut-btn-skip:hover { text-decoration: underline; color: #333; }
+
 
 
 
