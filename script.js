@@ -21,12 +21,13 @@ import {
 })();
 
 // =========================================================================
-// === DATA FETCHING LOGIC (Updated to sync Tutorial Status) ===============
+// === DATA FETCHING LOGIC ===
 // =========================================================================
 const auth = getAuth();
 const db = getFirestore();
 
 onAuthStateChanged(auth, async (user) => {
+    // Stop if we are in the middle of linking an account
     if (sessionStorage.getItem('isLinking') === 'true') return;
 
     if (user) {
@@ -45,27 +46,33 @@ onAuthStateChanged(auth, async (user) => {
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
                     
-                    // --- NEW: SYNC TUTORIAL STATUS FROM CLOUD ---
+                    // --- SYNC TUTORIAL STATUS FROM CLOUD ---
+                    // If DB says tutorial is done, update local storage immediately
                     if (data.tutorialComplete === true) {
                         localStorage.setItem('tutorialComplete', 'true');
                     }
-                    // --------------------------------------------
-
-                    loadData();
-                    updateDashboardDisplay();
-                    
-                    if (document.getElementById('incomeExpenseChart')) {
-                        const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
-                        const initialIncome = monthlyIncomes[currentMonthKey] || 0;
-                        if(typeof renderAnalyticsCharts === 'function') {
-                            renderAnalyticsCharts(initialTransactions, initialIncome);
-                        }
-                    }
+                    // ---------------------------------------
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         }
+
+        // Load Data & UI
+        loadData();
+        updateDashboardDisplay();
+        
+        if (document.getElementById('incomeExpenseChart')) {
+            const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
+            const initialIncome = monthlyIncomes[currentMonthKey] || 0;
+            if(typeof renderAnalyticsCharts === 'function') {
+                renderAnalyticsCharts(initialTransactions, initialIncome);
+            }
+        }
+
+        // Attempt to start tutorial (Will check tutorialComplete flag inside)
+        // 1 second delay to ensure DOM/Animations are ready
+        setTimeout(initTutorial, 1000);
     }
 });
 
@@ -401,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Link Account
+    // === FIXED LINK ACCOUNT LOGIC (With Forced Popup) ===
     const linkGoogleBtn = document.getElementById("link-google");
     if (linkGoogleBtn) {
         linkGoogleBtn.addEventListener("click", async () => {
@@ -411,11 +418,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
                     monthlyIncomes: JSON.parse(localStorage.getItem("monthlyIncomes")) || {}
                 };
+                
                 const provider = new GoogleAuthProvider();
+                // FORCE GOOGLE TO ASK WHICH ACCOUNT TO USE
+                provider.setCustomParameters({ prompt: 'select_account' });
+
                 const result = await linkWithPopup(auth.currentUser, provider);
                 const user = result.user;
+                
                 localStorage.setItem("loginMode", "google");
                 await setDoc(doc(db, "users", user.uid), currentData, { merge: true });
+                
                 alert("Account linked successfully!");
                 sessionStorage.removeItem('isLinking');
                 location.reload(); 
@@ -675,28 +688,28 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#month-management',
             title: 'Welcome!',
-            msg: 'This shows the currently active month for your financial tracking.',
+            msg: 'This dashboard tracks your finances. The current active month is shown here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#monthly-income',
             title: 'Income Input',
-            msg: 'Enter your income here.',
+            msg: 'Enter your expected income here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#monthly-income-form button[type="submit"]',
             title: 'Update Budget',
-            msg: 'Click this to update your income.',
+            msg: 'Click this to set your budget baseline.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#start-new-month',
             title: 'New Month',
-            msg: 'Click here when a month ends to archieve that month data and to start a fresh new month.',
+            msg: 'Click here when a month ends to start fresh.',
             position: 'bottom'
         },
         {
@@ -710,14 +723,14 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#clear-data',
             title: 'Reset',
-            msg: 'Wipe all data (Caution!), this will permenently remove all your data.',
+            msg: 'Wipe all data (Caution!).',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#download-pdf',
             title: 'Export',
-            msg: 'Download a PDF report of selected month or all month.',
+            msg: 'Download a PDF report.',
             position: 'top'
         },
         {
@@ -951,6 +964,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    initTutorial();
+    // Initial tutorial check (outside auth loop as fallback)
+    setTimeout(initTutorial, 1500);
 });
-
