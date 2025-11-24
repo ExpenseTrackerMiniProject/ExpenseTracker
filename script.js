@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === UPDATED LOGOUT LOGIC (WITH GUEST WARNING) ===
+    // === LOGOUT LOGIC ===
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
@@ -694,30 +694,51 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             page: 'index.html',
             target: '#month-management',
-            title: 'Welcome to Expense Tracker!',
-            msg: 'This is your main dashboard. Here you can see the currently active month for tracking.',
+            title: 'Welcome!',
+            msg: 'This is your dashboard. The currently active month is shown here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
-            target: '#monthly-income-form',
-            title: 'Set Your Budget',
-            msg: 'Start by entering your total income for the current month here and click "Update Income".',
+            target: '#monthly-income-form button[type="submit"]',
+            title: 'Set Budget',
+            msg: 'Enter your income for the month and click "Update Income" to set your budget baseline.',
+            position: 'bottom'
+        },
+        {
+            page: 'index.html',
+            target: '#start-new-month',
+            title: 'New Month',
+            msg: 'When a month ends, click "Start New Month" to archive current data and start fresh.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#totals',
-            title: 'Financial Overview',
-            msg: 'This summary box shows your Total Income, Expenses, and Remaining Balance in real-time.',
+            title: 'Summary',
+            msg: 'Track your total income, expenses, and remaining balance here.',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: '#type-filter-container',
+            title: 'Filters',
+            msg: 'Toggle between "Credit", "Debit", or "All" to filter your transaction list.',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: '#transaction-container',
+            title: 'History',
+            msg: 'All your recent transactions will appear in this list.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: 'a[href="add-transaction.html"]', 
-            title: 'Add Your First Transaction',
-            msg: 'Click this link to go to the "Add Transaction" page to log an expense or income.',
-            action: 'click-link', // Special action: User must click the link to proceed
+            title: 'Add Data',
+            msg: 'Click here to go to the Add Transaction page.',
+            action: 'click-link', 
             position: 'bottom'
         },
 
@@ -725,22 +746,22 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             page: 'add-transaction.html',
             target: '#transaction-form',
-            title: 'Log Expenses (Debit)',
-            msg: 'Use this form to log money you SPENT. You can type manually or use the microphone button for voice commands!',
+            title: 'Log Expenses',
+            msg: 'Use this form to log money you spent (Debit).',
             position: 'right'
         },
         {
             page: 'add-transaction.html',
             target: '#add-money-form',
-            title: 'Log Income (Credit)',
-            msg: 'Use this second form if you receive extra money (like a bonus or refund).',
+            title: 'Log Income',
+            msg: 'Use this form to log extra income or deposits (Credit).',
             position: 'right'
         },
         {
             page: 'add-transaction.html',
             target: 'a[href="analytics.html"]',
-            title: 'Check Analytics',
-            msg: 'Click here to view detailed charts and insights about your spending habits.',
+            title: 'View Analytics',
+            msg: 'Click here to see detailed charts.',
             action: 'click-link',
             position: 'bottom'
         },
@@ -749,60 +770,57 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             page: 'analytics.html',
             target: '.filter-controls',
-            title: 'Filter Data',
-            msg: 'Use this control to switch between different months to compare your spending.',
+            title: 'Date Filter',
+            msg: 'Select a specific month to analyze past data.',
             position: 'bottom'
         },
         {
             page: 'analytics.html',
-            target: '.chart-container', // Highlights the first chart found
-            title: 'Visual Insights',
-            msg: 'Here you can see a visual breakdown of your Income vs. Expenses.',
+            target: '#incomeExpenseChart', 
+            title: 'Income vs Expenses',
+            msg: 'This bar chart compares how much you earned vs how much you spent.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: '#logout-btn', // Or target the header
-            title: 'You are Ready!',
-            msg: 'That concludes the tour! Remember to logout securely when you are finished.',
+            target: '#expenseCategoryChart', 
+            title: 'Spending Habits',
+            msg: 'This pie chart shows which categories you spend the most money on.',
+            position: 'top'
+        },
+        {
+            page: 'analytics.html',
+            target: '#logout-btn',
+            title: 'All Done!',
+            msg: 'You are ready to go! Remember to logout when finished.',
             position: 'bottom',
             isLast: true
         }
     ];
 
-    // Function to start checking if tutorial is needed
     function initTutorial() {
-        // 1. Check if tutorial is already marked as complete
         if (localStorage.getItem('tutorialComplete') === 'true') return;
 
-        // 2. Get current step index (default 0)
         let currentStepIndex = parseInt(localStorage.getItem('tutorialStep')) || 0;
         
-        // Safety check
         if (currentStepIndex >= tutorialData.length) {
             endTutorial();
             return;
         }
 
         const step = tutorialData[currentStepIndex];
-        
-        // 3. Check if we are on the correct page for this step
-        // Get filename (e.g., "index.html") from path. handle root path "/" as index.html
         let currentPage = window.location.pathname.split("/").pop();
-        if (currentPage === "" || currentPage === undefined) currentPage = "index.html";
+        if (!currentPage || currentPage === "") currentPage = "index.html";
 
-        // Only run if the page matches the step's page
         if (!currentPage.includes(step.page)) return;
 
-        // 4. Render the step (Wait briefly for DOM to settle)
         setTimeout(() => showStep(step, currentStepIndex), 500);
     }
 
     function showStep(step, index) {
         const targetEl = document.querySelector(step.target);
-        if (!targetEl) return; // Element not found on this page, skip or wait
+        if (!targetEl) return;
 
-        // Create UI elements if they don't exist
         if (!document.getElementById('tutorial-spotlight')) {
             const spotlight = document.createElement('div');
             spotlight.id = 'tutorial-spotlight';
@@ -816,49 +834,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const spotlight = document.getElementById('tutorial-spotlight');
         const tooltip = document.getElementById('tutorial-tooltip');
 
-        // --- 1. Position Spotlight ---
         const rect = targetEl.getBoundingClientRect();
         const scrollY = window.scrollY;
         const scrollX = window.scrollX;
-
-        // Add some padding around the target
         const padding = 5;
+
         spotlight.style.width = `${rect.width + (padding*2)}px`;
         spotlight.style.height = `${rect.height + (padding*2)}px`;
         spotlight.style.top = `${rect.top + scrollY - padding}px`;
         spotlight.style.left = `${rect.left + scrollX - padding}px`;
 
-        // --- 2. Position Tooltip ---
-        // Logic to place top or bottom based on space
         let tooltipTop = rect.bottom + scrollY + 15;
-        
-        // If explicitly requested 'top' OR if near bottom of page, move up
         if (step.position === 'top' || (window.innerHeight - rect.bottom < 200)) {
             tooltipTop = rect.top + scrollY - 200; 
         }
         
-        // Logic to ensure tooltip doesn't go off-screen right
         let tooltipLeft = rect.left + scrollX;
         if (tooltipLeft + 280 > window.innerWidth) {
-            tooltipLeft = window.innerWidth - 300; // Push it back left
+            tooltipLeft = window.innerWidth - 300;
         }
-        if (tooltipLeft < 10) tooltipLeft = 10; // Push it back right
+        if (tooltipLeft < 10) tooltipLeft = 10;
 
         tooltip.style.top = `${tooltipTop}px`;
         tooltip.style.left = `${tooltipLeft}px`;
 
-        // --- 3. Set Content ---
         let btnHtml = `<button class="tut-btn-next" onclick="nextTutorialStep()">Next</button>`;
         
-        // Handle special "click link" steps
         if (step.action === 'click-link') {
             btnHtml = `<span style="font-size:0.85em; color:#666; font-style:italic; display:block; margin-top:10px;">(Click the highlighted link to continue)</span>`;
-            
-            // Add a one-time click listener to the target to advance the step index
             targetEl.onclick = function() {
                 localStorage.setItem('tutorialStep', index + 1);
-                // The default link behavior will take them to the next page, 
-                // where initTutorial() will run again.
             };
         } else if (step.isLast) {
             btnHtml = `<button class="tut-btn-next" onclick="endTutorial()">Finish Tour</button>`;
@@ -868,25 +873,43 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3>${step.title}</h3>
             <p>${step.msg}</p>
             <div class="tutorial-footer">
-                <button class="tut-btn-skip" onclick="endTutorial()">Skip Tour</button>
+                <button class="tut-btn-skip" onclick="endTutorial()">Skip</button>
                 ${btnHtml}
             </div>
         `;
 
-        // Show elements
         tooltip.classList.add('visible');
-        
-        // Smooth scroll to the element
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Global functions attached to window for the buttons to work
+    // Global functions for buttons
     window.nextTutorialStep = function() {
-        let current = parseInt(localStorage.getItem('tutorialStep')) || 0;
-        localStorage.setItem('tutorialStep', current + 1);
-        // Reload to re-trigger initTutorial() which will check the new step index
-        // In a Single Page App we wouldn't reload, but here it ensures fresh state
-        location.reload(); 
+        const current = parseInt(localStorage.getItem('tutorialStep')) || 0;
+        const next = current + 1;
+        localStorage.setItem('tutorialStep', next);
+
+        if (next >= tutorialData.length) {
+            endTutorial();
+            return;
+        }
+
+        // NO RELOAD LOGIC: Check if next step is on same page
+        const nextStepData = tutorialData[next];
+        let currentPage = window.location.pathname.split("/").pop();
+        if (!currentPage || currentPage === "") currentPage = "index.html";
+
+        if (currentPage.includes(nextStepData.page)) {
+            // Same page: remove old spotlight and render new one
+            const spot = document.getElementById('tutorial-spotlight');
+            const tool = document.getElementById('tutorial-tooltip');
+            if(spot) spot.remove();
+            if(tool) tool.remove();
+            
+            showStep(nextStepData, next);
+        } else {
+            // Different page: navigate
+            window.location.href = nextStepData.page;
+        }
     };
 
     window.endTutorial = function() {
@@ -897,7 +920,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if(tool) tool.remove();
     };
 
-    // Start the tutorial check
     initTutorial();
-
 });
