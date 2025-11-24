@@ -28,12 +28,10 @@ const db = getFirestore();
 
 onAuthStateChanged(auth, async (user) => {
     if (sessionStorage.getItem('isLinking') === 'true') {
-        console.log("Linking in progress... Auto-fetch paused.");
         return;
     }
 
     if (user) {
-        console.log("User detected:", user.uid);
         const loginMode = localStorage.getItem('loginMode');
         
         if(loginMode === 'google' || loginMode === 'guest') {
@@ -42,7 +40,6 @@ onAuthStateChanged(auth, async (user) => {
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    console.log("FIREBASE DATA FOUND!");
                     const data = docSnap.data();
                     
                     const transactionsFromDB = data.transactions || [];
@@ -228,17 +225,14 @@ function updateDashboardDisplay() {
         incomeForView = monthlyIncomes[monthKey] || 0;
     }
 
-    // Calculate totals
     const totalCredit = transactionsForView.filter(t => t.type === 'income').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const totalDebit = transactionsForView.filter(t => t.type === 'expense').reduce((acc, t) => acc + parseFloat(t.amount), 0);
     const netExpenses = totalDebit - totalCredit;
 
-    // Update Top Summary Box
     totalIncomeElem.textContent = incomeForView.toFixed(2);
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (incomeForView - netExpenses).toFixed(2);
 
-    // --- FAR RIGHT DYNAMIC SUBTOTAL LOGIC ---
     const subtotalText = document.getElementById('subtotal-display');
     const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
     
@@ -387,7 +381,6 @@ function generatePdfReport(selectedMonths) {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 
-    // === THEME TOGGLE ===
     const themeToggleButton = document.getElementById('theme-toggle');
     if (themeToggleButton) {
         const themeIcon = themeToggleButton.querySelector('i');
@@ -407,7 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === LINK ACCOUNT LOGIC ===
     const linkGoogleBtn = document.getElementById("link-google");
     if (linkGoogleBtn) {
         linkGoogleBtn.addEventListener("click", async () => {
@@ -424,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const user = result.user;
                 
                 localStorage.setItem("loginMode", "google");
-                console.log("Forcing save of Guest data to Google Account...");
                 await setDoc(doc(db, "users", user.uid), currentData, { merge: true });
 
                 alert("Account linked successfully! Your guest data is saved.");
@@ -443,19 +434,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === LOGOUT LOGIC ===
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.addEventListener("click", async () => {
             const loginMode = localStorage.getItem('loginMode');
-            
             if (loginMode === 'guest') {
-                const confirmGuestLogout = confirm("⚠️ WARNING: You are signed in as a Guest.\n\nLogging out will PERMANENTLY DELETE all your data unless you link a Google account first.\n\nAre you sure you want to logout and lose your data?");
-                if (!confirmGuestLogout) {
+                if (!confirm("⚠️ WARNING: You are signed in as a Guest.\n\nLogging out will PERMANENTLY DELETE all your data.\n\nAre you sure?")) {
                     return; 
                 }
             }
-
             try {
                 await signOut(auth);
                 localStorage.clear();
@@ -469,7 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Form Listeners
     const expenseVoiceBtn = document.getElementById('voice-command-btn');
     if (expenseVoiceBtn) expenseVoiceBtn.addEventListener('click', window.startVoiceCommand);
     
@@ -539,7 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Filter Buttons
     const showCurrentBtn = document.getElementById('show-current-month-data');
     if (showCurrentBtn) showCurrentBtn.addEventListener('click', function () { currentView.mode = 'month'; currentView.monthKey = currentMonthKey; if (document.getElementById('filter-date')) document.getElementById('filter-date').value = ''; updateDashboardDisplay(); });
 
@@ -551,7 +536,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('input[name="transaction-type"]').forEach(radio => radio.addEventListener('change', () => updateDashboardDisplay()));
 
-    // Clear Data
     const clearDataBtn = document.getElementById('clear-data');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', async function () {
@@ -569,7 +553,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // PDF Logic
     const downloadPdfBtn = document.getElementById('download-pdf');
     const pdfModal = document.getElementById('pdf-modal');
     if (downloadPdfBtn && pdfModal) {
@@ -600,7 +583,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Analytics Init
     if (document.getElementById('incomeExpenseChart')) {
         let incomeExpenseChart, expenseCategoryChart, incomeCategoryChart;
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
@@ -688,102 +670,146 @@ document.addEventListener('DOMContentLoaded', () => {
     // === USER ONBOARDING TUTORIAL SYSTEM (Walkthrough) ==========
     // ============================================================
     
-    // Define the steps for the tutorial
     const tutorialData = [
         // --- INDEX PAGE STEPS ---
         {
             page: 'index.html',
             target: '#month-management',
             title: 'Welcome!',
-            msg: 'This is your dashboard. The currently active month is shown here.',
+            msg: 'This shows the currently active month for your financial tracking.',
             position: 'bottom'
         },
         {
             page: 'index.html',
-            target: '#monthly-income-form',
-            title: 'Set Budget',
-            msg: 'Enter your income for the month here and click "Update Income" to set your baseline.',
+            target: '#monthly-income',
+            title: 'Income Input',
+            msg: 'Enter your total expected income for this month here.',
+            position: 'bottom'
+        },
+        {
+            page: 'index.html',
+            target: '#monthly-income-form button[type="submit"]',
+            title: 'Update Budget',
+            msg: 'Click here to save your income and update your budget calculations.',
+            position: 'bottom'
+        },
+        {
+            page: 'index.html',
+            target: '#start-new-month',
+            title: 'New Month',
+            msg: 'When the month ends, click here to archive data and start a fresh month.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#totals',
             title: 'Summary',
-            msg: 'Track your total income, expenses, and remaining balance here.',
+            msg: 'Track your total Income, Expenses, and Remaining Balance in real-time.',
             position: 'top'
         },
-        // NEW BUTTON EXPLANATIONS
+        // Buttons Row
         {
             page: 'index.html',
             target: '#clear-data',
-            title: 'Reset Data',
-            msg: 'Click here to wipe all data and start fresh. Use with caution!',
+            title: 'Reset',
+            msg: 'Click to wipe ALL data and start over. (Use with caution!)',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#download-pdf',
-            title: 'Export Reports',
+            title: 'Export',
             msg: 'Download a PDF report of your finances for any month.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#show-current-month-data',
-            title: 'Current View',
-            msg: 'Click to see only transactions from the current active month.',
+            title: 'View Current',
+            msg: 'Filters the list below to show only transactions from the active month.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#show-all-data',
-            title: 'All-Time View',
-            msg: 'Click to see your entire history of transactions across all months.',
+            title: 'View All',
+            msg: 'Shows your complete transaction history across all months.',
             position: 'top'
         },
         {
             page: 'index.html',
-            target: '.filter-container', // Wraps the filter inputs
-            title: 'Filtering',
-            msg: 'Use these controls to filter the transaction list by a specific month or by type (Credit/Debit).',
+            target: '.filter-container',
+            title: 'Transaction Filters',
+            msg: 'Filter the list below by a specific month or by type (Credit/Debit).',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#transaction-container',
-            title: 'Transaction List',
-            msg: 'Your recent transactions will appear here.',
+            title: 'History List',
+            msg: 'Your recent transactions will appear here. You can Edit or Delete them.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: 'a[href="add-transaction.html"]', 
-            title: 'Next Step',
-            msg: 'Click here to go to the Add Transaction page.',
+            title: 'Add Data',
+            msg: 'Click here to go to the "Add Transaction" page.',
             action: 'click-link', 
             position: 'bottom'
         },
 
         // --- ADD TRANSACTION PAGE STEPS ---
+        // Debit Section
         {
             page: 'add-transaction.html',
-            target: '#transaction-form', // This is the EXPENSE form
-            title: 'Log Expenses (Debit)',
-            msg: 'Use this top form to log money you spent.',
-            position: 'right'
+            target: '#category',
+            title: 'Expense Category',
+            msg: 'Type what you spent money on (e.g., Food, Fuel).',
+            position: 'bottom'
         },
         {
             page: 'add-transaction.html',
-            target: '#add-money-form', // This is the INCOME form
-            title: 'Log Income (Credit)',
-            msg: 'Use this bottom form to log extra income or deposits.',
-            position: 'top' // Changed to top so it doesn't overlap bottom of screen
+            target: '#amount',
+            title: 'Expense Amount',
+            msg: 'Enter the exact amount you spent.',
+            position: 'bottom'
+        },
+        {
+            page: 'add-transaction.html',
+            target: '#date',
+            title: 'Date',
+            msg: 'Select the date of the expense.',
+            position: 'bottom'
+        },
+        
+        // Credit Section
+        {
+            page: 'add-transaction.html',
+            target: '#add-money-category',
+            title: 'Income Category',
+            msg: 'Type the source of income (e.g., Salary, Bonus).',
+            position: 'top'
+        },
+        {
+            page: 'add-transaction.html',
+            target: '#add-money-amount',
+            title: 'Income Amount',
+            msg: 'Enter the amount received.',
+            position: 'top'
+        },
+        {
+            page: 'add-transaction.html',
+            target: '#add-money-date',
+            title: 'Date',
+            msg: 'Select the date you received the money.',
+            position: 'top'
         },
         {
             page: 'add-transaction.html',
             target: 'a[href="analytics.html"]',
             title: 'See Insights',
-            msg: 'Click here to view your Analytics charts.',
+            msg: 'Click here to view your Analytics.',
             action: 'click-link',
             position: 'bottom'
         },
@@ -792,43 +818,41 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             page: 'analytics.html',
             target: '.filter-controls',
-            title: 'Date Filter',
-            msg: 'Select a specific month here to analyze your spending for that period.',
+            title: 'Month Filter',
+            msg: 'Use this to view charts for a specific month in the past.',
             position: 'bottom'
         },
         {
             page: 'analytics.html',
-            target: '#incomeExpenseChart', // Specific Canvas ID
-            title: 'Income vs Expenses',
-            msg: 'This bar chart gives you a quick comparison of what you earned vs what you spent.',
+            target: '#incomeExpenseChart', 
+            title: 'Overview Chart',
+            msg: 'This bar chart compares your Total Income vs Total Expenses.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: '#expenseCategoryChart', // Specific Canvas ID
+            target: '#expenseCategoryChart', 
             title: 'Expense Breakdown',
-            msg: 'This pie chart shows exactly where your money is going (e.g., Food, Travel).',
+            msg: 'See exactly where your money goes (Pie Chart by Category).',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: '#incomeCategoryChart', // Specific Canvas ID
-            title: 'Income Sources',
-            msg: 'This chart shows where your money is coming from (e.g., Salary, Freelance).',
+            target: '#incomeCategoryChart', 
+            title: 'Income Breakdown',
+            msg: 'See your different sources of income.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: 'header', // Use header instead of specific button to be safe
+            target: 'header', 
             title: 'All Done!',
-            msg: 'You are ready to go! Remember to logout securely when you are finished.',
+            msg: 'You are all set! Welcome to Expense Tracker.',
             position: 'bottom',
             isLast: true
         }
     ];
 
-    // ... (Keep the rest of the initTutorial, showStep, nextTutorialStep, endTutorial functions exactly as they were) ...
-    
     function initTutorial() {
         if (localStorage.getItem('tutorialComplete') === 'true') return;
 
@@ -844,7 +868,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentPage || currentPage === "") currentPage = "index.html";
 
         if (currentPage.includes(step.page)) {
-             // Small delay to ensure elements are rendered
              setTimeout(() => showStep(step, currentStepIndex), 500);
         }
     }
@@ -852,11 +875,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function showStep(step, index) {
         const targetEl = document.querySelector(step.target);
         
-        // If element isn't found, we skip to next step automatically to avoid getting stuck
         if (!targetEl) {
             console.warn(`Tutorial target ${step.target} not found. Skipping.`);
             localStorage.setItem('tutorialStep', index + 1);
-            initTutorial(); // Try next step immediately
+            initTutorial(); 
             return;
         }
 
@@ -884,8 +906,8 @@ document.addEventListener('DOMContentLoaded', () => {
         spotlight.style.left = `${rect.left + scrollX - padding}px`;
 
         let tooltipTop = rect.bottom + scrollY + 15;
-        if (step.position === 'top' || (window.innerHeight - rect.bottom < 200)) {
-            tooltipTop = rect.top + scrollY - 200; 
+        if (step.position === 'top' || (window.innerHeight - rect.bottom < 250)) {
+            tooltipTop = rect.top + scrollY - 220; 
         }
         
         let tooltipLeft = rect.left + scrollX;
@@ -956,4 +978,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initTutorial();
 });
-
