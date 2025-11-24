@@ -449,15 +449,13 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener("click", async () => {
             const loginMode = localStorage.getItem('loginMode');
             
-            // 1. WARNING FOR GUESTS
             if (loginMode === 'guest') {
                 const confirmGuestLogout = confirm("⚠️ WARNING: You are signed in as a Guest.\n\nLogging out will PERMANENTLY DELETE all your data unless you link a Google account first.\n\nAre you sure you want to logout and lose your data?");
                 if (!confirmGuestLogout) {
-                    return; // Stop logout if user cancels
+                    return; 
                 }
             }
 
-            // 2. PROCEED WITH LOGOUT
             try {
                 await signOut(auth);
                 localStorage.clear();
@@ -685,4 +683,221 @@ document.addEventListener('DOMContentLoaded', () => {
         const initialIncome = monthlyIncomes[currentMonthKey] || 0;
         renderAnalyticsCharts(initialTransactions, initialIncome);
     }
+
+    // ============================================================
+    // === USER ONBOARDING TUTORIAL SYSTEM (Walkthrough) ==========
+    // ============================================================
+    
+    // Define the steps for the tutorial
+    const tutorialData = [
+        // --- INDEX PAGE STEPS ---
+        {
+            page: 'index.html',
+            target: '#month-management',
+            title: 'Welcome to Expense Tracker!',
+            msg: 'This is your main dashboard. Here you can see the currently active month for tracking.',
+            position: 'bottom'
+        },
+        {
+            page: 'index.html',
+            target: '#monthly-income-form',
+            title: 'Set Your Budget',
+            msg: 'Start by entering your total income for the current month here and click "Update Income".',
+            position: 'bottom'
+        },
+        {
+            page: 'index.html',
+            target: '#totals',
+            title: 'Financial Overview',
+            msg: 'This summary box shows your Total Income, Expenses, and Remaining Balance in real-time.',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: 'a[href="add-transaction.html"]', 
+            title: 'Add Your First Transaction',
+            msg: 'Click this link to go to the "Add Transaction" page to log an expense or income.',
+            action: 'click-link', // Special action: User must click the link to proceed
+            position: 'bottom'
+        },
+
+        // --- ADD TRANSACTION PAGE STEPS ---
+        {
+            page: 'add-transaction.html',
+            target: '#transaction-form',
+            title: 'Log Expenses (Debit)',
+            msg: 'Use this form to log money you SPENT. You can type manually or use the microphone button for voice commands!',
+            position: 'right'
+        },
+        {
+            page: 'add-transaction.html',
+            target: '#add-money-form',
+            title: 'Log Income (Credit)',
+            msg: 'Use this second form if you receive extra money (like a bonus or refund).',
+            position: 'right'
+        },
+        {
+            page: 'add-transaction.html',
+            target: 'a[href="analytics.html"]',
+            title: 'Check Analytics',
+            msg: 'Click here to view detailed charts and insights about your spending habits.',
+            action: 'click-link',
+            position: 'bottom'
+        },
+
+        // --- ANALYTICS PAGE STEPS ---
+        {
+            page: 'analytics.html',
+            target: '.filter-controls',
+            title: 'Filter Data',
+            msg: 'Use this control to switch between different months to compare your spending.',
+            position: 'bottom'
+        },
+        {
+            page: 'analytics.html',
+            target: '.chart-container', // Highlights the first chart found
+            title: 'Visual Insights',
+            msg: 'Here you can see a visual breakdown of your Income vs. Expenses.',
+            position: 'top'
+        },
+        {
+            page: 'analytics.html',
+            target: '#logout-btn', // Or target the header
+            title: 'You are Ready!',
+            msg: 'That concludes the tour! Remember to logout securely when you are finished.',
+            position: 'bottom',
+            isLast: true
+        }
+    ];
+
+    // Function to start checking if tutorial is needed
+    function initTutorial() {
+        // 1. Check if tutorial is already marked as complete
+        if (localStorage.getItem('tutorialComplete') === 'true') return;
+
+        // 2. Get current step index (default 0)
+        let currentStepIndex = parseInt(localStorage.getItem('tutorialStep')) || 0;
+        
+        // Safety check
+        if (currentStepIndex >= tutorialData.length) {
+            endTutorial();
+            return;
+        }
+
+        const step = tutorialData[currentStepIndex];
+        
+        // 3. Check if we are on the correct page for this step
+        // Get filename (e.g., "index.html") from path. handle root path "/" as index.html
+        let currentPage = window.location.pathname.split("/").pop();
+        if (currentPage === "" || currentPage === undefined) currentPage = "index.html";
+
+        // Only run if the page matches the step's page
+        if (!currentPage.includes(step.page)) return;
+
+        // 4. Render the step (Wait briefly for DOM to settle)
+        setTimeout(() => showStep(step, currentStepIndex), 500);
+    }
+
+    function showStep(step, index) {
+        const targetEl = document.querySelector(step.target);
+        if (!targetEl) return; // Element not found on this page, skip or wait
+
+        // Create UI elements if they don't exist
+        if (!document.getElementById('tutorial-spotlight')) {
+            const spotlight = document.createElement('div');
+            spotlight.id = 'tutorial-spotlight';
+            document.body.appendChild(spotlight);
+
+            const tooltip = document.createElement('div');
+            tooltip.id = 'tutorial-tooltip';
+            document.body.appendChild(tooltip);
+        }
+
+        const spotlight = document.getElementById('tutorial-spotlight');
+        const tooltip = document.getElementById('tutorial-tooltip');
+
+        // --- 1. Position Spotlight ---
+        const rect = targetEl.getBoundingClientRect();
+        const scrollY = window.scrollY;
+        const scrollX = window.scrollX;
+
+        // Add some padding around the target
+        const padding = 5;
+        spotlight.style.width = `${rect.width + (padding*2)}px`;
+        spotlight.style.height = `${rect.height + (padding*2)}px`;
+        spotlight.style.top = `${rect.top + scrollY - padding}px`;
+        spotlight.style.left = `${rect.left + scrollX - padding}px`;
+
+        // --- 2. Position Tooltip ---
+        // Logic to place top or bottom based on space
+        let tooltipTop = rect.bottom + scrollY + 15;
+        
+        // If explicitly requested 'top' OR if near bottom of page, move up
+        if (step.position === 'top' || (window.innerHeight - rect.bottom < 200)) {
+            tooltipTop = rect.top + scrollY - 200; 
+        }
+        
+        // Logic to ensure tooltip doesn't go off-screen right
+        let tooltipLeft = rect.left + scrollX;
+        if (tooltipLeft + 280 > window.innerWidth) {
+            tooltipLeft = window.innerWidth - 300; // Push it back left
+        }
+        if (tooltipLeft < 10) tooltipLeft = 10; // Push it back right
+
+        tooltip.style.top = `${tooltipTop}px`;
+        tooltip.style.left = `${tooltipLeft}px`;
+
+        // --- 3. Set Content ---
+        let btnHtml = `<button class="tut-btn-next" onclick="nextTutorialStep()">Next</button>`;
+        
+        // Handle special "click link" steps
+        if (step.action === 'click-link') {
+            btnHtml = `<span style="font-size:0.85em; color:#666; font-style:italic; display:block; margin-top:10px;">(Click the highlighted link to continue)</span>`;
+            
+            // Add a one-time click listener to the target to advance the step index
+            targetEl.onclick = function() {
+                localStorage.setItem('tutorialStep', index + 1);
+                // The default link behavior will take them to the next page, 
+                // where initTutorial() will run again.
+            };
+        } else if (step.isLast) {
+            btnHtml = `<button class="tut-btn-next" onclick="endTutorial()">Finish Tour</button>`;
+        }
+
+        tooltip.innerHTML = `
+            <h3>${step.title}</h3>
+            <p>${step.msg}</p>
+            <div class="tutorial-footer">
+                <button class="tut-btn-skip" onclick="endTutorial()">Skip Tour</button>
+                ${btnHtml}
+            </div>
+        `;
+
+        // Show elements
+        tooltip.classList.add('visible');
+        
+        // Smooth scroll to the element
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Global functions attached to window for the buttons to work
+    window.nextTutorialStep = function() {
+        let current = parseInt(localStorage.getItem('tutorialStep')) || 0;
+        localStorage.setItem('tutorialStep', current + 1);
+        // Reload to re-trigger initTutorial() which will check the new step index
+        // In a Single Page App we wouldn't reload, but here it ensures fresh state
+        location.reload(); 
+    };
+
+    window.endTutorial = function() {
+        localStorage.setItem('tutorialComplete', 'true');
+        const spot = document.getElementById('tutorial-spotlight');
+        const tool = document.getElementById('tutorial-tooltip');
+        if(spot) spot.remove();
+        if(tool) tool.remove();
+    };
+
+    // Start the tutorial check
+    initTutorial();
+
 });
