@@ -21,7 +21,7 @@ import {
 })();
 
 // =========================================================================
-// === DATA FETCHING LOGIC ===
+// === DATA FETCHING LOGIC (Updated to sync Tutorial Status) ===============
 // =========================================================================
 const auth = getAuth();
 const db = getFirestore();
@@ -45,6 +45,12 @@ onAuthStateChanged(auth, async (user) => {
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
                     
+                    // --- NEW: SYNC TUTORIAL STATUS FROM CLOUD ---
+                    if (data.tutorialComplete === true) {
+                        localStorage.setItem('tutorialComplete', 'true');
+                    }
+                    // --------------------------------------------
+
                     loadData();
                     updateDashboardDisplay();
                     
@@ -528,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('input[name="transaction-type"]').forEach(radio => radio.addEventListener('change', () => updateDashboardDisplay()));
 
-    // Clear
+    // Clear Data
     const clearDataBtn = document.getElementById('clear-data');
     if (clearDataBtn) {
         clearDataBtn.addEventListener('click', async function () {
@@ -546,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // PDF
+    // PDF Logic
     const downloadPdfBtn = document.getElementById('download-pdf');
     const pdfModal = document.getElementById('pdf-modal');
     if (downloadPdfBtn && pdfModal) {
@@ -575,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Charts
+    // Analytics Init
     if (document.getElementById('incomeExpenseChart')) {
         let incomeExpenseChart, expenseCategoryChart, incomeCategoryChart;
         const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
@@ -669,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#month-management',
             title: 'Welcome!',
-            msg: 'This dashboard tracks your finances. The current active month is shown here.',
+            msg: 'This shows the currently active month for your financial tracking.',
             position: 'bottom'
         },
         {
@@ -754,16 +760,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- ADD TRANSACTION PAGE ---
         {
             page: 'add-transaction.html',
-            target: '#transaction-form', // Highlights Debit Form
+            target: '#transaction-form', // Highlights whole Debit Form
             title: 'Log Expense (Debit)',
-            msg: 'Use this top form to log money you spent.',
+            msg: 'Use this section to log money you spent. Enter Category, Amount, and Date.',
             position: 'bottom'
         },
         {
             page: 'add-transaction.html',
-            target: '#add-money-form', // Highlights Credit Form
+            target: '#add-money-form', // Highlights whole Credit Form
             title: 'Log Income (Credit)',
-            msg: 'Use this bottom form to log extra money received.',
+            msg: 'Use this section to log extra money received.',
             position: 'top'
         },
         {
@@ -780,26 +786,26 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'analytics.html',
             target: '.filter-controls',
             title: 'Date Filter',
-            msg: 'Select a month to see how your budget looked then. This updates the summary numbers too!',
+            msg: 'Select a month to analyze past data. This updates income/expense totals too.',
             position: 'bottom'
         },
         {
             page: 'analytics.html',
-            target: 'section:nth-of-type(2) .chart-container', // Income vs Expense Container
+            target: 'section:nth-of-type(2) .chart-container', // Specific Chart Container
             title: 'Overview Chart',
             msg: 'Bar chart comparing total Income vs total Expenses.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: 'section:nth-of-type(3) .chart-container', // Expense Pie Container
+            target: 'section:nth-of-type(3) .chart-container', 
             title: 'Expense Breakdown',
             msg: 'Pie chart showing where you spent your money.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: 'section:nth-of-type(4) .chart-container', // Income Pie Container
+            target: 'section:nth-of-type(4) .chart-container', 
             title: 'Income Breakdown',
             msg: 'Pie chart showing your income sources.',
             position: 'top'
@@ -829,7 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentPage || currentPage === "") currentPage = "index.html";
 
         if (currentPage.includes(step.page)) {
-             // Increased delay to 1000ms to allow animations/rendering to finish
+             // 1000ms delay to wait for animations/DOM
              setTimeout(() => showStep(step, currentStepIndex), 1000);
         }
     }
@@ -930,12 +936,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.endTutorial = function() {
+    window.endTutorial = async function() {
         localStorage.setItem('tutorialComplete', 'true');
         const spot = document.getElementById('tutorial-spotlight');
         const tool = document.getElementById('tutorial-tooltip');
         if(spot) spot.remove();
         if(tool) tool.remove();
+
+        const uid = localStorage.getItem('uid');
+        if(uid) {
+             try {
+                 await setDoc(doc(db, "users", uid), { tutorialComplete: true }, { merge: true });
+             } catch(e) { console.error(e); }
+        }
     };
 
     initTutorial();
