@@ -700,16 +700,9 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             page: 'index.html',
-            target: '#monthly-income-form button[type="submit"]',
+            target: '#monthly-income-form',
             title: 'Set Budget',
-            msg: 'Enter your income for the month and click "Update Income" to set your budget baseline.',
-            position: 'bottom'
-        },
-        {
-            page: 'index.html',
-            target: '#start-new-month',
-            title: 'New Month',
-            msg: 'When a month ends, click "Start New Month" to archive current data and start fresh.',
+            msg: 'Enter your income for the month here and click "Update Income" to set your baseline.',
             position: 'bottom'
         },
         {
@@ -719,24 +712,53 @@ document.addEventListener('DOMContentLoaded', () => {
             msg: 'Track your total income, expenses, and remaining balance here.',
             position: 'top'
         },
+        // NEW BUTTON EXPLANATIONS
         {
             page: 'index.html',
-            target: '#type-filter-container',
-            title: 'Filters',
-            msg: 'Toggle between "Credit", "Debit", or "All" to filter your transaction list.',
+            target: '#clear-data',
+            title: 'Reset Data',
+            msg: 'Click here to wipe all data and start fresh. Use with caution!',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: '#download-pdf',
+            title: 'Export Reports',
+            msg: 'Download a PDF report of your finances for any month.',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: '#show-current-month-data',
+            title: 'Current View',
+            msg: 'Click to see only transactions from the current active month.',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: '#show-all-data',
+            title: 'All-Time View',
+            msg: 'Click to see your entire history of transactions across all months.',
+            position: 'top'
+        },
+        {
+            page: 'index.html',
+            target: '.filter-container', // Wraps the filter inputs
+            title: 'Filtering',
+            msg: 'Use these controls to filter the transaction list by a specific month or by type (Credit/Debit).',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#transaction-container',
-            title: 'History',
-            msg: 'All your recent transactions will appear in this list.',
+            title: 'Transaction List',
+            msg: 'Your recent transactions will appear here.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: 'a[href="add-transaction.html"]', 
-            title: 'Add Data',
+            title: 'Next Step',
             msg: 'Click here to go to the Add Transaction page.',
             action: 'click-link', 
             position: 'bottom'
@@ -745,23 +767,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- ADD TRANSACTION PAGE STEPS ---
         {
             page: 'add-transaction.html',
-            target: '#transaction-form',
-            title: 'Log Expenses',
-            msg: 'Use this form to log money you spent (Debit).',
+            target: '#transaction-form', // This is the EXPENSE form
+            title: 'Log Expenses (Debit)',
+            msg: 'Use this top form to log money you spent.',
             position: 'right'
         },
         {
             page: 'add-transaction.html',
-            target: '#add-money-form',
-            title: 'Log Income',
-            msg: 'Use this form to log extra income or deposits (Credit).',
-            position: 'right'
+            target: '#add-money-form', // This is the INCOME form
+            title: 'Log Income (Credit)',
+            msg: 'Use this bottom form to log extra income or deposits.',
+            position: 'top' // Changed to top so it doesn't overlap bottom of screen
         },
         {
             page: 'add-transaction.html',
             target: 'a[href="analytics.html"]',
-            title: 'View Analytics',
-            msg: 'Click here to see detailed charts.',
+            title: 'See Insights',
+            msg: 'Click here to view your Analytics charts.',
             action: 'click-link',
             position: 'bottom'
         },
@@ -771,33 +793,42 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'analytics.html',
             target: '.filter-controls',
             title: 'Date Filter',
-            msg: 'Select a specific month to analyze past data.',
+            msg: 'Select a specific month here to analyze your spending for that period.',
             position: 'bottom'
         },
         {
             page: 'analytics.html',
-            target: '#incomeExpenseChart', 
+            target: '#incomeExpenseChart', // Specific Canvas ID
             title: 'Income vs Expenses',
-            msg: 'This bar chart compares how much you earned vs how much you spent.',
+            msg: 'This bar chart gives you a quick comparison of what you earned vs what you spent.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: '#expenseCategoryChart', 
-            title: 'Spending Habits',
-            msg: 'This pie chart shows which categories you spend the most money on.',
+            target: '#expenseCategoryChart', // Specific Canvas ID
+            title: 'Expense Breakdown',
+            msg: 'This pie chart shows exactly where your money is going (e.g., Food, Travel).',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: '#logout-btn',
+            target: '#incomeCategoryChart', // Specific Canvas ID
+            title: 'Income Sources',
+            msg: 'This chart shows where your money is coming from (e.g., Salary, Freelance).',
+            position: 'top'
+        },
+        {
+            page: 'analytics.html',
+            target: 'header', // Use header instead of specific button to be safe
             title: 'All Done!',
-            msg: 'You are ready to go! Remember to logout when finished.',
+            msg: 'You are ready to go! Remember to logout securely when you are finished.',
             position: 'bottom',
             isLast: true
         }
     ];
 
+    // ... (Keep the rest of the initTutorial, showStep, nextTutorialStep, endTutorial functions exactly as they were) ...
+    
     function initTutorial() {
         if (localStorage.getItem('tutorialComplete') === 'true') return;
 
@@ -812,14 +843,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentPage = window.location.pathname.split("/").pop();
         if (!currentPage || currentPage === "") currentPage = "index.html";
 
-        if (!currentPage.includes(step.page)) return;
-
-        setTimeout(() => showStep(step, currentStepIndex), 500);
+        if (currentPage.includes(step.page)) {
+             // Small delay to ensure elements are rendered
+             setTimeout(() => showStep(step, currentStepIndex), 500);
+        }
     }
 
     function showStep(step, index) {
         const targetEl = document.querySelector(step.target);
-        if (!targetEl) return;
+        
+        // If element isn't found, we skip to next step automatically to avoid getting stuck
+        if (!targetEl) {
+            console.warn(`Tutorial target ${step.target} not found. Skipping.`);
+            localStorage.setItem('tutorialStep', index + 1);
+            initTutorial(); // Try next step immediately
+            return;
+        }
 
         if (!document.getElementById('tutorial-spotlight')) {
             const spotlight = document.createElement('div');
@@ -873,7 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3>${step.title}</h3>
             <p>${step.msg}</p>
             <div class="tutorial-footer">
-                <button class="tut-btn-skip" onclick="endTutorial()">Skip</button>
+                <button class="tut-btn-skip" onclick="endTutorial()">Skip Tour</button>
                 ${btnHtml}
             </div>
         `;
@@ -882,7 +921,6 @@ document.addEventListener('DOMContentLoaded', () => {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Global functions for buttons
     window.nextTutorialStep = function() {
         const current = parseInt(localStorage.getItem('tutorialStep')) || 0;
         const next = current + 1;
@@ -893,21 +931,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // NO RELOAD LOGIC: Check if next step is on same page
         const nextStepData = tutorialData[next];
         let currentPage = window.location.pathname.split("/").pop();
         if (!currentPage || currentPage === "") currentPage = "index.html";
 
         if (currentPage.includes(nextStepData.page)) {
-            // Same page: remove old spotlight and render new one
             const spot = document.getElementById('tutorial-spotlight');
             const tool = document.getElementById('tutorial-tooltip');
             if(spot) spot.remove();
             if(tool) tool.remove();
-            
             showStep(nextStepData, next);
         } else {
-            // Different page: navigate
             window.location.href = nextStepData.page;
         }
     };
@@ -922,3 +956,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initTutorial();
 });
+
