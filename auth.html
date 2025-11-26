@@ -210,30 +210,27 @@
 
         // --- THEME LOGIC ---
         const themeBtn = document.getElementById('themeBtn');
-        // Define palettes first
         const darkColors = ['rgb(20, 80, 160)', 'rgb(30, 90, 180)', 'rgb(15, 60, 130)', 'rgb(25, 85, 170)', 'rgb(10, 40, 100)', 'rgb(5, 30, 80)'];
         const lightColors = ['rgb(10, 50, 120)', 'rgb(20, 60, 140)', 'rgb(5, 30, 80)', 'rgb(60, 60, 60)'];
         let currentPalette = darkColors;
 
         const savedTheme = localStorage.getItem('theme');
-        // Default to DARK
-        if (savedTheme === 'dark' || !savedTheme) {
-            document.body.classList.add('dark-theme');
-            currentPalette = darkColors;
-            if(!savedTheme) localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
             currentPalette = lightColors;
+        } else {
+            document.body.classList.remove('light-theme');
+            currentPalette = darkColors;
         }
 
         themeBtn.addEventListener('click', () => {
-            document.body.classList.toggle('dark-theme');
-            if (document.body.classList.contains('dark-theme')) {
-                localStorage.setItem('theme', 'dark');
-                currentPalette = darkColors;
-            } else {
+            document.body.classList.toggle('light-theme');
+            if (document.body.classList.contains('light-theme')) {
                 localStorage.setItem('theme', 'light');
                 currentPalette = lightColors;
+            } else {
+                localStorage.setItem('theme', 'dark');
+                currentPalette = darkColors;
             }
             updateParticleColors();
         });
@@ -329,13 +326,19 @@
         // ==========================================
         
         // --- GUEST LOGIN ---
-        document.getElementById('guest-btn').addEventListener('click', async () => {
+        const guestBtn = document.getElementById('guest-btn');
+
+        guestBtn.addEventListener('click', async () => {
+            // LOCK BUTTON
+            const originalText = guestBtn.innerText;
+            guestBtn.disabled = true;
+            guestBtn.innerText = "Signing in...";
+
             try {
                 console.log("Signing in anonymously...");
                 const result = await signInAnonymously(auth);
                 const user = result.user;
                 
-                // Create initial data in Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 
@@ -348,26 +351,38 @@
                 if(!localStorage.getItem('allTransactions')) localStorage.setItem("allTransactions", JSON.stringify([]));
                 
                 window.location.href = "index.html";
+
             } catch (error) {
                 console.error(error);
                 alert("Error signing in as guest: " + error.message);
+                // UNLOCK BUTTON ON ERROR
+                guestBtn.innerText = originalText;
+                guestBtn.disabled = false;
             }
         });
 
-        // --- GOOGLE LOGIN (Wait for Data Fetch) ---
-        document.getElementById('google-btn').addEventListener('click', async () => {
+        // --- GOOGLE LOGIN ---
+        const googleBtn = document.getElementById('google-btn');
+
+        googleBtn.addEventListener('click', async () => {
+            // LOCK BUTTON (Save HTML to keep the Icon)
+            const originalHTML = googleBtn.innerHTML;
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = "Contacting Google...";
+
             const provider = new GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
 
             try {
-                // Normal Google Login (Not linking)
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 
+                // Update Status
+                googleBtn.innerHTML = "Loading Data...";
+
                 localStorage.setItem("loginMode", "google");
                 localStorage.setItem("uid", user.uid);
 
-                // Wait for data fetch
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
@@ -385,9 +400,16 @@
 
             } catch (error) {
                 console.error("Login Error:", error);
-                alert("Login failed: " + error.message);
+                // UNLOCK BUTTON ON ERROR
+                googleBtn.innerHTML = originalHTML;
+                googleBtn.disabled = false;
+
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    alert("Login failed: " + error.message);
+                }
             }
         });
     </script>
 </body>
 </html>
+
