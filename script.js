@@ -32,7 +32,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (user) {
         const loginMode = localStorage.getItem('loginMode');
-        
+
         if(loginMode === 'google' || loginMode === 'guest') {
             try {
                 const docRef = doc(db, "users", user.uid);
@@ -45,7 +45,7 @@ onAuthStateChanged(auth, async (user) => {
 
                     localStorage.setItem("allTransactions", JSON.stringify(transactionsFromDB));
                     localStorage.setItem("monthlyIncomes", JSON.stringify(incomesFromDB));
-                    
+
                     // --- SYNC TUTORIAL STATUS FROM CLOUD ---
                     // If DB says tutorial is done, update local storage immediately
                     if (data.tutorialComplete === true) {
@@ -61,7 +61,7 @@ onAuthStateChanged(auth, async (user) => {
         // Load Data & UI
         loadData();
         updateDashboardDisplay();
-        
+
         if (document.getElementById('incomeExpenseChart')) {
             const initialTransactions = allTransactions.filter(t => t.date.startsWith(currentMonthKey));
             const initialIncome = monthlyIncomes[currentMonthKey] || 0;
@@ -69,6 +69,17 @@ onAuthStateChanged(auth, async (user) => {
                 renderAnalyticsCharts(initialTransactions, initialIncome);
             }
         }
+        // --- FINISH TOUR LOGIC ---
+    const finishTourBtn = document.getElementById('finish-tour-btn');
+
+    if (finishTourBtn) {
+        finishTourBtn.addEventListener('click', () => {
+            // This reloads the page, effectively "loading the dashboard"
+            // and clearing any tour overlays.
+            window.location.reload();
+        });
+    }
+
 
         // Attempt to start tutorial (Will check tutorialComplete flag inside)
         // 1 second delay to ensure DOM/Animations are ready
@@ -97,7 +108,7 @@ if (recognition) {
 
     recognition.onresult = function (event) {
         const voiceInput = event.results[0][0].transcript.toLowerCase();
-        
+
         const expenseRegex = /add (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
         const incomeRegex = /(credit|credited|deposit) (\d+(\.\d{1,2})?) ([\w\s]+) on (today|\w+ \d{1,2} \d{4})/i;
 
@@ -242,18 +253,18 @@ function updateDashboardDisplay() {
 
     const subtotalText = document.getElementById('subtotal-display');
     const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
-    
+
     if (subtotalText && filterTypeElement) {
         const type = filterTypeElement.value;
         if (type === 'all') {
             subtotalText.style.display = 'none';
         } else if (type === 'income') {
             subtotalText.style.display = 'block';
-            subtotalText.style.color = '#2ecc71'; 
+            subtotalText.style.color = '#2ecc71';
             subtotalText.textContent = `Total Credit: ₹${totalCredit.toFixed(2)}`;
         } else if (type === 'expense') {
             subtotalText.style.display = 'block';
-            subtotalText.style.color = '#e74c3c'; 
+            subtotalText.style.color = '#e74c3c';
             subtotalText.textContent = `Total Debit: ₹${totalDebit.toFixed(2)}`;
         }
     }
@@ -287,11 +298,11 @@ function displayTransactions(transactionsToDisplay) {
         const originalIndex = findOriginalTransactionIndex(transaction);
 
         li.innerHTML = `
-            <span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
-            <div class="button-container">
-                <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
-                <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
-            </div>`;
+<span>${transaction.category}: ₹${parseFloat(transaction.amount).toFixed(2)} on ${transaction.date}</span>
+<div class="button-container">
+    <button class="edit-button" onclick="editTransaction(${originalIndex})"><i class="fas fa-edit"></i></button>
+    <button class="delete-button" onclick="deleteTransaction(${originalIndex})"><i class="fas fa-trash-alt"></i></button>
+</div>`;
         transactionList.appendChild(li);
     });
 }
@@ -418,20 +429,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     transactions: JSON.parse(localStorage.getItem("allTransactions")) || [],
                     monthlyIncomes: JSON.parse(localStorage.getItem("monthlyIncomes")) || {}
                 };
-                
+
                 const provider = new GoogleAuthProvider();
                 // FORCE GOOGLE TO ASK WHICH ACCOUNT TO USE
                 provider.setCustomParameters({ prompt: 'select_account' });
 
                 const result = await linkWithPopup(auth.currentUser, provider);
                 const user = result.user;
-                
+
                 localStorage.setItem("loginMode", "google");
                 await setDoc(doc(db, "users", user.uid), currentData, { merge: true });
-                
+
                 alert("Account linked successfully!");
                 sessionStorage.removeItem('isLinking');
-                location.reload(); 
+                location.reload();
             } catch (e) {
                 console.error(e);
                 sessionStorage.removeItem('isLinking');
@@ -451,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const loginMode = localStorage.getItem('loginMode');
             if (loginMode === 'guest') {
                 if (!confirm("⚠️ WARNING: Guest data will be deleted on logout. Continue?")) {
-                    return; 
+                    return;
                 }
             }
             try {
@@ -615,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 data: { labels: ['Monthly Income', 'Net Expenses'], datasets: [{ label: 'Amount (₹)', data: [incomeForView || 0, netExpenses || 0], backgroundColor: ['#28a745', '#dc3545'] }] },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
-            
+
             const drawPie = (ctx, data, type) => {
                 const categories = [...new Set(data.map(t => t.category))];
                 const totals = categories.map(cat => data.filter(t => t.category === cat).reduce((acc, t) => acc + parseFloat(t.amount), 0));
@@ -625,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const expenseData = dataToDisplay.filter(t => t.type === 'expense');
             const expenseContainer = document.getElementById('expenseCategoryChart').parentElement;
             if(expenseContainer.querySelector('.no-data-message')) expenseContainer.querySelector('.no-data-message').remove();
-            
+
             if (expenseData.length > 0) {
                 document.getElementById('expenseCategoryChart').style.display = 'block';
                 expenseCategoryChart = drawPie(expenseCategoryCtx, expenseData, 'Expenses');
@@ -646,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 incomeContainer.insertAdjacentHTML('beforeend', '<p class="no-data-message">No income data</p>');
             }
         }
-        
+
         window.renderAnalyticsCharts = renderAnalyticsCharts;
 
         const analyticsMonthFilter = document.getElementById('analytics-month-filter');
@@ -663,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        
+
         const analyticsShowAllBtn = document.getElementById('analytics-show-all');
         if (analyticsShowAllBtn) {
             analyticsShowAllBtn.addEventListener('click', function () {
@@ -681,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     // === USER ONBOARDING TUTORIAL SYSTEM (Walkthrough) ==========
     // ============================================================
-    
+
     const tutorialData = [
         // --- INDEX PAGE ---
         {
@@ -763,10 +774,10 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             page: 'index.html',
-            target: 'a[href="add-transaction.html"]', 
+            target: 'a[href="add-transaction.html"]',
             title: 'Add Data',
             msg: 'Go to "Add Transaction" page.',
-            action: 'click-link', 
+            action: 'click-link',
             position: 'bottom'
         },
 
@@ -811,21 +822,21 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             page: 'analytics.html',
-            target: 'section:nth-of-type(3) .chart-container', 
+            target: 'section:nth-of-type(3) .chart-container',
             title: 'Expense Breakdown',
             msg: 'Pie chart showing where you spent your money.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: 'section:nth-of-type(4) .chart-container', 
+            target: 'section:nth-of-type(4) .chart-container',
             title: 'Income Breakdown',
             msg: 'Pie chart showing your income sources.',
             position: 'top'
         },
         {
             page: 'analytics.html',
-            target: 'header', 
+            target: 'header',
             title: 'All Done!',
             msg: 'You are ready! Welcome to Expense Tracker.',
             position: 'bottom',
@@ -837,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (localStorage.getItem('tutorialComplete') === 'true') return;
 
         let currentStepIndex = parseInt(localStorage.getItem('tutorialStep')) || 0;
-        
+
         if (currentStepIndex >= tutorialData.length) {
             endTutorial();
             return;
@@ -855,11 +866,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showStep(step, index) {
         const targetEl = document.querySelector(step.target);
-        
+
         if (!targetEl) {
             console.warn(`Tutorial target ${step.target} not found. Skipping.`);
             localStorage.setItem('tutorialStep', index + 1);
-            initTutorial(); 
+            initTutorial();
             return;
         }
 
@@ -888,9 +899,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let tooltipTop = rect.bottom + scrollY + 15;
         if (step.position === 'top' || (window.innerHeight - rect.bottom < 250)) {
-            tooltipTop = rect.top + scrollY - 220; 
+            tooltipTop = rect.top + scrollY - 220;
         }
-        
+
         let tooltipLeft = rect.left + scrollX;
         if (tooltipLeft + 280 > window.innerWidth) {
             tooltipLeft = window.innerWidth - 300;
@@ -901,7 +912,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tooltip.style.left = `${tooltipLeft}px`;
 
         let btnHtml = `<button class="tut-btn-next" onclick="nextTutorialStep()">Next</button>`;
-        
+
         if (step.action === 'click-link') {
             btnHtml = `<span style="font-size:0.85em; color:#666; font-style:italic; display:block; margin-top:10px;">(Click the highlighted link to continue)</span>`;
             targetEl.onclick = function() {
@@ -912,12 +923,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         tooltip.innerHTML = `
-            <h3>${step.title}</h3>
-            <p>${step.msg}</p>
-            <div class="tutorial-footer">
-                <button class="tut-btn-skip" onclick="endTutorial()">Skip Tour</button>
-                ${btnHtml}
-            </div>
+<h3>${step.title}</h3>
+<p>${step.msg}</p>
+<div class="tutorial-footer">
+    <button class="tut-btn-skip" onclick="endTutorial()">Skip Tour</button>
+    ${btnHtml}
+</div>
         `;
 
         tooltip.classList.add('visible');
@@ -967,4 +978,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial tutorial check (outside auth loop as fallback)
     setTimeout(initTutorial, 1500);
 });
-
