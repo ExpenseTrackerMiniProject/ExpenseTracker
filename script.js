@@ -695,21 +695,21 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#monthly-income',
             title: 'Income Input',
-            msg: 'Enter your expected income here.',
+            msg: 'Enter your income here.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#monthly-income-form button[type="submit"]',
             title: 'Update Budget',
-            msg: 'Click this to set your budget baseline.',
+            msg: 'Click this to update your income.',
             position: 'bottom'
         },
         {
             page: 'index.html',
             target: '#start-new-month',
             title: 'New Month',
-            msg: 'Click here when a month ends to start fresh.',
+            msg: 'Click here to archive the current month and start fresh.',
             position: 'bottom'
         },
         {
@@ -723,14 +723,14 @@ document.addEventListener('DOMContentLoaded', () => {
             page: 'index.html',
             target: '#clear-data',
             title: 'Reset',
-            msg: 'Wipe all data (Caution!).',
+            msg: 'Wipe all data (Caution!). This will delete all your data permanently.',
             position: 'top'
         },
         {
             page: 'index.html',
             target: '#download-pdf',
             title: 'Export',
-            msg: 'Download a PDF report.',
+            msg: 'Download a PDF report of a selected month or all months.',
             position: 'top'
         },
         {
@@ -967,3 +967,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial tutorial check (outside auth loop as fallback)
     setTimeout(initTutorial, 1500);
 });
+
