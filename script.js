@@ -999,4 +999,85 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initTutorial, 1500);
 });
 
+// =========================================================================
+// === SWIPE NAVIGATION & ANIMATION SYSTEM =================================
+// =========================================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. APPLY ANIMATION BASED ON URL PARAMETER
+    // -----------------------------------------
+    const urlParams = new URLSearchParams(window.location.search);
+    const transitionType = urlParams.get('transition');
+    const mainContent = document.querySelector('main');
+
+    if (mainContent && transitionType) {
+        // Remove existing hardcoded animation classes to avoid conflicts
+        const sections = document.querySelectorAll('.slide-in-left, .slide-in-bottom, .fade-in');
+        sections.forEach(el => {
+            el.classList.remove('slide-in-left', 'slide-in-bottom', 'fade-in');
+            el.style.animation = 'none'; // Reset hardcoded animations
+        });
+
+        // Apply the new directional animation to the whole main container
+        if (transitionType === 'slide-right') {
+            // Coming from the right (Swiped Left / Next Page)
+            mainContent.classList.add('slide-in-right');
+        } else if (transitionType === 'slide-left') {
+            // Coming from the left (Swiped Right / Prev Page)
+            mainContent.classList.add('slide-in-left');
+        }
+    }
+
+    // 2. SWIPE DETECTION LOGIC
+    // ------------------------
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const minSwipeDistance = 75; // Minimum px to register a swipe
+
+    // Only enable on mobile/touch screens
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+    }, { passive: true });
+
+    function handleSwipeGesture() {
+        // Calculate distance
+        const distance = touchEndX - touchStartX;
+
+        // Check if swipe is valid
+        if (Math.abs(distance) < minSwipeDistance) return;
+
+        // Identify current page
+        const path = window.location.pathname;
+        const page = path.split("/").pop() || "index.html";
+
+        if (distance < 0) {
+            // === SWIPE LEFT (Go to Next Page) ===
+            // Logic: Enter from Right
+            if (page === 'index.html') {
+                navigateTo('add-transaction.html', 'slide-right');
+            } else if (page === 'add-transaction.html') {
+                navigateTo('analytics.html', 'slide-right');
+            }
+        } else {
+            // === SWIPE RIGHT (Go to Prev Page) ===
+            // Logic: Enter from Left
+            if (page === 'analytics.html') {
+                navigateTo('add-transaction.html', 'slide-left');
+            } else if (page === 'add-transaction.html') {
+                navigateTo('index.html', 'slide-left');
+            }
+        }
+    }
+
+    function navigateTo(url, animation) {
+        // Add a small delay to visual feedback or immediate
+        window.location.href = `${url}?transition=${animation}`;
+    }
+});
 
