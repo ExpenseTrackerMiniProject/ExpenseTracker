@@ -68,48 +68,66 @@
             }
         }
         /* --- MOBILE OPTIMIZATIONS (Android Fixes) --- */
-        @media (max-width: 768px) {
-            
-            /* 1. Fix Navigation: Make it Horizontal */
-            nav {
-                flex-direction: row !important; /* Force horizontal row */
-                flex-wrap: wrap; /* Allow wrapping if screen is tiny */
-                justify-content: center;
-                gap: 5px;
-                padding-bottom: 10px;
-            }
+        /* --- MOBILE OPTIMIZATIONS --- */
+@media (max-width: 768px) {
 
-            nav a {
-                font-size: 0.85rem; /* Smaller text for links */
-                padding: 8px 10px; /* Adjust padding */
-            }
+    /* 1. Reduce Header Padding to save vertical space */
+    header {
+        padding: 10px 5px; /* Reduced from 20px */
+    }
 
-            .auth-buttons {
-                position: static;
-                transform: none;
-                margin-top: 5px;
-                width: 100%; /* Push logout to bottom or new line if needed */
-                justify-content: center;
-            }
+    /* 2. Nav Container: Allow wrapping */
+    nav {
+        display: flex;
+        flex-direction: row !important; 
+        flex-wrap: wrap; /* Critical: allows items to drop to next line */
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        gap: 5px; /* Space between the top links */
+    }
 
-            /* 2. Fix Summary / Total Expenses Text */
-            #totals div {
-                display: flex;       /* Enable flexbox for alignment */
-                flex-wrap: wrap;     /* Allow text to wrap nicely */
-                align-items: center;
-                margin-bottom: 12px; /* Space out the rows */
-                line-height: 1.4;
-            }
+    /* 3. The Links (Row 1) */
+    nav a {
+        font-size: 0.85rem; /* Compact text size */
+        padding: 5px 8px;   /* Reduce click area padding slightly */
+        margin: 0;          /* Remove extra margins */
+        white-space: nowrap; /* Keep link text on one line */
+    }
 
-            /* Make the breakdown text (Spent - Credited) drop to a new line & smaller */
-            .expense-explanation {
-                display: block;      /* Forces it to its own line */
-                width: 100%;         /* Takes full width */
-                margin-left: 0 !important; /* Remove left margin */
-                margin-top: 2px;     /* Add small space on top */
-                font-size: 0.75rem;  /* Make text smaller */
-            }
-        }
+    /* 4. The Auth Buttons Container (Row 2) */
+    .auth-buttons {
+        position: static;
+        transform: none;
+        
+        /* This forces the buttons to a new line */
+        width: 100%; 
+        
+        display: flex;
+        justify-content: center; /* Center buttons in the second row */
+        margin-top: 8px; /* Small gap between Row 1 and Row 2 */
+        gap: 15px; /* Space between Link and Logout button */
+    }
+
+    /* 5. Adjust Charts height for mobile (Keep existing logic) */
+    #incomeExpenseChart,
+    #expenseCategoryChart,
+    #incomeCategoryChart {
+        height: 120px;
+    }
+
+    /* 6. Adjust Theme Toggle position */
+    #theme-toggle {
+        top: 5px;
+        right: 5px;
+        padding: 6px 10px; /* Make the button smaller */
+    }
+
+    body.dark-theme #theme-toggle {
+        top: 5px;
+        right: 5px;
+    }
+}
     </style>
 </head>
 <body>
@@ -221,5 +239,6 @@
     </script>
 </body>
 </html>
+
 
 
