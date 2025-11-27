@@ -708,9 +708,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAnalyticsCharts(initialTransactions, initialIncome);
     }
 
-    // ============================================================
-    // === USER ONBOARDING TUTORIAL SYSTEM (Walkthrough) ==========
-    // ============================================================
+    // =========================================================================
+// === USER ONBOARDING TUTORIAL SYSTEM (Walkthrough) =======================
+// =========================================================================
     
     const tutorialData = [
         // --- INDEX PAGE ---
@@ -878,8 +878,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentPage || currentPage === "") currentPage = "index.html";
 
         if (currentPage.includes(step.page)) {
-             // 1000ms delay to wait for animations/DOM
-             setTimeout(() => showStep(step, currentStepIndex), 1000);
+             // REDUCED DELAY: 600ms (Enough for 0.5s animation to finish + buffer)
+             setTimeout(() => showStep(step, currentStepIndex), 600);
         }
     }
 
@@ -995,8 +995,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = "index.html";
     };
 
-    // Initial tutorial check (outside auth loop as fallback)
-    setTimeout(initTutorial, 1500);
+    // Initial tutorial check (Reduced Delay)
+    setTimeout(initTutorial, 500); // Wait 0.5s for initial render
 });
 
 // =========================================================================
@@ -1086,5 +1086,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `${url}?transition=${animation}`;
     }
 });
+
 
 
