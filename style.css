@@ -403,8 +403,62 @@ body.dark-theme {
         background-color: #0056b3;
     }
 
-/* Media Queries for Responsiveness */
+/* =====================================================
+   MOBILE OPTIMIZATIONS (Updated Fixes)
+=====================================================
+*/
 @media (max-width: 768px) {
+
+    /* --- HEADER FIXES --- */
+    header {
+        padding: 10px 5px; /* Compact padding */
+    }
+
+    nav {
+        display: flex;
+        flex-direction: row !important; 
+        flex-wrap: wrap; /* Allows buttons to drop to next line */
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        gap: 5px; 
+    }
+
+    nav a {
+        font-size: 0.85rem; 
+        padding: 5px 8px;   
+        margin: 0;          
+        white-space: nowrap; 
+    }
+
+    .auth-buttons {
+        position: static;
+        transform: none;
+        width: 100%; /* Forces this container to a new line */
+        display: flex;
+        justify-content: center; 
+        margin-top: 8px; 
+        gap: 15px; 
+    }
+
+    /* --- TEXT ALIGNMENT FIX (Spent & Credited on same row) --- */
+    
+    /* 1. Stop using Flexbox for the totals rows on mobile */
+    #totals div {
+        display: block; 
+        margin-bottom: 15px; /* Add space between Income, Expense, Balance */
+    }
+
+    /* 2. Force the explanation text to its own full-width line */
+    .expense-explanation, #expense-breakdown {
+        display: block;      /* Moves it to the line BELOW Total Expenses */
+        width: 100%;         /* Gives it full width so text doesn't wrap early */
+        margin-left: 0 !important; /* Override any desktop margins */
+        margin-top: 4px;     /* Small gap between the amount and the breakdown */
+        font-size: 0.8rem;   /* Keep it readable but small */
+    }
+
+    /* --- OTHER MOBILE ADJUSTMENTS --- */
     #incomeExpenseChart,
     #expenseCategoryChart,
     #incomeCategoryChart {
@@ -412,13 +466,14 @@ body.dark-theme {
     }
 
     #theme-toggle {
-        top: 2px;
-        right: 6px;
+        top: 5px;
+        right: 5px;
+        padding: 6px 10px;
     }
 
     body.dark-theme #theme-toggle {
-        top: 2px;
-        right: 6px;
+        top: 5px;
+        right: 5px;
     }
 }
 
@@ -566,12 +621,3 @@ body.dark-theme #pdf-month-selection {
     font-size: 0.9rem;
 }
 .tut-btn-skip:hover { text-decoration: underline; color: #333; }
-
-
-
-
-
-
-
-
-
