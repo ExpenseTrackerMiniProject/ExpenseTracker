@@ -219,6 +219,7 @@ function updateDashboardDisplay() {
 
     const totalExpensesElem = document.getElementById('total-expenses');
     const remainingBalanceElem = document.getElementById('remaining-balance');
+    const expenseBreakdownElem = document.getElementById('expense-breakdown'); 
 
     let transactionsForView = [];
     let incomeForView = 0;
@@ -240,20 +241,33 @@ function updateDashboardDisplay() {
     totalExpensesElem.textContent = netExpenses.toFixed(2);
     remainingBalanceElem.textContent = (incomeForView - netExpenses).toFixed(2);
 
+    // --- UPDATED LOGIC: Hide breakdown if no transactions exist ---
+    if (expenseBreakdownElem) {
+        if (totalDebit === 0 && totalCredit === 0) {
+            // If both are zero, hide the element
+            expenseBreakdownElem.style.display = 'none'; 
+        } else {
+            // If there is any transaction, show it
+            expenseBreakdownElem.style.display = 'inline'; 
+            expenseBreakdownElem.innerHTML = `= <span style="color: #e74c3c;">₹${totalDebit.toFixed(2)}</span> + <span style="color: #2ecc71;">₹${totalCredit.toFixed(2)}</span>`;
+        }
+    }
+    // -------------------------------------------------------------
+
     const subtotalText = document.getElementById('subtotal-display');
     const filterTypeElement = document.querySelector('input[name="transaction-type"]:checked');
-    
+
     if (subtotalText && filterTypeElement) {
         const type = filterTypeElement.value;
         if (type === 'all') {
             subtotalText.style.display = 'none';
         } else if (type === 'income') {
             subtotalText.style.display = 'block';
-            subtotalText.style.color = '#2ecc71'; 
+            subtotalText.style.color = '#2ecc71';
             subtotalText.textContent = `Total Credit: ₹${totalCredit.toFixed(2)}`;
         } else if (type === 'expense') {
             subtotalText.style.display = 'block';
-            subtotalText.style.color = '#e74c3c'; 
+            subtotalText.style.color = '#e74c3c';
             subtotalText.textContent = `Total Debit: ₹${totalDebit.toFixed(2)}`;
         }
     }
@@ -968,3 +982,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial tutorial check (outside auth loop as fallback)
     setTimeout(initTutorial, 1500);
 });
+
