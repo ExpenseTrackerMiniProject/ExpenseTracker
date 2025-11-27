@@ -1,3 +1,32 @@
+/* --- SWIPE ANIMATIONS --- */
+
+/* Ensure no horizontal scrollbars during swipe animations */
+body, html {
+    overflow-x: hidden; 
+}
+
+/* 1. Enter from Right (Used when swiping Left/Next) */
+.slide-in-right {
+    transform: translateX(100%); /* Start off-screen right */
+    animation: slideInRight 0.5s forwards ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* 2. Enter from Left (Used when swiping Right/Back) */
+.slide-in-left {
+    transform: translateX(-100%); /* Start off-screen left */
+    animation: slideInLeft 0.5s forwards ease-out;
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
 /* Slide-in Animations for Sections */
 .slide-in-left {
     transform: translateX(-100%);
@@ -621,3 +650,4 @@ body.dark-theme #pdf-month-selection {
     font-size: 0.9rem;
 }
 .tut-btn-skip:hover { text-decoration: underline; color: #333; }
+
