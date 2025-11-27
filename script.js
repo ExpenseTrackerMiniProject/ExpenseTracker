@@ -242,16 +242,32 @@ function updateDashboardDisplay() {
     remainingBalanceElem.textContent = (incomeForView - netExpenses).toFixed(2);
 
     // --- UPDATED LOGIC: Hide breakdown if no transactions exist ---
+    // --- UPDATED LOGIC: "Spent - Credited" Format ---
     if (expenseBreakdownElem) {
+        
+        // Scenario 1: No data at all -> Hide
         if (totalDebit === 0 && totalCredit === 0) {
-            // If both are zero, hide the element
             expenseBreakdownElem.style.display = 'none'; 
-        } else {
-            // If there is any transaction, show it
+        } 
+        // Scenario 2: There is Debit, but NO Credit -> Hide
+        // (Because if Credit is 0, the Total Expense is exactly the Debit, so no explanation needed)
+        else if (totalCredit === 0) {
+            expenseBreakdownElem.style.display = 'none';
+        }
+        // Scenario 3: There is Credit involved -> Show Explanation
+        else {
             expenseBreakdownElem.style.display = 'inline'; 
-            expenseBreakdownElem.innerHTML = `= <span style="color: #e74c3c;">₹${totalDebit.toFixed(2)}</span> + <span style="color: #2ecc71;">₹${totalCredit.toFixed(2)}</span>`;
+            
+            // This format explains: (Spent X - Credited Y)
+            expenseBreakdownElem.innerHTML = `
+                <span class="expense-explanation">
+                    (Spent <span class="val-debit">₹${totalDebit.toFixed(2)}</span> 
+                    - Credited <span class="val-credit">₹${totalCredit.toFixed(2)}</span>)
+                </span>
+            `;
         }
     }
+    // ------------------------------------------------
     // -------------------------------------------------------------
 
     const subtotalText = document.getElementById('subtotal-display');
@@ -982,4 +998,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial tutorial check (outside auth loop as fallback)
     setTimeout(initTutorial, 1500);
 });
+
 
