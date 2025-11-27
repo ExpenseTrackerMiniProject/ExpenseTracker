@@ -1007,16 +1007,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 1. APPLY ANIMATION BASED ON URL PARAMETER
     // -----------------------------------------
+    // 1. APPLY ANIMATION BASED ON URL PARAMETER
+    // -----------------------------------------
     const urlParams = new URLSearchParams(window.location.search);
     const transitionType = urlParams.get('transition');
     const mainContent = document.querySelector('main');
 
     if (mainContent && transitionType) {
-        // Remove existing hardcoded animation classes to avoid conflicts
+        // Select all elements that might have default animations
         const sections = document.querySelectorAll('.slide-in-left, .slide-in-bottom, .fade-in');
+        
         sections.forEach(el => {
+            // Remove the hardcoded classes
             el.classList.remove('slide-in-left', 'slide-in-bottom', 'fade-in');
-            el.style.animation = 'none'; // Reset hardcoded animations
+            
+            // CRITICAL FIX: clear any inline animation styles so the new class can work
+            el.style.animation = ''; 
         });
 
         // Apply the new directional animation to the whole main container
@@ -1080,4 +1086,5 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `${url}?transition=${animation}`;
     }
 });
+
 
