@@ -91,6 +91,24 @@ body.dark-theme .voice-hint {
     color: #a0a0a0;
 }
 
+/* Update your style section with this */
+.expense-explanation {
+    font-size: 0.85rem;
+    color: #888; /* Grey text for the brackets/text */
+    margin-left: 8px;
+    font-weight: normal;
+}
+
+.val-debit {
+    color: #e74c3c; /* Red */
+    font-weight: bold;
+}
+
+.val-credit {
+    color: #2ecc71; /* Green */
+    font-weight: bold;
+}
+
 /* Section Styles */
 section {
     background-color: white;
@@ -548,6 +566,7 @@ body.dark-theme #pdf-month-selection {
     font-size: 0.9rem;
 }
 .tut-btn-skip:hover { text-decoration: underline; color: #333; }
+
 
 
 
