@@ -67,6 +67,49 @@
                 margin-top: 10px;
             }
         }
+        /* --- MOBILE OPTIMIZATIONS (Android Fixes) --- */
+        @media (max-width: 768px) {
+            
+            /* 1. Fix Navigation: Make it Horizontal */
+            nav {
+                flex-direction: row !important; /* Force horizontal row */
+                flex-wrap: wrap; /* Allow wrapping if screen is tiny */
+                justify-content: center;
+                gap: 5px;
+                padding-bottom: 10px;
+            }
+
+            nav a {
+                font-size: 0.85rem; /* Smaller text for links */
+                padding: 8px 10px; /* Adjust padding */
+            }
+
+            .auth-buttons {
+                position: static;
+                transform: none;
+                margin-top: 5px;
+                width: 100%; /* Push logout to bottom or new line if needed */
+                justify-content: center;
+            }
+
+            /* 2. Fix Summary / Total Expenses Text */
+            #totals div {
+                display: flex;       /* Enable flexbox for alignment */
+                flex-wrap: wrap;     /* Allow text to wrap nicely */
+                align-items: center;
+                margin-bottom: 12px; /* Space out the rows */
+                line-height: 1.4;
+            }
+
+            /* Make the breakdown text (Spent - Credited) drop to a new line & smaller */
+            .expense-explanation {
+                display: block;      /* Forces it to its own line */
+                width: 100%;         /* Takes full width */
+                margin-left: 0 !important; /* Remove left margin */
+                margin-top: 2px;     /* Add small space on top */
+                font-size: 0.75rem;  /* Make text smaller */
+            }
+        }
     </style>
 </head>
 <body>
@@ -178,4 +221,5 @@
     </script>
 </body>
 </html>
+
 
