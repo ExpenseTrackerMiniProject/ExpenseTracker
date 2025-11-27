@@ -1039,32 +1039,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------
     let touchStartX = 0;
     let touchEndX = 0;
-    const minSwipeDistance = 75; // Minimum px to register a swipe
+    let touchStartY = 0; // New: Track vertical start
+    let touchEndY = 0;   // New: Track vertical end
 
-    // Only enable on mobile/touch screens
+    // Increased threshold to 100px (requires a longer, more intentional swipe)
+    const minSwipeDistance = 100; 
+
     document.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY; // Capture Y
     }, { passive: true });
 
     document.addEventListener('touchend', e => {
         touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;   // Capture Y
         handleSwipeGesture();
     }, { passive: true });
 
     function handleSwipeGesture() {
-        // Calculate distance
-        const distance = touchEndX - touchStartX;
+        const xDistance = touchEndX - touchStartX;
+        const yDistance = touchEndY - touchStartY;
 
-        // Check if swipe is valid
-        if (Math.abs(distance) < minSwipeDistance) return;
+        // 1. Minimum Distance Check
+        // If the horizontal move is too short, ignore it.
+        if (Math.abs(xDistance) < minSwipeDistance) return;
+
+        // 2. Vertical Scroll Check (The Fix)
+        // If the user moved UP/DOWN more than LEFT/RIGHT, assume they are scrolling.
+        // Ignore this gesture.
+        if (Math.abs(yDistance) > Math.abs(xDistance)) return;
 
         // Identify current page
         const path = window.location.pathname;
         const page = path.split("/").pop() || "index.html";
 
-        if (distance < 0) {
+        if (xDistance < 0) {
             // === SWIPE LEFT (Go to Next Page) ===
-            // Logic: Enter from Right
             if (page === 'index.html') {
                 navigateTo('add-transaction.html', 'slide-right');
             } else if (page === 'add-transaction.html') {
@@ -1072,7 +1082,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // === SWIPE RIGHT (Go to Prev Page) ===
-            // Logic: Enter from Left
             if (page === 'analytics.html') {
                 navigateTo('add-transaction.html', 'slide-left');
             } else if (page === 'add-transaction.html') {
@@ -1082,10 +1091,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function navigateTo(url, animation) {
-        // Add a small delay to visual feedback or immediate
         window.location.href = `${url}?transition=${animation}`;
     }
 });
+
 
 
 
